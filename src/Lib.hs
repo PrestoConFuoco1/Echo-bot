@@ -5,9 +5,8 @@ module Lib
 
 --import qualified Stuff as S (echo, findWithDefault, safeHead, showT)
 --import qualified HTTPRequests as H
---import Config
+import Config
 
-import qualified Logger as L
 import Data.IORef (newIORef)
 import qualified Data.Map as M (Map, empty, insert, findWithDefault)
 import Data.Foldable (asum)
@@ -16,7 +15,7 @@ import qualified Control.Exception as E
 import qualified System.IO.Error as E
     (isDoesNotExistError, isPermissionError, isAlreadyInUseError)
 
---import qualified Data.Configurator.Types as CT (ConfigError (..))
+import qualified Data.Configurator.Types as CT (ConfigError (..))
 
 import qualified System.Exit as Q (ExitCode (..), exitWith)
 
@@ -26,8 +25,11 @@ import qualified Data.Text.Lazy as T (Text, pack, words, unpack)
 import qualified GenericPretty as GP
 import System.Environment (getArgs)
 import System.IO (hPutStrLn, stderr)
+import qualified App.Logger as L
+import Control.Monad (when, forever)
+import Execute
 
-
+import qualified App.Handle.Telegram as T
 
 data RunOptions = RunOptions {
     testConfig :: Bool
@@ -50,12 +52,22 @@ getOpts = foldr f defaultRunOpts
 
 runWithConf :: RunOptions -> FilePath -> IO ()
 runWithConf opts path = do
-   (gen, eithConf) <- undefined
-        --loadConfig L.simpleLog path `E.catches` configHandlers
-   L.logDebug L.simpleLog "Successfully got bot configuration."
+    let f (E.Handler g) = E.Handler (\e -> g e >>
+            L.logFatal L.simpleLog 
+                "Failed to get required data from configuration files, terminating..."
+            >> Q.exitWith (Q.ExitFailure 1))
+    (gen, eithConf) <- loadConfig L.simpleLog path `E.catches` map f (configHandlers L.simpleLog)
+    L.logDebug L.simpleLog "Successfully got bot configuration."
     when (testConfig opts) $ Q.exitWith (Q.ExitSuccess)
 
-{-    case eithConf of
+    case eithConf of
+        TlC tlConf -> do
+            let tlConfig = T.Config gen tlConf
+            resources <- T.initResources tlConfig
+            let handle = T.resourcesToHandle resources L.simpleLog
+            forever (mainLoop handle undefined)
+{-
+    case eithConf of
         TlC tlConf -> runBot dummyTl L.simpleLog H.simpleHttp gen tlConf
         VkC vkConf -> runBot dummyVk L.simpleLog H.simpleHttp gen vkConf
 -}
@@ -67,10 +79,10 @@ runWithConf opts path = do
 
 
 
-configHandlers :: L.Handle -> [E.Handler ()]
-configHandlers = 
+configHandlers :: L.Handle IO -> [E.Handler ()]
+configHandlers h = 
     let f (E.Handler g) = E.Handler (\e -> g e >>
-            L.logFatal L.simpleLog 
+            L.logFatal h
                 "Failed to get required data from configuration files, terminating..."
             >> Q.exitWith (Q.ExitFailure 1))
     in  map f [E.Handler (handleIOError L.simpleLog),
@@ -79,22 +91,22 @@ configHandlers =
                      E.Handler (handleOthers L.simpleLog)]
  
 
-handleIOError :: L.Handle -> E.IOException -> IO ()
+handleIOError :: L.Handle IO -> E.IOException -> IO ()
 handleIOError logger exc
   | E.isDoesNotExistError exc = L.logError logger "File does not exist."
   | E.isPermissionError exc   = L.logError logger "Not enough permissions to open file."
   | E.isAlreadyInUseError exc = L.logError logger "File is already in use."
   | otherwise = L.logError logger "Unknown error occured"
 
-handleConfigError :: L.Handle -> CT.ConfigError -> IO ()
+handleConfigError :: L.Handle IO -> CT.ConfigError -> IO ()
 handleConfigError logger (CT.ParseError path s) =
     L.logError logger $ "Failed to parse configuration file."
 
-handleConfig2Error :: L.Handle -> ConfigException -> IO ()
+handleConfig2Error :: L.Handle IO -> ConfigException -> IO ()
 handleConfig2Error logger RequiredFieldMissing =
     L.logError logger "Failed to get required field value."
 
-handleOthers :: L.Handle -> E.SomeException -> IO ()
+handleOthers :: L.Handle IO -> E.SomeException -> IO ()
 handleOthers logger exc =
     L.logError logger "Unknown error occured."
 

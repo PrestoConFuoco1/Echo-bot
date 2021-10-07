@@ -26,8 +26,11 @@ source-repository head
 library
   exposed-modules:
       App.Handle
+      App.Handle.Telegram
       App.Logger
       BotClass
+      BotClassTypes
+      BotTeleInstance
       BotTypes
       Config
       Execute
@@ -36,7 +39,9 @@ library
       Lib
       Private
       Stuff
+      TeleTypes
       Types
+      VkTypes
   other-modules:
       Paths_bot2
   hs-source-dirs:
@@ -48,8 +53,10 @@ library
     , aeson
     , base >=4.7 && <5
     , bytestring
+    , configurator
     , containers
     , http-conduit
+    , random
     , text
     , time
   default-language: Haskell2010
@@ -69,8 +76,10 @@ executable bot2-exe
     , base >=4.7 && <5
     , bot2
     , bytestring
+    , configurator
     , containers
     , http-conduit
+    , random
     , text
     , time
   default-language: Haskell2010
@@ -91,8 +100,10 @@ test-suite bot2-test
     , base >=4.7 && <5
     , bot2
     , bytestring
+    , configurator
     , containers
     , http-conduit
+    , random
     , text
     , time
   default-language: Haskell2010

@@ -6,7 +6,8 @@ module Stuff (
     safeHead,
     emptyToNothing,
     findWithDefault,
-    showT
+    showT,
+    withEither
 ) where
 
 
@@ -43,3 +44,8 @@ findWithDefault x (Just k) m = M.findWithDefault x k m
 
 showT :: Show a => a -> T.Text
 showT = T.pack . show
+
+withEither :: Either a b -> (a -> c) -> (b -> c) -> c
+withEither e left right = either left right e
+
+

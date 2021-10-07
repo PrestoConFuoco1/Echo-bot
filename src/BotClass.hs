@@ -10,36 +10,25 @@ import qualified HTTPRequests as H
 import qualified Stuff as S (Timeout)
 import Data.Aeson (Value)
 import qualified Data.Text as T (Text)
+import qualified Data.Text.Lazy as TL (Text)
 import qualified App.Handle as D
 import qualified Data.ByteString.Lazy.Char8 as BSL (ByteString)
 import qualified GenericPretty as GP
+import BotClassTypes
 
 
-class (GP.PrettyShow (Rep s), Show (Rep s)) =>
-        BotClass s where
+fmsg url (method, params) = H.Req H.POST (url <> method) params
+
+class (BotClassTypes s) => BotClass s where
     takesJSON :: s -> Bool
-
-    type Conf s :: *
-
-
-    type StC s :: *
-    type StM s :: *
-
-    type Rep s :: *
-    type Upd s :: *
-    type Msg s :: *
-    type Chat s :: *
-    type User s :: *
-
-    type CallbackQuery s :: *
-
-
-    getUpdatesRequest :: (Monad m) => D.Handle m -> s -> m H.HTTPRequest
+    
+    getUpdatesRequest :: (Monad m) => D.Handle s m -> s -> m H.HTTPRequest
     parseHTTPResponse :: s -> BSL.ByteString -> Either String (Rep s)
 
     isSuccess :: s -> Rep s -> Bool
+    getResult :: s -> Rep s -> Maybe Value
+
     parseUpdatesList :: s -> Rep s -> Either String [Upd s]
-    defaultStateTrans :: D.Handle m -> s -> [Upd s] -> Rep s -> m ()
 
     getMsg :: s -> Upd s -> Maybe (Msg s)
 
@@ -50,10 +39,15 @@ class (GP.PrettyShow (Rep s), Show (Rep s)) =>
 
     getCallbackQuery :: s -> Upd s -> Maybe (CallbackQuery s)
 
---    sendTextMsg :: s -> Maybe (Chat s) -> Maybe (User s) -> T.Text
---        -> StC s -> Either String (State (StM s) H.HTTPRequest)
-    sendTextMsg :: D.Handle m -> s -> Maybe (Chat s) -> Maybe (User s) -> T.Text
+    getCallbackUser :: s -> CallbackQuery s -> User s
+    getCallbackData :: s -> CallbackQuery s -> Maybe T.Text
+    getCallbackChat :: s -> CallbackQuery s -> Maybe (Chat s)
+
+    sendTextMsg :: (Monad m) => D.Handle s m -> s -> Maybe (Chat s) -> Maybe (User s) -> T.Text
         -> m (Either String H.HTTPRequest)
 
-    repNumKeyboard :: s -> [Int] -> T.Text -> H.ParamsList
+    repNumKeyboard :: s -> [Int] -> TL.Text -> H.ParamsList
 
+    processMessage :: (Monad m) => D.Handle s m -> s -> Msg s -> m (Maybe (m H.HTTPRequest))
+
+    epilogue :: (Monad m) => D.Handle s m -> s -> [Upd s] -> Rep s -> m ()

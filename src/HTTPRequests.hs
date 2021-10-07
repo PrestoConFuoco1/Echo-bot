@@ -23,7 +23,7 @@ import Control.Exception (catches, SomeException, Handler(..))
 import Data.Bifunctor (bimap)
 import qualified Data.Aeson as Ae (ToJSON (..), Value, encode, object, (.=))
 import qualified Data.Text.Lazy as TL (Text, pack, unpack, toStrict)
-import qualified Data.Text as T (Text)
+import qualified Data.Text as T (Text, unpack)
 import Data.Text.Lazy.Encoding (decodeUtf8)
 
 newtype HttpHandle = HttpHandle { sendH :: Bool -> HTTPRequest -> IO (Either String BSL.ByteString) }
@@ -46,7 +46,8 @@ data ParVal = PIntg Integer
             | PFloat Double
 --            | PStr String
             | PVal Ae.Value
-            | PText TL.Text
+            | PLText TL.Text
+            | PText T.Text
         deriving (Show, Eq)
 
 instance Ae.ToJSON ParVal where
@@ -54,6 +55,7 @@ instance Ae.ToJSON ParVal where
 --    Ae.toJSON (PStr s)  = Ae.toJSON s
     toJSON (PVal v)  = v
     toJSON (PFloat x) = Ae.toJSON x
+    toJSON (PLText x) = Ae.toJSON x
     toJSON (PText x) = Ae.toJSON x
 
 parValToString :: ParVal -> String
@@ -61,7 +63,8 @@ parValToString (PIntg n) = show n
 --parValToString (PStr s)  = s
 parValToString (PVal v) = TL.unpack . decodeUtf8 . Ae.encode $ v
 parValToString (PFloat x) = show x
-parValToString (PText x) = TL.unpack x
+parValToString (PLText x) = TL.unpack x
+parValToString (PText x) = T.unpack x
 
 type ParamsUnit = (TL.Text, Maybe ParVal)
 type ParamsList = [ParamsUnit]

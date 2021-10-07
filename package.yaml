@@ -31,6 +31,8 @@ dependencies:
 - bytestring
 - http-conduit
 - HTTP
+- random
+- configurator
  
 
 library:
