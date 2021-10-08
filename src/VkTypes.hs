@@ -10,17 +10,26 @@ import Data.Foldable (asum)
 import System.Random (StdGen)
 import qualified Stuff as S (echo)
 import qualified Private as S (vkAccessToken, vkGroupID)
-import Data.Text.Lazy.Encoding (decodeUtf8, encodeUtf8)
-import qualified Data.Text.Lazy as T (Text, unpack, pack, toStrict)
+import qualified Data.Text.Lazy.Encoding as EL (decodeUtf8, encodeUtf8)
+import qualified Data.Text.Encoding as E (decodeUtf8, encodeUtf8)
+import qualified Data.Text.Lazy as TL (Text, unpack, pack, toStrict)
+import qualified Data.Text as T (Text, unpack, pack)
 import Control.Applicative ((<|>))
 
 import GenericPretty
 
+import qualified HTTPRequests as H
+
+defaultVkParams accTok apiV =
+    [("access_token", Just $ H.PLText accTok),
+     ("v", Just $ H.PText apiV)]
+
+
 ----------------------------------------------
 
 data VkConfig = VkConf {
-    _VC_vkUrl :: T.Text,
-    _VC_accessToken :: T.Text,
+    _VC_vkUrl :: TL.Text,
+    _VC_accessToken :: TL.Text,
     _VC_groupID :: Integer,
     _VC_apiV :: T.Text
     } deriving (Show, Eq, Generic)
@@ -30,16 +39,16 @@ defaultVkConfig = VkConf "https://api.vk.com/method/" S.vkAccessToken S.vkGroupI
 ---------------------------------------------
 
 data VkStateConst = VKSC {
-    vkKey :: T.Text,
-    vkServer :: T.Text,
-    vkUrl :: T.Text, -- only for methods
-    vkAccessToken :: T.Text,
+    vkKey :: TL.Text,
+    vkServer :: TL.Text,
+    vkUrl :: TL.Text, -- only for methods
+    vkAccessToken :: TL.Text,
     vkGroupID :: Integer,
     apiVersion :: T.Text
     } deriving (Show, Eq)
 
 data VkStateMut = VKSM {
-    vkTs :: T.Text, -- timestamp
+    vkTs :: TL.Text, -- timestamp
     vkRndGen :: StdGen
     } deriving (Show)
 
@@ -47,7 +56,7 @@ data VkStateMut = VKSM {
 ----------------------------------------------
 
 data VkReply = VkReply {
-    _VR_ts :: Maybe T.Text,
+    _VR_ts :: Maybe TL.Text,
     _VR_updates :: Maybe Value,
     _VR_failed :: Maybe Int
     } deriving (Eq, Show, Generic)
@@ -94,8 +103,8 @@ instance FromJSON VkUpdate where
 
 parseCallback :: Value -> Parser VkMyCallback
 parseCallback = withObject "Expected message object with payload" $ \msg -> do
-    pt <- msg .: "payload" :: Parser T.Text
-    let pbs = {- S.echo $-} encodeUtf8 pt
+    pt <- msg .: "payload" :: Parser TL.Text
+    let pbs = {- S.echo $-} EL.encodeUtf8 pt
         pVal = {-S.echo $-} decode pbs :: Maybe Value
     payload <- maybe (fail "unable to parse payload object") return pVal >>= parseJSON
     text <- msg .: "text"
@@ -171,7 +180,7 @@ instance FromJSON VkKeyboard where
 ----------------------------------------------------
 
 data VkButton = VkButton {
-    _VB_color :: T.Text, -- or maybe make an enum for that?
+    _VB_color :: TL.Text, -- or maybe make an enum for that?
     _VB_action :: VkButtonActions
     } deriving (Eq, Show, Generic)
 
@@ -207,8 +216,8 @@ instance FromJSON VkButtonActions where
 
 
 data VkCallbackButton = VkCallbackButton {
-    _VCB_label :: T.Text,
-    _VCB_payload :: T.Text
+    _VCB_label :: TL.Text,
+    _VCB_payload :: TL.Text
     } deriving (Show, Eq, Generic)
 
 instance ToJSON VkCallbackButton where
@@ -222,7 +231,7 @@ instance FromJSON VkCallbackButton where
 
 
 data VkTextButton = VkTextButton {
-    _VTB_label :: T.Text,
+    _VTB_label :: TL.Text,
     _VTB_payload :: VkPayload
     } deriving (Show, Eq, Generic)
 
@@ -235,33 +244,33 @@ instance FromJSON VkTextButton where
     parseJSON = genericParseJSON defaultOptions {
         fieldLabelModifier = drop 5 }
 
-repNumKeyboardVk :: T.Text -> [Int] -> T.Text
-repNumKeyboardVk cmd lst = decodeUtf8 $
+repNumKeyboardVk :: TL.Text -> [Int] -> TL.Text
+repNumKeyboardVk cmd lst = EL.decodeUtf8 $
     encode $ toJSON $ VkKeyboard True $
     [map (VkButton "primary" . VBACallback . repNumButtonVk cmd) lst]
 
-repNumButtonVk :: T.Text -> Int -> VkCallbackButton
+repNumButtonVk :: TL.Text -> Int -> VkCallbackButton
 repNumButtonVk cmd n = VkCallbackButton shown $ "{\"" <> cmd <> "\": \"" <> shown <> "\"}"-- (cmd <> " " <> shown)
-  where shown = T.pack $ show n 
+  where shown = TL.pack $ show n 
 
 
-repNumKeyboardVkTxt :: T.Text -> [Int] -> T.Text
-repNumKeyboardVkTxt cmd lst = decodeUtf8 $
+repNumKeyboardVkTxt :: TL.Text -> [Int] -> TL.Text
+repNumKeyboardVkTxt cmd lst = EL.decodeUtf8 $
     encode $ toJSON $ VkKeyboard True $
     [map (VkButton "primary" . VBAText . repNumButtonVkTxt cmd) lst]
 
-repNumButtonVkTxt :: T.Text -> Int -> VkTextButton
+repNumButtonVkTxt :: TL.Text -> Int -> VkTextButton
 repNumButtonVkTxt cmd n = VkTextButton shown $ VkPayload (cmd <> " " <> shown)
-  where shown = T.pack $ show n 
+  where shown = TL.pack $ show n 
 
-repNumKeyboardVkTxt' :: T.Text -> [Int] -> VkKeyboard
+repNumKeyboardVkTxt' :: TL.Text -> [Int] -> VkKeyboard
 repNumKeyboardVkTxt' cmd lst = VkKeyboard True $ 
     [map (VkButton "primary" . VBAText . repNumButtonVkTxt cmd) lst]
 
 ------------------------------------------
 data VkMyCallback = VkMyCallback {
     _VMC_from_id :: VkUser,
-    _VMC_text    :: Maybe T.Text,
+    _VMC_text    :: Maybe TL.Text,
     _VMC_payload :: VkPayload
     } deriving (Show, Eq, Generic)
 
@@ -289,7 +298,7 @@ testVkKeyboard' ="{\"inline\":true,\"buttons\":[[{\"action\":{\"type\":\"callbac
 --------------------------------------------
 
 data VkPayload = VkPayload {
-    _VP_payload :: T.Text
+    _VP_payload :: TL.Text
     } deriving (Show, Eq, Generic)
 
 
@@ -353,7 +362,7 @@ instance FromJSON VkAttachment where
             "sticker" -> fmap VASticker $ o .: "sticker"
             "gift" -> fmap VAGift $ o .: "gift"
             --str -> fail $ "Unexpected attachment type: " <> str
-            str -> fmap (VAUnexpectedAtt . VkUnexpectedAtt str) $  o .: (T.toStrict str)
+            str -> fmap (VAUnexpectedAtt . VkUnexpectedAtt str) $  o .: ({-TL.toStrict-} str)
 
 ------------------------------------------
 

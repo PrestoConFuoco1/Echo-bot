@@ -39,10 +39,10 @@ initResources (Config common tlConf) = do
         }
 
 
+--initResources :: Config -> IO Resources
 resourcesToHandle :: Resources -> L.Handle IO -> D.Handle Tele IO
 resourcesToHandle resources logger =
-    let x = 1
-    in D.Handle {
+    D.Handle {
           D.log = logger
         , D.sendRequest = H.sendRequest
         , D.commonEnv = commonEnv resources

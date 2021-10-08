@@ -69,7 +69,6 @@ instance BotClass Tele where
         AeT.parseEither AeT.parseJSON val
 
 
---    epilogue :: D.Handle s m -> s -> [Upd s] -> Rep s -> m ()
 
 
 --    getResult :: s -> Rep s -> Maybe Value
@@ -90,7 +89,8 @@ instance BotClass Tele where
 --    getText :: s -> Msg s -> Maybe T.Text
     getText _ = _TM_text
 --    getUserID :: s -> User s -> T.Text
---
+    getUserID _ = T.pack . show . _TUs_id
+
 --    getCallbackQuery :: s -> Upd s -> Maybe (CallbackQuery s)
     getCallbackQuery _ (TlUpdate _ (TECallback cb)) = Just cb
     getCallbackQuery _ _ = Nothing
@@ -104,7 +104,6 @@ instance BotClass Tele where
     getCallbackChat d c = _TCB_message c >>= return . _TM_chat
 
     --getUserID :: q -> User q -> T.Text
-    getUserID _ = T.pack . show . _TUs_id
 
 
     --repNumKeyboard :: s -> [Int] -> T.Text -> H.ParamsList
@@ -113,6 +112,7 @@ instance BotClass Tele where
 
 --    sendTextMsg :: D.Handle s m -> s -> Maybe (Chat s) -> Maybe (User s) -> T.Text
 --        -> m (Either String H.HTTPRequest)
+    sendTextMsg h s Nothing _ _ = return $ Left "Telegram: no chat supplied, unable to send messages to users"
     sendTextMsg h s (Just c) _ text = do
         let
             url = tlUrl $ D.getConstState h s
@@ -120,7 +120,6 @@ instance BotClass Tele where
             [("chat_id", Just . H.PIntg . _TC_id $ c),
             ("text", Just $ H.PText text)])
             
-    sendTextMsg h s Nothing _ _ = return $ Left "Telegram: no chat supplied, unable to send messages to users"
 
 --    epilogue :: D.Handle s m -> s -> [Upd s] -> Rep s -> m ()
     epilogue h s [] _ = return ()

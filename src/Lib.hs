@@ -30,11 +30,14 @@ import Control.Monad (when, forever)
 import Execute
 
 import qualified App.Handle.Telegram as T
+import qualified App.Handle.Vkontakte as V
 
+data Messager = Vkontakte | Telegram
 data RunOptions = RunOptions {
-    testConfig :: Bool
+    testConfig :: Bool,
+    messager :: Messager
     }
-defaultRunOpts = RunOptions { testConfig = False }
+defaultRunOpts = RunOptions { testConfig = False, messager = Telegram }
 
 
 someFunc :: IO ()
@@ -48,6 +51,8 @@ someFunc = do
 getOpts :: [String] -> RunOptions
 getOpts = foldr f defaultRunOpts
   where f "--test-config" acc = acc { testConfig = True }
+        f "-vk" acc = acc { messager = Vkontakte }
+        f "-tl" acc = acc { messager = Telegram }
         f _ acc = acc
 
 runWithConf :: RunOptions -> FilePath -> IO ()
@@ -65,6 +70,11 @@ runWithConf opts path = do
             let tlConfig = T.Config gen tlConf
             resources <- T.initResources tlConfig
             let handle = T.resourcesToHandle resources L.simpleLog
+            forever (mainLoop handle undefined)
+        VkC vkConf -> do
+            let vkConfig = V.Config gen vkConf
+            resources <- V.initResources vkConfig
+            let handle = V.resourcesToHandle resources L.simpleLog
             forever (mainLoop handle undefined)
 {-
     case eithConf of

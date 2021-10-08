@@ -27,11 +27,13 @@ library
   exposed-modules:
       App.Handle
       App.Handle.Telegram
+      App.Handle.Vkontakte
       App.Logger
       BotClass
       BotClassTypes
       BotTeleInstance
       BotTypes
+      BotVkInstance
       Config
       Execute
       GenericPretty
@@ -56,6 +58,7 @@ library
     , configurator
     , containers
     , http-conduit
+    , mtl
     , random
     , text
     , time
@@ -79,6 +82,7 @@ executable bot2-exe
     , configurator
     , containers
     , http-conduit
+    , mtl
     , random
     , text
     , time
@@ -103,6 +107,7 @@ test-suite bot2-test
     , configurator
     , containers
     , http-conduit
+    , mtl
     , random
     , text
     , time

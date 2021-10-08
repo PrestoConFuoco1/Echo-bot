@@ -47,4 +47,5 @@ logFatal h = Logger.logFatal (log h)
 
 --data (Show a) => Some a = Some a
 
-
+logEntry :: Handle s m -> Logger.LoggerEntry -> m ()
+logEntry h (pri, msg) = Logger.log (log h) pri msg

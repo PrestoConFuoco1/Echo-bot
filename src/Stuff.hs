@@ -7,7 +7,8 @@ module Stuff (
     emptyToNothing,
     findWithDefault,
     showT,
-    withEither
+    withEither,
+    withMaybe
 ) where
 
 
@@ -48,4 +49,5 @@ showT = T.pack . show
 withEither :: Either a b -> (a -> c) -> (b -> c) -> c
 withEither e left right = either left right e
 
-
+withMaybe :: Maybe a -> b -> (a -> b) -> b
+withMaybe m nothing just = maybe nothing just m
