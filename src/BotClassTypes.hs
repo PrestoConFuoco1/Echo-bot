@@ -18,7 +18,8 @@ import qualified GenericPretty as GP
 
 
 
-class (GP.PrettyShow (Rep s), Show (Rep s), GP.PrettyShow (Msg s)) =>
+class (GP.PrettyShow (Rep s), Show (Rep s), GP.PrettyShow (Msg s),
+        GP.PrettyShow (Conf s)) =>
         BotClassTypes s where
 
     type Conf s :: *

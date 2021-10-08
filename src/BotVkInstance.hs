@@ -33,11 +33,6 @@ import qualified Data.ByteString.Lazy as BSL (ByteString)
 import qualified App.Handle as D
 import Control.Monad.Writer (Writer, tell, runWriter)
 
-newtype Vk = Vk ()
-
-dummyVk = Vk ()
-
-
 
 parseInitResp :: BSL.ByteString -> Either String (TL.Text, TL.Text, TL.Text)
 parseInitResp = eithParsed

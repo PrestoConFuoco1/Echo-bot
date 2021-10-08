@@ -18,6 +18,13 @@ import GenericPretty
 
 -----------------------------------------------------------
 
+
+newtype Tele = Tele ()
+
+dummyTl = Tele ()
+
+
+
 data TlConfig = TlConf {
         _TC_updID :: Integer,
         _TC_url :: TL.Text

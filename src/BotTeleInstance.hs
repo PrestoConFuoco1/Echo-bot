@@ -21,10 +21,6 @@ import Data.Bifunctor (first)
 
 import qualified App.Handle as D
 
-newtype Tele = Tele ()
-
-dummyTl = Tele ()
-
 instance BotClassTypes Tele where
     type Conf Tele = TlConfig -- don't care
 

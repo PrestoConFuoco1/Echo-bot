@@ -25,6 +25,12 @@ defaultVkParams accTok apiV =
      ("v", Just $ H.PText apiV)]
 
 
+newtype Vk = Vk ()
+
+dummyVk = Vk ()
+
+
+
 ----------------------------------------------
 
 data VkConfig = VkConf {

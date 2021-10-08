@@ -31,13 +31,19 @@ import Execute
 
 import qualified App.Handle.Telegram as T
 import qualified App.Handle.Vkontakte as V
+import BotClassTypes
+import BotTypes
+import BotVkInstance
+import BotTeleInstance
+import TeleTypes
+import VkTypes
 
-data Messager = Vkontakte | Telegram
+data Messager = Vkontakte | Telegram | None
 data RunOptions = RunOptions {
     testConfig :: Bool,
     messager :: Messager
     }
-defaultRunOpts = RunOptions { testConfig = False, messager = Telegram }
+defaultRunOpts = RunOptions { testConfig = False, messager = None }
 
 
 someFunc :: IO ()
@@ -54,36 +60,35 @@ getOpts = foldr f defaultRunOpts
         f "-vk" acc = acc { messager = Vkontakte }
         f "-tl" acc = acc { messager = Telegram }
         f _ acc = acc
-
 runWithConf :: RunOptions -> FilePath -> IO ()
-runWithConf opts path = do
-    let f (E.Handler g) = E.Handler (\e -> g e >>
-            L.logFatal L.simpleLog 
-                "Failed to get required data from configuration files, terminating..."
-            >> Q.exitWith (Q.ExitFailure 1))
-    (gen, eithConf) <- loadConfig L.simpleLog path `E.catches` map f (configHandlers L.simpleLog)
-    L.logDebug L.simpleLog "Successfully got bot configuration."
-    when (testConfig opts) $ Q.exitWith (Q.ExitSuccess)
-
-    case eithConf of
-        TlC tlConf -> do
+runWithConf opts path =
+    case messager opts of
+        Telegram -> runWithConf' dummyTl opts path tlAction
+        Vkontakte -> runWithConf' dummyVk opts path vkAction
+        None -> L.logFatal L.simpleLog "No messager parameter supplied, terminating..." >>
+                L.logInfo  L.simpleLog "Use -tl for Telegram and -vk for Vkontakte"
+  where tlAction gen tlConf = do
             let tlConfig = T.Config gen tlConf
             resources <- T.initResources tlConfig
             let handle = T.resourcesToHandle resources L.simpleLog
             forever (mainLoop handle undefined)
-        VkC vkConf -> do
+        vkAction gen vkConf = do
             let vkConfig = V.Config gen vkConf
             resources <- V.initResources vkConfig
             let handle = V.resourcesToHandle resources L.simpleLog
             forever (mainLoop handle undefined)
-{-
-    case eithConf of
-        TlC tlConf -> runBot dummyTl L.simpleLog H.simpleHttp gen tlConf
-        VkC vkConf -> runBot dummyVk L.simpleLog H.simpleHttp gen vkConf
--}
-
-
-
+       
+ 
+runWithConf' :: (BotConfigurable s) => s -> RunOptions -> FilePath -> (EnvironmentCommon -> Conf s -> IO ()) -> IO ()
+runWithConf' s opts path todo = do
+    let f (E.Handler g) = E.Handler (\e -> g e >>
+            L.logFatal L.simpleLog 
+                "Failed to get required data from configuration files, terminating..."
+            >> Q.exitWith (Q.ExitFailure 1))
+    (gen, conf) <- loadConfig s L.simpleLog path `E.catches` map f (configHandlers L.simpleLog)
+    L.logDebug L.simpleLog "Successfully got bot configuration."
+    when (testConfig opts) $ Q.exitWith (Q.ExitSuccess)
+    todo gen conf
 
 
 
