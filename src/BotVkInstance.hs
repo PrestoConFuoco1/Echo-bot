@@ -1,8 +1,4 @@
-{-# LANGUAGE TypeFamilies,
-             FlexibleContexts,
-             ConstrainedClassMethods,
-             GeneralizedNewtypeDeriving,
-             OverloadedStrings #-}
+{-# LANGUAGE TypeFamilies #-}
 
 
 module BotVkInstance where
@@ -11,13 +7,11 @@ import BotClass
 import BotTypes
 
 import qualified HTTPRequests as H
---import ErrConcat (unEC, ErrConcat(..))
 
 import VkTypes
 import qualified Stuff as S (echo, emptyToNothing, withMaybe)
 import Data.Aeson (decode)
 import Data.Aeson.Types (Parser, parseJSON, toJSON, parseEither, (.:), withObject)
-import Data.List (intercalate)
 import Data.Foldable (asum)
 import qualified Data.Text.Lazy as TL (Text, pack, intercalate, toStrict)
 import qualified Data.Text as T (Text, pack, intercalate)
@@ -77,52 +71,27 @@ instance BotClass Vk where
                     ("wait", Just . H.PIntg $ fromIntegral timeout')]
         return $ H.Req H.GET fullUrl pars
 
-{-
-     getUpdatesRequest d t sc = do
-        curTS <- gets vkTs
-        let fullUrl = vkServer sc
-            pars = [("act", Just $ H.PText "a_check"),
-                    ("key", Just . H.PText $vkKey sc),
-                    ("ts", Just $ H.PText curTS),
-                    ("wait", Just . H.PIntg $ fromIntegral t)]
-        return $ H.Req H.GET fullUrl pars
--}
-
-
     --parseHTTPResponse :: s -> BSL.ByteString -> Either String (Rep s)
     parseHTTPResponse _ resp = do -- Either
         val <- maybe (Left "Couldn't parse HTTP response") Right $ decode resp
         repl <- parseEither parseJSON val
         return repl
 
-{-
-    --parseHTTPResponse :: q -> BSL.ByteString -> Either T.Text (Rep q)
-    parseHTTPResponse _ resp = do -- Either
-        val <- maybe (Left "Couldn't parse HTTP response") Right $ decode resp
-        repl <- parseEither parseJSON val
-        return repl
--}
-
 --    isSuccess :: s -> Rep s -> Bool
     isSuccess _ r = _VR_failed r == Nothing
 
-
 --    getResult :: s -> Rep s -> Maybe Value
     getResult _ = _VR_updates
---
+
 --    parseUpdatesList :: s -> Rep s -> Either String [Upd s]
     parseUpdatesList d rep = do
         val <- maybe (Left "Couldn't parse update list, or failed result") Right $ getResult d rep
         parseEither parseJSON val
 
-
---
 --    getMsg :: s -> Upd s -> Maybe (Msg s)
     getMsg _ (VkUpdate _ (VEMsg m)) = Just m
     getMsg _ _ = Nothing
 
-
---
 --    getChat :: s -> Msg s -> Maybe (Chat s)
     getChat d m = Nothing
 --    getUser :: s -> Msg s -> Maybe (User s)
@@ -142,7 +111,7 @@ instance BotClass Vk where
     getCallbackData _ = Just . TL.toStrict . _VP_payload . _VMC_payload
 --    getCallbackChat :: s -> CallbackQuery s -> Maybe (Chat s)
     getCallbackChat d = const Nothing
---
+
 --    sendTextMsg :: (Monad m) => D.Handle s m -> s -> Maybe (Chat s) -> Maybe (User s) -> T.Text
 --        -> m (Either String H.HTTPRequest)
     sendTextMsg h s mChat mUser "" = return $ Left "Unable to send empty message."
@@ -156,31 +125,11 @@ instance BotClass Vk where
                 ("random_id", Just . H.PIntg $ fromIntegral (rndInt32::Integer))] <> defaultVkParams (vkAccessToken sc) (apiVersion sc)
         return $ Right $ fmsg (vkUrl sc) (method, pars)
 
-{-
-    sendTextMsg _ _ _       ""   _  = Left "Unable to send empty message."
-    sendTextMsg _ c Nothing text sc = Left "VK: no user supplied, unable to send messages to chats."
-    sendTextMsg d c (Just u) text sc = Right $ state $ \sm ->
-        let method = "messages.send"
-            (rndInt32, g) = randomR (0, 2^32-1) $ vkRndGen sm :: (Int, StdGen)
-            f x = x { vkRndGen = g }
-            pars = [("user_id", Just . H.PIntg $ _VU_id u), ("message", Just $ H.PText text),
-                ("random_id", Just . H.PIntg $ fromIntegral rndInt32)] <> defaultVkParams (vkAccessToken sc) (apiVersion sc)
-        in  (fmsg (getUrl d sc) (method, pars), f sm)
--}
-
-
---
 --    repNumKeyboard :: s -> [Int] -> TL.Text -> H.ParamsList
     repNumKeyboard d lst cmd = [("keyboard", Just $ H.PVal obj)]
       --where obj = S.echo $ repNumKeyboardVk cmd lst
       where obj = toJSON $ {-S.echo $-} repNumKeyboardVkTxt' cmd lst
 
-
---
-
-
-
---
 --    epilogue :: (Monad m) => D.Handle s m -> s -> [Upd s] -> Rep s -> m ()
     epilogue h s _ rep = maybe (return ()) m $ _VR_ts rep
          where m = D.modifyMutState h s . f
@@ -216,13 +165,6 @@ instance BotClass Vk where
                             ++ defaultVkParams (vkAccessToken sc) (apiVersion sc)
                     method = "messages.send"
  
-{-
-                    h x = x {vkRndGen = g}
-                    pars = [("user_id", Just . H.PIntg $ _VU_id user), ("message", fmap H.PText maybeText),
-                            ("random_id", Just . H.PIntg $ fromIntegral rndInt32)]
-                            ++ defaultVkParams (vkAccessToken sc) (apiVersion sc)
-                in  (fmsg (getUrl d sc) (method, extraPars <> pars), h sm)
--}
                 D.putMutState h dummyVk $ sm { vkRndGen = g' }
                 return $ fmsg (vkUrl sc) (method, extraPars <> pars)
 
@@ -231,182 +173,7 @@ instance BotClass Vk where
             atts = _VM_attachments m
 
 
-{-
---    sendMessage' :: (MonadBot (StC q) (StM q) (User q) m) =>
---        q -> StC q -> Msg q -> m (Maybe (State (StM q) H.HTTPRequest))
 
-    sendMessage' d sc m
-        | null atts && maybeText == Nothing = logError "Unable to send empty message." >> return Nothing
-        | otherwise = (mapM_ logM toLog >>) $ ($ maybeText) $ maybe
-            (maybe
-                (logError "No text found and unable to send any attachments."
-                    >> return Nothing)
-                (return . Just . f) maybePars)
-            (const . return . return . f $ maybe [] id maybePars)
-            
-      where f extraPars = state $ \sm ->
-                let upperRandomIDBound = 2^32-1 :: Int
-                    (rndInt32, g) = randomR (0, upperRandomIDBound) $ vkRndGen sm
-                    h x = x {vkRndGen = g}
-                    pars = [("user_id", Just . H.PIntg $ _VU_id user), ("message", fmap H.PText maybeText),
-                            ("random_id", Just . H.PIntg $ fromIntegral rndInt32)]
-                            ++ defaultVkParams (vkAccessToken sc) (apiVersion sc)
-                in  (fmsg (getUrl d sc) (method, extraPars <> pars), h sm)
-
-            method = "messages.send"
-            user = _VM_from_id m
-            maybeText = S.emptyToNothing $ _VM_text m
-            atts = _VM_attachments m
-            (maybePars, toLog) = runWriter $ attsToParsVk' atts
-
--}
-
-
-{-
-    --defaultStateTrans :: q -> [Upd q] -> Rep q -> StM q -> StM q
-    defaultStateTrans d _ rep sm = maybe sm f $ _VR_ts rep
-      where f x = sm { vkTs = x }
--}
-
-
-{-
-    defaultConfig _ = defaultVkConfig
-
-
-    --initialize :: q -> Conf q -> IO (Maybe (StC q, StM q))
-    -- i think this function can be further splitted to some lesser functions
-    initialize d (VkConf methodsUrl accTok gid apiV) = do
-        let pars = [("group_id", Just . H.PIntg $ gid)] <> defaultVkParams accTok apiV
-            initReq = H.Req H.GET (methodsUrl <> "groups.getLongPollServer") pars
-        initReply <- fmap S.echo $ H.sendRequest (takesJSON d) initReq
-        let eithParsed = initReply >>= parseInitResp
-        initRndNum <- newStdGen
-        return $ case eithParsed of
-            Left _ -> Nothing
-            Right (k, s, t) -> Just (VKSC {
-                vkKey = k,
-                vkServer = s,
-                vkUrl = methodsUrl,
-                vkAccessToken = accTok,
-                vkGroupID = gid,
-                apiVersion = apiV
-              }, VKSM {
-                vkTs = t,
-                vkRndGen = initRndNum
-              })
-
-
-    --close :: q -> St q -> IO ()
-    close _ s = return ()
-
-    --getUpdatesRequest :: q -> (StC q, StM q) -> S.Timeout -> HTTPRequest
-    --getUpdatesRequest :: q -> S.Timeout -> StC q -> State (StM q) HTTPRequest
-    getUpdatesRequest d t sc = do
-        curTS <- gets vkTs
-        let fullUrl = vkServer sc
-            pars = [("act", Just $ H.PText "a_check"),
-                    ("key", Just . H.PText $vkKey sc),
-                    ("ts", Just $ H.PText curTS),
-                    ("wait", Just . H.PIntg $ fromIntegral t)]
-        return $ H.Req H.GET fullUrl pars
-
-    --parseHTTPResponse :: q -> BSL.ByteString -> Either T.Text (Rep q)
-    parseHTTPResponse _ resp = do -- Either
-        val <- maybe (Left "Couldn't parse HTTP response") Right $ decode resp
-        repl <- parseEither parseJSON val
-        return repl
-
-
-    --parseUpdatesList :: q -> Rep q -> Either T.Text [Upd q]
-    parseUpdatesList d rep = do
-        val <- maybe (Left "Couldn't parse update list, or failed result") Right $ getResult d rep
-        parseEither parseJSON val
-
-    --defaultStateTrans :: q -> [Upd q] -> Rep q -> StM q -> StM q
-    defaultStateTrans d _ rep sm = maybe sm f $ _VR_ts rep
-      where f x = sm { vkTs = x }
-
-    ----
-    ----
-    getMsg _ (VkUpdate _ (VEMsg m)) = Just m
-    getMsg _ _ = Nothing
-
-
-    getUrl _ = vkUrl
-
-    --isSuccess :: q -> Rep q -> Bool
-    isSuccess _ r = _VR_failed r == Nothing
-
-    --getResult :: q -> Rep q -> Maybe Value
-    getResult _ = _VR_updates
-
-    --getText :: q -> Msg q -> Maybe T.Text
-    getText _ = {- S.echo .-} _VM_text
-
-
-    --getUserID :: q -> User q -> T.Text
-    getUserID _ = T.pack . show . _VU_id
-
-    --getChat :: q -> Msg q -> Maybe (Chat q)
-    getChat d m = Nothing
-
-    --getUser :: q -> Msg q -> Maybe (User q)
-    getUser d m = Just $ _VM_from_id m
-
-
-    -- repNumKeyboard :: q -> [Int] -> T.Text -> ParamsList
-    repNumKeyboard d lst cmd = [("keyboard", Just $ H.PVal obj)]
-      --where obj = S.echo $ repNumKeyboardVk cmd lst
-      where obj = toJSON $ {-S.echo $-} repNumKeyboardVkTxt' cmd lst
-
-    --getCallbackQuery :: q -> Upd q -> Maybe (CallbackQuery q)
-    getCallbackQuery d (VkUpdate _ (VECallback c)) = Just c
-    getCallbackQuery d _ = Nothing
-
-    --getCallbackUser :: q -> CallbackQuery q -> User q
-    getCallbackUser d = _VMC_from_id
-    --getCallbackData :: q -> CallbackQuery q -> Maybe T.Text
-    getCallbackData d = Just . _VP_payload . _VMC_payload
-    --getCallbackChat d = getChat d
-    getCallbackChat d = const Nothing
-
-    sendTextMsg _ _ _       ""   _  = Left "Unable to send empty message."
-    sendTextMsg _ c Nothing text sc = Left "VK: no user supplied, unable to send messages to chats."
-    sendTextMsg d c (Just u) text sc = Right $ state $ \sm ->
-        let method = "messages.send"
-            (rndInt32, g) = randomR (0, 2^32-1) $ vkRndGen sm :: (Int, StdGen)
-            f x = x { vkRndGen = g }
-            pars = [("user_id", Just . H.PIntg $ _VU_id u), ("message", Just $ H.PText text),
-                ("random_id", Just . H.PIntg $ fromIntegral rndInt32)] <> defaultVkParams (vkAccessToken sc) (apiVersion sc)
-        in  (fmsg (getUrl d sc) (method, pars), f sm)
-
---    sendMessage' :: (MonadBot (StC q) (StM q) (User q) m) =>
---        q -> StC q -> Msg q -> m (Maybe (State (StM q) H.HTTPRequest))
-
-    sendMessage' d sc m
-        | null atts && maybeText == Nothing = logError "Unable to send empty message." >> return Nothing
-        | otherwise = (mapM_ logM toLog >>) $ ($ maybeText) $ maybe
-            (maybe
-                (logError "No text found and unable to send any attachments."
-                    >> return Nothing)
-                (return . Just . f) maybePars)
-            (const . return . return . f $ maybe [] id maybePars)
-            
-      where f extraPars = state $ \sm ->
-                let upperRandomIDBound = 2^32-1 :: Int
-                    (rndInt32, g) = randomR (0, upperRandomIDBound) $ vkRndGen sm
-                    h x = x {vkRndGen = g}
-                    pars = [("user_id", Just . H.PIntg $ _VU_id user), ("message", fmap H.PText maybeText),
-                            ("random_id", Just . H.PIntg $ fromIntegral rndInt32)]
-                            ++ defaultVkParams (vkAccessToken sc) (apiVersion sc)
-                in  (fmsg (getUrl d sc) (method, extraPars <> pars), h sm)
-
-            method = "messages.send"
-            user = _VM_from_id m
-            maybeText = S.emptyToNothing $ _VM_text m
-            atts = _VM_attachments m
-            (maybePars, toLog) = runWriter $ attsToParsVk' atts
--}
 attsToParsVk' :: [VkAttachment] -> Writer [L.LoggerEntry] (Maybe H.ParamsList)
 attsToParsVk' atts = do
     let part = partitionVkAttachments atts
@@ -475,59 +242,4 @@ sendMsgSendable :: [T.Text] -> Either String H.ParamsUnit
 sendMsgSendable [] = Left "Empty list of attachments."
 sendMsgSendable lst = Right $ ("attachment", Just $ H.PText s)
   where s = T.intercalate "," lst
-{-
--}
-
-{-
-    sendMessage' :: MonadBot (StC q) (StM q) (User q) m =>
-        q -> StC q -> Msg q -> m (Either T.Text (State (StM q) H.HTTPRequest))
--}
-
-{-
-attsToParsVk :: [VkAttachment] -> Either String H.ParamsList
-attsToParsVk atts = 
-    let part = partitionVkAttachments atts
-        messageSendable =
-            map encodeVkAtt (pPhotos part) <>
-            map encodeVkAtt (pVideos part) <>
-            map encodeVkAtt (pAudios part) <>
-            map encodeVkAtt (pDocs part) <>
-            map encodeVkAtt (pWalls part) <>
-            map encodeVkAtt (pMarkets part)
-            -- <> map encodeVkAtt (PPolls part)
-        eithPars = unEC $ asum $ map ErrConcat [
-                      sendGift $ pGifts part,
-                      sendLink $ pLinks part,
-                      sendMarketAlbum $ pMarketAlbums part,
-                      sendWallReply $ pWallReplies part,
-                      sendSticker $ pStickers part,
-                      sendMsgSendable messageSendable
-                    ]
-    in  fmap (:[]) eithPars
-
-
-    --sendMessage :: q -> StC q -> Msg q
-    --    -> Either String (State (StM q) HTTPRequest)
-    sendMessage d sc m
-        | null atts && maybeText == Nothing = Left "Unable to send empty message."
-        | otherwise = maybe (fmap f eithPars)
-            (const . return . f $ either (const []) id eithPars) maybeText
-      where f extraPars = state $ \sm ->
-                let upperRandomIDBound = 2^32-1 :: Int
-                    (rndInt32, g) = randomR (0, upperRandomIDBound) $ vkRndGen sm
-                    h x = x {vkRndGen = g}
-                    pars = [("user_id", Just . H.PIntg $ _VU_id user), ("message", fmap H.PText maybeText),
-                            ("random_id", Just . H.PIntg $ fromIntegral rndInt32)]
-                            ++ defaultVkParams (vkAccessToken sc) (apiVersion sc)
-                in  (fmsg (getUrl d sc) (method, extraPars <> pars), h sm)
-
-            method = "messages.send"
-            user = _VM_from_id m
-            maybeText = S.emptyToNothing $ _VM_text m
-            --maybeText = Just ""
-            atts = _VM_attachments m
-            eithPars = attsToParsVk atts
-
-
--}
 

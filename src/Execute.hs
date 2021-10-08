@@ -46,11 +46,10 @@ handleUpdate h s u = do
     ECallback callback -> handleCallback h s callback
     EError err -> D.logError h err
 
---type EventT s = Event (Chat s) (User s) (Msg s) (CallbackQuery s)
+type EventT s = Event (Chat s) (User s) (Msg s) (CallbackQuery s)
 
-defineUpdateType :: (BotClass s) => D.Handle s m -> s -> Upd s
-    -> Event (Chat s) (User s) (Msg s) (CallbackQuery s)
---    -> EventT s
+defineUpdateType ::
+    (BotClass s) => D.Handle s m -> s -> Upd s -> EventT s
 defineUpdateType h s u =
     let mMsg = getMsg s u
         mText = mMsg >>= getText s
@@ -71,23 +70,6 @@ getCmd e str
     | str == setRepNumCommand e = Just SetRepNum
     | otherwise = Nothing
 
-handleMessage :: (BotClass s, Monad m) => D.Handle s m -> s -> Msg s -> m ()
-handleMessage h s m = do
-    let
-        maybeUser = getUser s m
-        defaultRepNum = repNum $ D.commonEnv h
-    mReqFunc <- processMessage h s m
-    ($ mReqFunc) $ maybe (return ()) $ \req -> do
-        repN <- D.findWithDefault h s defaultRepNum maybeUser
-        D.logDebug h $ "Sending message " <> S.showT repN <> " times."
-        D.logDebug h $ T.pack $ GP.defaultPretty m
-        reqs <- replicateM repN req
-        eithRespStrList <- mapM (D.sendRequest h $ takesJSON s) reqs
-        let (errs, resps) = partitionEithers $
-                map (>>= parseHTTPResponse s) eithRespStrList
-        mapM_ (D.logError h . T.pack) errs
-
-
 handleCallback :: (BotClass s, Monad m) =>
     D.Handle s m -> s -> CallbackQuery s -> m ()
 handleCallback h s callback =
@@ -106,8 +88,8 @@ defineCallbackType h s callback =
                 (Left "No callback data found, unable to respond.") Right mData
             repNumDat <- case T.words dat of
                 ("set" : num : _) ->
+                    -- maybe move "set" to config?
                     maybe (Left "Expected number after \"set\" command.")
---- !!! move "set" to config?
                     Right (readMaybe $ T.unpack num :: Maybe Int)
                 _ -> Left "Unknown callback query"
             return repNumDat
@@ -130,6 +112,29 @@ handleSetRepNum h s user mChat repnum = do
     either sendFail (sendFixedInfo h s) eithReqFunc
 
 
+handleMessage :: (BotClass s, Monad m) => D.Handle s m -> s -> Msg s -> m ()
+handleMessage h s m = do
+    let
+        maybeUser = getUser s m
+        defaultRepNum = repNum $ D.commonEnv h
+    mReqFunc <- processMessage h s m
+    S.withMaybe mReqFunc (return ()) $ \req -> do
+        repNraw <- D.findWithDefault h s defaultRepNum maybeUser
+        let repN = validateRepNum repNraw
+        D.logDebug h $ "Sending message " <> S.showT repN <> " times."
+        D.logDebug h $ T.pack $ GP.defaultPretty m
+        reqs <- replicateM repN req
+        eithRespStrList <- mapM (D.sendRequest h $ takesJSON s) reqs
+        let (errs, resps) = partitionEithers $
+                map (>>= parseHTTPResponse s) eithRespStrList
+        mapM_ (D.logError h . T.pack) errs
+
+validateRepNum :: Int -> Int
+validateRepNum x
+  | x > maxRepNum = maxRepNum
+  | x < minRepNum = minRepNum
+  | otherwise     = x
+
 handleCommand :: (BotClass s, Monad m) =>
     D.Handle s m -> s -> Command -> Maybe (Chat s) -> Maybe (User s) -> m ()
 handleCommand h s cmd mChat mUser =
@@ -142,8 +147,9 @@ sendHelp :: (BotClass s, Monad m) =>
 sendHelp h s mChat mUser = do
     eithReqFunc <- sendTextMsg h s mChat mUser (helpMsg $ D.commonEnv h)
     D.logDebug h $ "Sending HTTP request to send help message"
-    ($ eithReqFunc) $ either (D.logError h . T.pack) $ \req -> do
-        sendFixedInfo h s req
+    S.withEither eithReqFunc
+        (D.logError h . T.pack)
+        (sendFixedInfo h s)
 
 
 minRepNum, maxRepNum :: Int
@@ -157,8 +163,9 @@ sendRepNumButtons h s mChat mUser = do
     let eithReqFuncKeyboard = fmap (H.addParams inlKeyboardPars) eithReqFunc
         inlKeyboardPars = repNumKeyboard s [minRepNum..maxRepNum] "set"
     D.logDebug h $ "Sending HTTP request to send repeat number buttons"
-    ($ eithReqFuncKeyboard) $ either (D.logError h . T.pack) $ \req -> do
-        sendFixedInfo h s req
+    S.withEither eithReqFuncKeyboard
+        (D.logError h . T.pack)
+        (sendFixedInfo h s)
 
 sendFixedInfo :: (BotClass s, Monad m) =>
     D.Handle s m -> s -> H.HTTPRequest -> m ()

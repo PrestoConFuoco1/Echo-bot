@@ -26,19 +26,6 @@ import BotVkInstance
 
 -----------------------------------------------------
 
-{-
-data BotConfig = TlC TlConfig | VkC VkConfig deriving (Show, Generic)
-
-instance GP.PrettyShow BotConfig where
-    prettyShow (TlC tl) = GP.genericPrettyShow GP.defaultOptionsL {
-        GP.consModifier = id
-        } $ tl
-    prettyShow (VkC vk) = GP.genericPrettyShow GP.defaultOptionsL {
-        GP.consModifier = id
-        } $ vk
--}
-
-
 
 data ConfigException = RequiredFieldMissing
     deriving (Show, Eq)
@@ -57,28 +44,10 @@ loadConfig s logger path = do
     stGen <- loadGeneral logger genConf
     L.logDebug logger "Loaded general configuration:"
     L.logDebug logger $ T.pack $ GP.defaultPretty stGen
- --   L.logDebug logger "Loading messager-specific configuration"
     stSpec <- tryGetConfig s logger (messagerName s) $ loadSpecial s logger conf
     L.logDebug logger "Loaded messager-specific configuration:"
     L.logDebug logger $ T.pack $ GP.defaultPretty stSpec
     return (stGen, stSpec)
-
-{-
-loadConfig :: L.Handle IO -> FilePath -> IO (EnvironmentCommon, BotConfig)
-loadConfig logger path = do
-    conf <- C.load [CT.Required path]
-
-    let genConf = C.subconfig "general" conf
-    L.logDebug logger "Loading general messager-independent configuration."
-    L.logDebug logger "This step cannot fail as this way defaults will be used"
-    stGen <- loadGeneral logger genConf
-    L.logDebug logger "Loaded general configuration:"
-    L.logDebug logger $ T.pack $ GP.defaultPretty stGen
-    stSpec <- loadSpecial logger conf
-    L.logDebug logger "Loaded messager-specific configuration:"
-    L.logDebug logger $ T.pack $ GP.defaultPretty stSpec
-    return (stGen, stSpec)
--}
 
 
 loadGeneral :: L.Handle IO -> CT.Config -> IO EnvironmentCommon
@@ -112,22 +81,11 @@ instance BotConfigurable Vk where
     messagerName _ = "Vkontakte"
 
 
-
-{-
-loadSpecial :: L.Handle IO -> CT.Config -> IO BotConfig
-loadSpecial logger conf = foldr (tryGetConfig logger) (E.throw RequiredFieldMissing) whatToDo
-  where vkConf = C.subconfig "vkontakte" conf
-        teleConf = C.subconfig "telegram" conf
-
-        whatToDo = [(fmap TlC $ loadTeleConfig logger teleConf, "Telegram"),
-                    (fmap VkC $ loadVkConfig logger vkConf, "Vkontakte")]
--}
-
 tryGetConfig :: (BotClassTypes s) => s -> L.Handle IO -> T.Text -> IO (Conf s) -> IO (Conf s)
 tryGetConfig s logger messager atry = do
     L.logDebug logger $ "Trying to get " <> messager <> " bot configuration"
-    eithStMsger <- E.try atry -- :: IO (Either CT.KeyError a)
-    ($ eithStMsger) $ either
+    eithStMsgError <- E.try atry -- :: IO (Either CT.KeyError a)
+    S.withEither eithStMsgError
         (\e -> do
             L.logError logger $ messager <> ": configuration error occured:"
             logKeyException logger e
@@ -136,22 +94,6 @@ tryGetConfig s logger messager atry = do
             L.logDebug logger $ "Ok, " <> messager <> " bot config loaded." 
             return c)
    
-
-{-
-tryGetConfig :: L.Handle IO -> (IO BotConfig, T.Text) -> IO BotConfig -> IO BotConfig
-tryGetConfig logger (atry, messager) acc = do
-    L.logDebug logger $ "Trying to get " <> messager <> " bot configuration"
-    eithStMsger <- E.try atry :: IO (Either CT.KeyError BotConfig)
-    ($ eithStMsger) $ either
-        (\e -> do
-            L.logError logger $ messager <> ": configuration error occured:"
-            logKeyException logger e
-            acc) 
-        (\c -> do
-            L.logDebug logger $ "Ok, " <> messager <> " bot config loaded." 
-            return c)
--} 
-
 loadTeleConfig :: L.Handle IO -> CT.Config -> IO TlConfig
 loadTeleConfig logger conf = do
     initialUpdateID <- C.lookupDefault (_TC_updID defaultTlConfig) conf "initial_update_id"
