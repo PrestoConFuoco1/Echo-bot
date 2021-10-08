@@ -29,11 +29,12 @@ library
       App.Handle.Telegram
       App.Handle.Vkontakte
       App.Logger
-      BotClass
-      BotClassTypes
-      BotTeleInstance
-      BotTypes
-      BotVkInstance
+      BotClass.BotTeleInstance
+      BotClass.BotVkInstance
+      BotClass.Class
+      BotClass.ClassTypes
+      BotClass.ClassTypesTeleInstance
+      BotClass.ClassTypesVkInstance
       Config
       Execute
       GenericPretty
@@ -41,9 +42,9 @@ library
       Lib
       Private
       Stuff
-      TeleTypes
+      Telegram.Types
       Types
-      VkTypes
+      Vkontakte.Types
   other-modules:
       Paths_bot2
   hs-source-dirs:

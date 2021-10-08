@@ -4,15 +4,16 @@
              GeneralizedNewtypeDeriving,
              OverloadedStrings #-}
 
-module BotTeleInstance where
+module BotClass.BotTeleInstance where
 
-import BotClassTypes
-import BotClass
-import BotTypes
+import BotClass.Class
+import BotClass.ClassTypes
+import BotClass.ClassTypesTeleInstance
+import Telegram.Types
+import Types
 
 import qualified HTTPRequests as H
 
-import TeleTypes
 import qualified Data.Aeson as Ae (decode)
 import qualified Data.Aeson.Types as AeT (parseEither, parseJSON, toJSON)
 import qualified Data.Text.Lazy as TL (Text, pack, fromStrict)
@@ -20,19 +21,6 @@ import qualified Data.Text as T (Text, pack)
 import Data.Bifunctor (first)
 
 import qualified App.Handle as D
-
-instance BotClassTypes Tele where
-    type Conf Tele = TlConfig -- don't care
-
-    type StateC Tele = TlStateConst
-    type StateM Tele = TlStateMut
-    type Rep Tele = TlReply
-    type Upd Tele = TlUpdate
-    type Msg Tele = TlMessage
-    type Chat Tele = TlChat
-    type User Tele = TlUser
-
-    type CallbackQuery Tele = TlCallback
 
 
 instance BotClass Tele where
@@ -49,7 +37,7 @@ instance BotClass Tele where
                ("timeout", Just $ H.PIntg $ fromIntegral tout)]
 
 
-    --parseHTTPResponse :: s -> BSL.ByteString -> Either String (Rep s)
+--    parseHTTPResponse :: s -> BSL.ByteString -> Either String (Rep s)
     parseHTTPResponse _ resp = do -- Either
         val <- maybe (Left "Couldn't parse HTTP response") Right $ Ae.decode resp
         repl <- AeT.parseEither AeT.parseJSON val

@@ -1,14 +1,16 @@
 {-# LANGUAGE TypeFamilies #-}
 
 
-module BotVkInstance where
+module BotClass.BotVkInstance where
 
-import BotClass
-import BotTypes
+import BotClass.Class
+import BotClass.ClassTypes
+import BotClass.ClassTypesVkInstance
+import Vkontakte.Types
+import Types
 
 import qualified HTTPRequests as H
 
-import VkTypes
 import qualified Stuff as S (echo, emptyToNothing, withMaybe)
 import Data.Aeson (decode)
 import Data.Aeson.Types (Parser, parseJSON, toJSON, parseEither, (.:), withObject)
@@ -16,7 +18,6 @@ import Data.Foldable (asum)
 import qualified Data.Text.Lazy as TL (Text, pack, intercalate, toStrict)
 import qualified Data.Text as T (Text, pack, intercalate)
 import qualified App.Logger as L
-import BotClassTypes
 
 import Data.Bifunctor (first)
 
@@ -26,34 +27,6 @@ import qualified Data.ByteString.Lazy as BSL (ByteString)
 
 import qualified App.Handle as D
 import Control.Monad.Writer (Writer, tell, runWriter)
-
-
-parseInitResp :: BSL.ByteString -> Either String (TL.Text, TL.Text, TL.Text)
-parseInitResp = eithParsed
-  where parseInitRep = withObject "object: key, server, ts" $ \o' -> do -- Parser a
-            o <- o' .: "response"
-            key <- o .: "key" :: Parser TL.Text
-            server <- o .: "server" :: Parser TL.Text
-            ts <- o .: "ts" :: Parser TL.Text
-            return (key, server, ts)
-        initReplyToJSON =
-                maybe (Left "Couldn't parse getLongPollServer reply") Right
-                . decode
-        eithParsed x = return x >>= initReplyToJSON >>= parseEither parseInitRep
- 
-instance BotClassTypes Vk where
-    type Conf Vk = VkConfig
-
-    type StateC Vk = VkStateConst
-    type StateM Vk = VkStateMut
-    type Rep Vk = VkReply
-    type Upd Vk = VkUpdate
-    type Msg Vk = VkMessage
-    type Chat Vk = VkChat
-    type User Vk = VkUser
-
-    type CallbackQuery Vk = VkMyCallback
-
 
 instance BotClass Vk where
     takesJSON _ = False
@@ -127,7 +100,6 @@ instance BotClass Vk where
 
 --    repNumKeyboard :: s -> [Int] -> TL.Text -> H.ParamsList
     repNumKeyboard d lst cmd = [("keyboard", Just $ H.PVal obj)]
-      --where obj = S.echo $ repNumKeyboardVk cmd lst
       where obj = toJSON $ {-S.echo $-} repNumKeyboardVkTxt' cmd lst
 
 --    epilogue :: (Monad m) => D.Handle s m -> s -> [Upd s] -> Rep s -> m ()
@@ -141,8 +113,6 @@ instance BotClass Vk where
             D.logError h "Unable to send empty message." >> return Nothing
      | otherwise = do
         let (maybePars, toLog) = runWriter $ attsToParsVk' atts
-        --uncurry (D.log h) $ head toLog
-        --D.logEntry h $ head toLog
         mapM_ (D.logEntry h) toLog
         case maybeText of
             Nothing -> S.withMaybe maybePars
@@ -159,11 +129,11 @@ instance BotClass Vk where
                 let sc = D.getConstState h dummyVk
                     upperRandomIDBound = 2^32-1 :: Int
                     (rndInt32, g') = randomR (0, upperRandomIDBound) $ vkRndGen sm
+                    method = "messages.send"
                     user = _VM_from_id m
                     pars = [("user_id", Just . H.PIntg $ _VU_id user), ("message", fmap H.PText maybeText),
                             ("random_id", Just . H.PIntg $ fromIntegral rndInt32)]
                             ++ defaultVkParams (vkAccessToken sc) (apiVersion sc)
-                    method = "messages.send"
  
                 D.putMutState h dummyVk $ sm { vkRndGen = g' }
                 return $ fmsg (vkUrl sc) (method, extraPars <> pars)

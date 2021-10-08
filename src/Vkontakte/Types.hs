@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings, DeriveGeneric, RecordWildCards #-}
 
-module VkTypes where
+module Vkontakte.Types where
 
 
 import Data.Aeson (encode, decode)
@@ -14,6 +14,7 @@ import qualified Data.Text.Lazy.Encoding as EL (decodeUtf8, encodeUtf8)
 import qualified Data.Text.Encoding as E (decodeUtf8, encodeUtf8)
 import qualified Data.Text.Lazy as TL (Text, unpack, pack, toStrict)
 import qualified Data.Text as T (Text, unpack, pack)
+import qualified Data.ByteString.Lazy as BSL (ByteString)
 import Control.Applicative ((<|>))
 
 import GenericPretty
@@ -23,6 +24,22 @@ import qualified HTTPRequests as H
 defaultVkParams accTok apiV =
     [("access_token", Just $ H.PLText accTok),
      ("v", Just $ H.PText apiV)]
+
+
+parseInitResp :: BSL.ByteString -> Either String (TL.Text, TL.Text, TL.Text)
+parseInitResp = eithParsed
+  where parseInitRep = withObject "object: key, server, ts" $ \o' -> do -- Parser a
+            o <- o' .: "response"
+            key <- o .: "key" :: Parser TL.Text
+            server <- o .: "server" :: Parser TL.Text
+            ts <- o .: "ts" :: Parser TL.Text
+            return (key, server, ts)
+        initReplyToJSON =
+                maybe (Left "Couldn't parse getLongPollServer reply") Right
+                . decode
+        eithParsed x = return x >>= initReplyToJSON >>= parseEither parseInitRep
+
+
 
 
 newtype Vk = Vk ()

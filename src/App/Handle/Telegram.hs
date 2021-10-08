@@ -3,9 +3,9 @@ module App.Handle.Telegram where
 
 import qualified App.Handle as D
 import qualified App.Logger as L
-import TeleTypes
-import BotTeleInstance
-import BotTypes
+import Telegram.Types
+import BotClass.ClassTypesTeleInstance
+import Types
 import Data.IORef
 import qualified Data.Map as M
 import qualified HTTPRequests as H

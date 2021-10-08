@@ -4,7 +4,7 @@
     GeneralizedNewtypeDeriving,
     OverloadedStrings #-}
 
-module BotClassTypes where
+module BotClass.ClassTypes where
 
 
 import qualified HTTPRequests as H

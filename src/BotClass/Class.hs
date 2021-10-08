@@ -4,7 +4,7 @@
     GeneralizedNewtypeDeriving,
     OverloadedStrings #-}
 
-module BotClass where
+module BotClass.Class where
 
 import qualified HTTPRequests as H
 import qualified Stuff as S (Timeout)
@@ -14,7 +14,7 @@ import qualified Data.Text.Lazy as TL (Text)
 import qualified App.Handle as D
 import qualified Data.ByteString.Lazy.Char8 as BSL (ByteString)
 import qualified GenericPretty as GP
-import BotClassTypes
+import BotClass.ClassTypes
 
 
 fmsg url (method, params) = H.Req H.POST (url <> method) params

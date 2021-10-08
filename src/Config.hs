@@ -13,16 +13,16 @@ import qualified Control.Exception as E (catch, SomeException, Exception (..),
                                          try, throw, SomeException)
 import qualified App.Logger as L
 
-import TeleTypes (TlConfig (..), defaultTlConfig, Tele)
-import VkTypes  (VkConfig (..), defaultVkConfig, Vk)
+import Telegram.Types (TlConfig (..), defaultTlConfig, Tele)
+import Vkontakte.Types  (VkConfig (..), defaultVkConfig, Vk)
 
-import BotTypes (EnvironmentCommon (..), helpMsg, repQuestion, repNum, timeout,
+import Types (EnvironmentCommon (..), helpMsg, repQuestion, repNum, timeout,
                  helpCommand, setRepNumCommand, defStateGen)
 
-import BotClassTypes
-import BotClass
-import BotTeleInstance
-import BotVkInstance
+import BotClass.ClassTypes
+import BotClass.Class
+import BotClass.ClassTypesTeleInstance
+import BotClass.ClassTypesVkInstance
 
 -----------------------------------------------------
 

@@ -1,9 +1,9 @@
 module Execute where
 
 import qualified App.Handle as D
-import BotClass
-import BotClassTypes
-import BotTypes
+import BotClass.ClassTypes
+import BotClass.Class
+import Types
 import qualified Data.Text as T
 import qualified GenericPretty as GP
 import qualified Stuff as S

@@ -3,8 +3,6 @@ module Lib
     ) where
 
 
---import qualified Stuff as S (echo, findWithDefault, safeHead, showT)
---import qualified HTTPRequests as H
 import Config
 
 import Data.IORef (newIORef)
@@ -20,7 +18,6 @@ import qualified Data.Configurator.Types as CT (ConfigError (..))
 import qualified System.Exit as Q (ExitCode (..), exitWith)
 
 import qualified Data.Text.Lazy as T (Text, pack, words, unpack)
---import Text.Read (readMaybe)
 
 import qualified GenericPretty as GP
 import System.Environment (getArgs)
@@ -31,12 +28,12 @@ import Execute
 
 import qualified App.Handle.Telegram as T
 import qualified App.Handle.Vkontakte as V
-import BotClassTypes
-import BotTypes
-import BotVkInstance
-import BotTeleInstance
-import TeleTypes
-import VkTypes
+import BotClass.ClassTypes
+import Types
+import BotClass.BotVkInstance
+import BotClass.BotTeleInstance
+import Telegram.Types
+import Vkontakte.Types
 
 data Messager = Vkontakte | Telegram | None
 data RunOptions = RunOptions {

@@ -1,13 +1,14 @@
 {-# LANGUAGE RankNTypes #-}
 module App.Handle where
-import BotTypes
+
+import Types
 
 import qualified Data.Text as T
 import Prelude hiding (log)
 import qualified App.Logger as Logger
 import qualified HTTPRequests as H
 import qualified Data.ByteString.Lazy.Char8 as BSL (ByteString)
-import BotClassTypes
+import BotClass.ClassTypes
 
 data Handle s m = Handle {
     log :: Logger.Handle m,

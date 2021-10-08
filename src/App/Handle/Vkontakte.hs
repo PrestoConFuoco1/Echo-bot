@@ -2,9 +2,9 @@ module App.Handle.Vkontakte where
 
 import qualified App.Handle as D
 import qualified App.Logger as L
-import VkTypes
-import BotVkInstance
-import BotTypes
+import Vkontakte.Types
+import BotClass.ClassTypesVkInstance
+import Types
 import Data.IORef
 import qualified Data.Map as M
 import qualified HTTPRequests as H

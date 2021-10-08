@@ -1,5 +1,5 @@
 {-# LANGUAGE OverloadedStrings, DeriveGeneric, RecordWildCards #-}
-module TeleTypes where
+module Telegram.Types where
 
 import qualified HTTPRequests as H (ParamsList, ParVal (..))
 
