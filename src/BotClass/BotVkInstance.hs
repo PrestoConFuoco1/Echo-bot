@@ -28,38 +28,9 @@ import qualified Data.ByteString.Lazy as BSL (ByteString)
 import qualified App.Handle as D
 import Control.Monad.Writer (Writer, tell, runWriter)
 
-instance BotClass Vk where
-    takesJSON _ = False
-
-
-    --getUpdatesRequest :: (Monad m) => D.Handle s m -> s -> m H.HTTPRequest
-    getUpdatesRequest h s = do
-        curTS <- fmap vkTs $ D.getMutState h s
-        let constState = D.getConstState h s
-            timeout' = timeout $ D.commonEnv h
-            fullUrl = vkServer constState
-            pars = [("act", Just $ H.PText "a_check"),
-                    ("key", Just . H.PLText $ vkKey constState),
-                    ("ts", Just $ H.PLText curTS),
-                    ("wait", Just . H.PIntg $ fromIntegral timeout')]
-        return $ H.Req H.GET fullUrl pars
-
-    --parseHTTPResponse :: s -> BSL.ByteString -> Either String (Rep s)
-    parseHTTPResponse _ resp = do -- Either
-        val <- maybe (Left "Couldn't parse HTTP response") Right $ decode resp
-        repl <- parseEither parseJSON val
-        return repl
-
---    isSuccess :: s -> Rep s -> Bool
-    isSuccess _ r = _VR_failed r == Nothing
-
+instance BotClassUtility Vk where
 --    getResult :: s -> Rep s -> Maybe Value
     getResult _ = _VR_updates
-
---    parseUpdatesList :: s -> Rep s -> Either String [Upd s]
-    parseUpdatesList d rep = do
-        val <- maybe (Left "Couldn't parse update list, or failed result") Right $ getResult d rep
-        parseEither parseJSON val
 
 --    getMsg :: s -> Upd s -> Maybe (Msg s)
     getMsg _ (VkUpdate _ (VEMsg m)) = Just m
@@ -84,6 +55,38 @@ instance BotClass Vk where
     getCallbackData _ = Just . TL.toStrict . _VP_payload . _VMC_payload
 --    getCallbackChat :: s -> CallbackQuery s -> Maybe (Chat s)
     getCallbackChat d = const Nothing
+
+
+
+instance BotClass Vk where
+    takesJSON _ = False
+
+--    parseUpdatesList :: s -> Rep s -> Either String [Upd s]
+    parseUpdatesList d rep = do
+        val <- maybe (Left "Couldn't parse update list, or failed result") Right $ getResult d rep
+        parseEither parseJSON val
+
+
+    --getUpdatesRequest :: (Monad m) => D.Handle s m -> s -> m H.HTTPRequest
+    getUpdatesRequest h s = do
+        curTS <- fmap vkTs $ D.getMutState h s
+        let constState = D.getConstState h s
+            timeout' = timeout $ D.commonEnv h
+            fullUrl = vkServer constState
+            pars = [("act", Just $ H.PText "a_check"),
+                    ("key", Just . H.PLText $ vkKey constState),
+                    ("ts", Just $ H.PLText curTS),
+                    ("wait", Just . H.PIntg $ fromIntegral timeout')]
+        return $ H.Req H.GET fullUrl pars
+
+    --parseHTTPResponse :: s -> BSL.ByteString -> Either String (Rep s)
+    parseHTTPResponse _ resp = do -- Either
+        val <- maybe (Left "Couldn't parse HTTP response") Right $ decode resp
+        repl <- parseEither parseJSON val
+        return repl
+
+--    isSuccess :: s -> Rep s -> Bool
+    isSuccess _ r = _VR_failed r == Nothing
 
 --    sendTextMsg :: (Monad m) => D.Handle s m -> s -> Maybe (Chat s) -> Maybe (User s) -> T.Text
 --        -> m (Either String H.HTTPRequest)

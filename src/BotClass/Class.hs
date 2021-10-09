@@ -19,16 +19,8 @@ import BotClass.ClassTypes
 
 fmsg url (method, params) = H.Req H.POST (url <> method) params
 
-class (BotClassTypes s) => BotClass s where
-    takesJSON :: s -> Bool
-    
-    getUpdatesRequest :: (Monad m) => D.Handle s m -> s -> m H.HTTPRequest
-    parseHTTPResponse :: s -> BSL.ByteString -> Either String (Rep s)
-
-    isSuccess :: s -> Rep s -> Bool
+class (BotClassTypes s) => BotClassUtility s where
     getResult :: s -> Rep s -> Maybe Value
-
-    parseUpdatesList :: s -> Rep s -> Either String [Upd s]
 
     getMsg :: s -> Upd s -> Maybe (Msg s)
 
@@ -42,6 +34,18 @@ class (BotClassTypes s) => BotClass s where
     getCallbackUser :: s -> CallbackQuery s -> User s
     getCallbackData :: s -> CallbackQuery s -> Maybe T.Text
     getCallbackChat :: s -> CallbackQuery s -> Maybe (Chat s)
+
+
+
+class (BotClassUtility s) => BotClass s where
+    takesJSON :: s -> Bool
+    
+    getUpdatesRequest :: (Monad m) => D.Handle s m -> s -> m H.HTTPRequest
+    parseHTTPResponse :: s -> BSL.ByteString -> Either String (Rep s)
+
+    isSuccess :: s -> Rep s -> Bool
+
+    parseUpdatesList :: s -> Rep s -> Either String [Upd s]
 
     sendTextMsg :: (Monad m) => D.Handle s m -> s -> Maybe (Chat s) -> Maybe (User s) -> T.Text
         -> m (Either String H.HTTPRequest)

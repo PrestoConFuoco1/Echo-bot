@@ -195,11 +195,11 @@ instance ToJSON VkKeyboard where
     toJSON = genericToJSON defaultOptions {
         fieldLabelModifier = drop 5 }
 
-
+{-
 instance FromJSON VkKeyboard where
     parseJSON = genericParseJSON defaultOptions {
         fieldLabelModifier = drop 5 }
-
+-}
 ----------------------------------------------------
 
 data VkButton = VkButton {
@@ -212,16 +212,18 @@ instance ToJSON VkButton where
     toJSON = genericToJSON defaultOptions {
         fieldLabelModifier = drop 4 }
 
-
+{-
 instance FromJSON VkButton where
     parseJSON = genericParseJSON defaultOptions {
         fieldLabelModifier = drop 4 }
-
+-}
 ----------------------------------------------------
 --examples
 
-data VkButtonActions = VBACallback VkCallbackButton
-                     | VBAText VkTextButton deriving (Eq, Show)
+data VkButtonActions =
+      VBACallback VkCallbackButton
+    | VBAText VkTextButton
+        deriving (Eq, Show)
 
 
 instance ToJSON VkButtonActions where

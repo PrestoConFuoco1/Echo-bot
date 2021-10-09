@@ -23,6 +23,37 @@ import Data.Bifunctor (first)
 import qualified App.Handle as D
 
 
+instance BotClassUtility Tele where
+--    getResult :: s -> Rep s -> Maybe Value
+    getResult _ = _TR_result
+
+--    getMsg :: s -> Upd s -> Maybe (Msg s)
+    getMsg _ (TlUpdate _ (TEMsg m)) = Just m
+    getMsg _ _ = Nothing
+
+--    getChat :: s -> Msg s -> Maybe (Chat s)
+    getChat _ = Just . _TM_chat
+--    getUser :: s -> Msg s -> Maybe (User s)
+    getUser _ = _TM_from
+--    getText :: s -> Msg s -> Maybe T.Text
+    getText _ = _TM_text
+--    getUserID :: s -> User s -> T.Text
+    getUserID _ = T.pack . show . _TUs_id
+
+--    getCallbackQuery :: s -> Upd s -> Maybe (CallbackQuery s)
+    getCallbackQuery _ (TlUpdate _ (TECallback cb)) = Just cb
+    getCallbackQuery _ _ = Nothing
+
+
+--    getCallbackUser :: s -> CallbackQuery s -> User s
+    getCallbackUser d = _TCB_from
+--    getCallbackData :: s -> CallbackQuery s -> Maybe T.Text
+    getCallbackData d = _TCB_data
+--    getCallbackChat :: s -> CallbackQuery s -> Maybe (Chat s)
+    getCallbackChat d c = _TCB_message c >>= return . _TM_chat
+
+
+
 instance BotClass Tele where
     takesJSON _ = True
 
@@ -51,34 +82,6 @@ instance BotClass Tele where
     parseUpdatesList d rep = do -- Either
         val <- maybe (Left "Couldn't parse update list") Right $ getResult d rep
         AeT.parseEither AeT.parseJSON val
-
---    getResult :: s -> Rep s -> Maybe Value
-    getResult _ = _TR_result
-
---    getMsg :: s -> Upd s -> Maybe (Msg s)
-    getMsg _ (TlUpdate _ (TEMsg m)) = Just m
-    getMsg _ _ = Nothing
-
---    getChat :: s -> Msg s -> Maybe (Chat s)
-    getChat _ = Just . _TM_chat
---    getUser :: s -> Msg s -> Maybe (User s)
-    getUser _ = _TM_from
---    getText :: s -> Msg s -> Maybe T.Text
-    getText _ = _TM_text
---    getUserID :: s -> User s -> T.Text
-    getUserID _ = T.pack . show . _TUs_id
-
---    getCallbackQuery :: s -> Upd s -> Maybe (CallbackQuery s)
-    getCallbackQuery _ (TlUpdate _ (TECallback cb)) = Just cb
-    getCallbackQuery _ _ = Nothing
-
-
---    getCallbackUser :: s -> CallbackQuery s -> User s
-    getCallbackUser d = _TCB_from
---    getCallbackData :: s -> CallbackQuery s -> Maybe T.Text
-    getCallbackData d = _TCB_data
---    getCallbackChat :: s -> CallbackQuery s -> Maybe (Chat s)
-    getCallbackChat d c = _TCB_message c >>= return . _TM_chat
 
     --repNumKeyboard :: s -> [Int] -> T.Text -> H.ParamsList
     repNumKeyboard d lst cmd = [("reply_markup", Just $ H.PVal obj)]
