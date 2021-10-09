@@ -106,7 +106,7 @@ handleSetRepNum h s user mChat repnum = do
         afterLog = "User with ID = " <> getUserID s user
             <> " set " <> S.showT repnum <> " repeats."
         sendFail x = D.logError h $ "Failed to send message: " <> T.pack x
-    D.insertUser h s user repnum
+    D.insertUser h user repnum
     eithReqFunc <- sendTextMsg h s mChat (Just user) text
     D.logInfo h afterLog
     either sendFail (sendFixedInfo h s) eithReqFunc

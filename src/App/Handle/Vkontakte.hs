@@ -3,6 +3,7 @@ module App.Handle.Vkontakte where
 import qualified App.Handle as D
 import qualified App.Logger as L
 import Vkontakte.Types
+--import Vkontakte.Entity
 import BotClass.ClassTypesVkInstance
 import Types
 import Data.IORef
@@ -29,9 +30,9 @@ data Resources = Resources {
 
 
 
-initResources :: Config -> IO Resources
-initResources (Config common vkConf) = do
-    mStates <- initialize vkConf
+initResources :: L.Handle IO -> Config -> IO Resources
+initResources h (Config common vkConf) = do
+    mStates <- initialize h vkConf
     S.withMaybe mStates undefined $ \(sc, sm) -> do
         umap <- newIORef M.empty
         mut <- newIORef sm
@@ -45,12 +46,12 @@ initResources (Config common vkConf) = do
 
 --initialize :: q -> Conf q -> IO (Maybe (StC q, StM q))
 -- i think this function can be further splitted to some lesser functions
-initialize :: VkConfig -> IO (Maybe (VkStateConst, VkStateMut))
-initialize (VkConf methodsUrl accTok gid apiV) = do
-    let pars = [("group_id", Just . H.PIntg $ gid)] <> defaultVkParams accTok apiV
+initialize :: L.Handle IO -> VkConfig -> IO (Maybe (VkStateConst, VkStateMut))
+initialize logger (VkConf methodsUrl accTok gid apiV) = do
+    let pars = [("group_id", Just . H.PIntg $ gid)] <> defaultVkParams' accTok apiV
         initReq = H.Req H.GET (methodsUrl <> "groups.getLongPollServer") pars
         takesJson = True
-    initReply <- {- fmap S.echo $ -} H.sendRequest takesJson initReq
+    initReply <- {- fmap S.echo $ -} H.sendRequest logger takesJson initReq
     let eithParsed = initReply >>= parseInitResp
     initRndNum <- newStdGen
     return $ case eithParsed of
@@ -72,13 +73,24 @@ resourcesToHandle :: Resources -> L.Handle IO -> D.Handle Vk IO
 resourcesToHandle resources logger =
     D.Handle {
           D.log = logger
-        , D.sendRequest = H.sendRequest
+        , D.sendRequest = H.sendRequest logger
         , D.commonEnv = commonEnv resources
         , D.getConstState = const (constState resources)
+{-
         , D.getMutState = const (readIORef $ mutState resources)
         , D.putMutState = const (writeIORef $ mutState resources)
-
-        , D.insertUser = const (\u i -> modifyIORef' (usersMap resources) (M.insert u i))
-        , D.getUser = const (\u -> readIORef (usersMap resources) >>= return . M.lookup u)
+-}
+        , D.insertUser = \u i -> modifyIORef' (usersMap resources) (M.insert u i)
+        , D.getUser = \u -> readIORef (usersMap resources) >>= return . M.lookup u
+        , D.specH = resourcesToVkHandler resources logger
     }
+
+resourcesToVkHandler :: Resources -> L.Handle IO -> VkHandler IO
+resourcesToVkHandler resources logger = 
+    VkHandler {
+          getRandomID = atomicModifyIORef' (mutState resources) getRandomID'
+        , getTimestamp = fmap getTimestamp' $ readIORef (mutState resources)
+        , putTimestamp = modifyIORef' (mutState resources) . putTimestamp'
+        }
+
 

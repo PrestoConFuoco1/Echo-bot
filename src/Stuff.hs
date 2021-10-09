@@ -7,6 +7,7 @@ module Stuff (
     emptyToNothing,
     findWithDefault,
     showT,
+    showTL,
     withEither,
     withMaybe
 ) where
@@ -19,13 +20,14 @@ import Data.List (unfoldr)
 import qualified Data.Map as M (Map, findWithDefault)
 
 import qualified Data.Text as T
+import qualified Data.Text.Lazy as TL
 
 echo :: Show a => a -> a
 echo x = show x `trace` x
 
 --------------------------------------------
 
-type Timeout = Int
+type Timeout = Integer
 
 --------------------------------------------
 
@@ -45,6 +47,12 @@ findWithDefault x (Just k) m = M.findWithDefault x k m
 
 showT :: Show a => a -> T.Text
 showT = T.pack . show
+
+
+showTL :: Show a => a -> TL.Text
+showTL = TL.pack . show
+
+
 
 withEither :: Either a b -> (a -> c) -> (b -> c) -> c
 withEither e left right = either left right e

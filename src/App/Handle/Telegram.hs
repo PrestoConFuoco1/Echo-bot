@@ -25,8 +25,8 @@ data Resources = Resources {
 
 
 
-initResources :: Config -> IO Resources
-initResources (Config common tlConf) = do
+initResources :: L.Handle IO -> Config -> IO Resources
+initResources logger (Config common tlConf) = do
     let initStateTele = TLSM { tlUpdateID = _TC_updID tlConf }
         const_ = TLSC { tlUrl = _TC_url tlConf }
     mut <- newIORef initStateTele
@@ -44,12 +44,22 @@ resourcesToHandle :: Resources -> L.Handle IO -> D.Handle Tele IO
 resourcesToHandle resources logger =
     D.Handle {
           D.log = logger
-        , D.sendRequest = H.sendRequest
+        , D.sendRequest = H.sendRequest logger
         , D.commonEnv = commonEnv resources
         , D.getConstState = const (constState resources)
-        , D.getMutState = const (readIORef $ mutState resources)
-        , D.putMutState = const (writeIORef $ mutState resources)
+--        , D.getMutState = const (readIORef $ mutState resources)
+--        , D.putMutState = const (writeIORef $ mutState resources)
 
-        , D.insertUser = const (\u i -> modifyIORef' (usersMap resources) (M.insert u i))
-        , D.getUser = const (\u -> readIORef (usersMap resources) >>= return . M.lookup u)
+        , D.insertUser = \u i -> modifyIORef' (usersMap resources) (M.insert u i)
+        , D.getUser = \u -> readIORef (usersMap resources) >>= return . M.lookup u
+
+        , D.specH = resourcesToTelegramHandler resources logger
     }
+
+resourcesToTelegramHandler :: Resources -> L.Handle IO -> TlHandler IO
+resourcesToTelegramHandler resources logger =
+    TlHandler {
+          getUpdateID = fmap getUpdateID' $ readIORef (mutState resources)
+        , putUpdateID = modifyIORef' (mutState resources) . putUpdateID'
+    }
+

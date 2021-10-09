@@ -43,7 +43,11 @@ library
       Private
       Stuff
       Telegram.Types
+      ToHTTP
       Types
+      Vkontakte.Attachment
+      Vkontakte.Entity
+      Vkontakte.Keyboard
       Vkontakte.Types
   other-modules:
       Paths_bot2

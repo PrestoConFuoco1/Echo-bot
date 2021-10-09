@@ -28,6 +28,8 @@ import qualified Data.ByteString.Lazy as BSL (ByteString)
 import qualified App.Handle as D
 import Control.Monad.Writer (Writer, tell, runWriter)
 
+import ToHTTP
+
 instance BotClassUtility Vk where
 --    getResult :: s -> Rep s -> Maybe Value
     getResult _ = _VR_updates
@@ -69,14 +71,15 @@ instance BotClass Vk where
 
     --getUpdatesRequest :: (Monad m) => D.Handle s m -> s -> m H.HTTPRequest
     getUpdatesRequest h s = do
-        curTS <- fmap vkTs $ D.getMutState h s
+        --curTS <- fmap vkTs $ D.getMutState h s
+        curTS <- getTimestamp (D.specH h)
         let constState = D.getConstState h s
             timeout' = timeout $ D.commonEnv h
             fullUrl = vkServer constState
-            pars = [("act", Just $ H.PText "a_check"),
-                    ("key", Just . H.PLText $ vkKey constState),
-                    ("ts", Just $ H.PLText curTS),
-                    ("wait", Just . H.PIntg $ fromIntegral timeout')]
+            pars = [unit "act" ("a_check" :: TL.Text),
+                    unit "key" $ vkKey constState,
+                    unit "ts" curTS,
+                    unit "wait" timeout']
         return $ H.Req H.GET fullUrl pars
 
     --parseHTTPResponse :: s -> BSL.ByteString -> Either String (Rep s)
@@ -95,20 +98,22 @@ instance BotClass Vk where
     sendTextMsg h s mChat (Just u) text = do
         let method = "messages.send"
             sc = D.getConstState h s
-        g <- fmap vkRndGen $ D.getMutState h s
-        let (rndInt32, g') = randomR (0, 2^32-1) $ g
-            pars = [("user_id", Just . H.PIntg $ _VU_id u), ("message", Just $ H.PText text),
-                ("random_id", Just . H.PIntg $ fromIntegral (rndInt32::Integer))] <> defaultVkParams (vkAccessToken sc) (apiVersion sc)
+        randomID <- getRandomID (D.specH h)
+        let pars = [unit "user_id" (_VU_id u),
+                    unit "message" text,
+                    unit "random_id" randomID]
+                    -- ++ defaultVkParams (vkAccessToken sc) (apiVersion sc)
+                    ++ defaultVkParams sc
         return $ Right $ fmsg (vkUrl sc) (method, pars)
 
 --    repNumKeyboard :: s -> [Int] -> TL.Text -> H.ParamsList
-    repNumKeyboard d lst cmd = [("keyboard", Just $ H.PVal obj)]
-      where obj = toJSON $ {-S.echo $-} repNumKeyboardVkTxt' cmd lst
+    repNumKeyboard d lst cmd = [(unit "keyboard" obj)]
+      where obj = toJSON $ repNumKeyboardVkTxt' cmd lst
 
 --    epilogue :: (Monad m) => D.Handle s m -> s -> [Upd s] -> Rep s -> m ()
-    epilogue h s _ rep = maybe (return ()) m $ _VR_ts rep
-         where m = D.modifyMutState h s . f
-               f x state = state { vkTs = x }
+    epilogue h s _ rep = case _VR_ts rep of
+        Nothing -> return ()
+        Just x  -> putTimestamp (D.specH h) x
 
 --    processMessage :: (Monad m) => D.Handle s m -> s -> Msg s -> m (Maybe (m H.HTTPRequest))
     processMessage h s m
@@ -126,25 +131,25 @@ instance BotClass Vk where
                          in  return $ Just (f h justPars)
     
       where
-            f :: (Monad m) => D.Handle Vk m -> H.ParamsList -> m H.HTTPRequest
-            f h extraPars = do
-                sm <- D.getMutState h dummyVk
-                let sc = D.getConstState h dummyVk
-                    upperRandomIDBound = 2^32-1 :: Int
-                    (rndInt32, g') = randomR (0, upperRandomIDBound) $ vkRndGen sm
-                    method = "messages.send"
-                    user = _VM_from_id m
-                    pars = [("user_id", Just . H.PIntg $ _VU_id user), ("message", fmap H.PText maybeText),
-                            ("random_id", Just . H.PIntg $ fromIntegral rndInt32)]
-                            ++ defaultVkParams (vkAccessToken sc) (apiVersion sc)
- 
-                D.putMutState h dummyVk $ sm { vkRndGen = g' }
-                return $ fmsg (vkUrl sc) (method, extraPars <> pars)
-
-                
             maybeText = S.emptyToNothing $ _VM_text m
             atts = _VM_attachments m
 
+
+            f :: (Monad m) => D.Handle Vk m -> H.ParamsList -> m H.HTTPRequest
+            f h extraPars = do
+                let
+                    vkHandler = D.specH h
+                    sc = D.getConstState h dummyVk
+                    method = "messages.send"
+                    user = _VM_from_id m
+                randomID <- getRandomID vkHandler
+                let pars = [unit "user_id" $ _VU_id user,
+                            mUnit "message" maybeText,
+                            unit "random_id" randomID]
+                            ++ defaultVkParams sc
+                return $ fmsg (vkUrl sc) (method, extraPars <> pars)
+
+                
 
 
 attsToParsVk' :: [VkAttachment] -> Writer [L.LoggerEntry] (Maybe H.ParamsList)

@@ -36,4 +36,6 @@ class (GP.PrettyShow (Rep s), Show (Rep s), GP.PrettyShow (Msg s),
 
     type CallbackQuery s :: *
 
+    type Hndl s :: (* -> *) -> *
+
 

@@ -16,27 +16,40 @@ data Handle s m = Handle {
 
     commonEnv :: EnvironmentCommon,
 
-    insertUser :: (BotClassTypes s) => s -> User s -> Int -> m (),
-    getUser :: (BotClassTypes s) => s -> User s -> m (Maybe Int),
+    insertUser :: (BotClassTypes s) => User s -> Int -> m (),
+    getUser :: (BotClassTypes s) => User s -> m (Maybe Int),
 
     getConstState :: (BotClassTypes s) => s -> StateC s,
-    getMutState :: (BotClassTypes s) => s -> m (StateM s),
-    putMutState :: (BotClassTypes s) => s -> StateM s -> m ()
+
+--    getMutState :: (BotClassTypes s) => s -> m (StateM s),
+--    putMutState :: (BotClassTypes s) => s -> StateM s -> m (),
+
+    specH :: (BotClassTypes s) => Hndl s m
     }
+
+    
+
 
 findWithDefault :: (BotClassTypes s, Monad m) => Handle s m -> s -> Int -> Maybe (User s) -> m Int
 findWithDefault h s def mUser =
   case mUser of
     Nothing -> return def
     Just user -> do
-        mRepNum <- getUser h s user
+        mRepNum <- getUser h user
         return $ maybe def id mRepNum
-
+{-
 modifyMutState :: (BotClassTypes s, Monad m) => Handle s m -> s -> (StateM s -> StateM s) -> m ()
 modifyMutState h s func = do
     oldState <- getMutState h s
     putMutState h s (func oldState)
 
+withMutState :: (BotClassTypes s, Monad m) => Handle s m -> s -> (StateM s -> (a, StateM s)) -> m a
+withMutState h s func = do
+    oldState <- getMutState h s
+    let (res, newState) = func oldState
+    putMutState h s newState
+    return res
+-}
 
 logDebug, logInfo, logWarning, logError :: Handle s m -> T.Text -> m ()
 

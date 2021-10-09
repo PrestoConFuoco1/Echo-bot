@@ -1,4 +1,8 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE
+    OverloadedStrings
+    , DeriveGeneric
+    , DeriveAnyClass
+    #-}
 
 module HTTPRequests (
     sendRequest,
@@ -10,7 +14,7 @@ module HTTPRequests (
     addParamsUnit,
     ParVal (..),
     HttpHandle (..),
-    simpleHttp
+    --simpleHttp
 ) where
 
 import Prelude hiding (log)
@@ -22,13 +26,17 @@ import Data.List (intercalate)
 import Control.Exception (catches, SomeException, Handler(..))
 import Data.Bifunctor (bimap)
 import qualified Data.Aeson as Ae (ToJSON (..), Value, encode, object, (.=))
-import qualified Data.Text.Lazy as TL (Text, pack, unpack, toStrict)
-import qualified Data.Text as T (Text, unpack)
+import qualified Data.Text.Lazy as TL (Text, pack, unpack, toStrict, concat, toStrict)
+import qualified Data.Text as T (Text, unpack, concat)
 import Data.Text.Lazy.Encoding (decodeUtf8)
+import qualified GenericPretty as GP
+import GHC.Generics
+import qualified Stuff as S
+import qualified App.Logger as L
 
 newtype HttpHandle = HttpHandle { sendH :: Bool -> HTTPRequest -> IO (Either String BSL.ByteString) }
 
-simpleHttp = HttpHandle sendRequest
+--simpleHttp = HttpHandle sendRequest
 
 data HTTPMethod = GET | POST deriving (Show, Eq)
 
@@ -44,15 +52,13 @@ handleOthers e = return . Left $ "unknown error occured"
 
 data ParVal = PIntg Integer
             | PFloat Double
---            | PStr String
             | PVal Ae.Value
             | PLText TL.Text
             | PText T.Text
-        deriving (Show, Eq)
+        deriving (Eq)
 
 instance Ae.ToJSON ParVal where
     toJSON (PIntg n) = Ae.toJSON n
---    Ae.toJSON (PStr s)  = Ae.toJSON s
     toJSON (PVal v)  = v
     toJSON (PFloat x) = Ae.toJSON x
     toJSON (PLText x) = Ae.toJSON x
@@ -66,18 +72,31 @@ parValToString (PFloat x) = show x
 parValToString (PLText x) = TL.unpack x
 parValToString (PText x) = T.unpack x
 
+instance Show ParVal where
+    show = parValToString
+
 type ParamsUnit = (TL.Text, Maybe ParVal)
 type ParamsList = [ParamsUnit]
 
 data HTTPRequest = Req {
     mthd :: HTTPMethod,
     reqUrl :: TL.Text,
-    pars :: ParamsList } deriving (Show, Eq)
+    pars :: ParamsList
+    } deriving (Show, Eq)
+
+showTReq :: HTTPRequest -> T.Text
+showTReq (Req method url params) =
+    T.concat ["\n    method: ", S.showT method,
+    "\n    URL: ", S.showT url, "\n", TL.toStrict $ showTParams params]
+showTParams :: ParamsList -> TL.Text
+showTParams = TL.concat . map f
+  where f (field, Nothing) = ""
+        f (field, Just value) = TL.concat ["    ", field, ": ", S.showTL value, "\n"]
 
 
 
-sendRequest :: Bool -> HTTPRequest -> IO (Either String BSL.ByteString)
-sendRequest takesJSON (Req method url params) =
+sendRequest :: L.Handle IO -> Bool -> HTTPRequest -> IO (Either String BSL.ByteString)
+sendRequest h takesJSON r@(Req method url params) =
     let (req, parsedReq) = case method of
             GET -> (reqWithoutJSON, parsedReqWithoutJSON)
             POST -> if takesJSON
@@ -89,7 +108,7 @@ sendRequest takesJSON (Req method url params) =
         parsedReqJSON = fmap f $ parseRequest $ reqJSON
 
         f r = setRequestBodyJSON (makeParamsValue params) r
-    in  case parsedReq of
+    in  L.logDebug h (showTReq r) >> case parsedReq of
             Nothing -> return . Left $ "Couldn't parse the HTTP request" ++ req
             Just parsedReq ->
                 (fmap (Right . getResponseBody) . httpLBS) parsedReq

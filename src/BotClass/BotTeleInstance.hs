@@ -59,7 +59,9 @@ instance BotClass Tele where
 
     --getUpdatesRequest :: (Monad m) => D.Handle s m -> s -> m H.HTTPRequest
     getUpdatesRequest h s = do
-        curUpdID <- fmap tlUpdateID $ D.getMutState h s
+ --       curUpdID <- fmap tlUpdateID $ D.getMutState h s
+        let tlHandler = D.specH h
+        curUpdID <- getUpdateID tlHandler
         return $ req curUpdID
       where tout = timeout $ D.commonEnv h
             url = tlUrl $ D.getConstState h s
@@ -101,9 +103,9 @@ instance BotClass Tele where
 --    epilogue :: D.Handle s m -> s -> [Upd s] -> Rep s -> m ()
     epilogue h s [] _ = return ()
     epilogue h s us _ =
-        let newUpdateID = (maximum $ map _TU_update_id us) + 1
-            f s = s { tlUpdateID = newUpdateID }
-        in  D.modifyMutState h s f
+        let tlHandler = D.specH h
+            newUpdateID = (maximum $ map _TU_update_id us) + 1
+        in  putUpdateID tlHandler newUpdateID
 
 --    processMessage :: (Monad m) => D.Handle s m -> s -> Msg s -> m (Maybe (m H.HTTPRequest))
     processMessage h s m = either

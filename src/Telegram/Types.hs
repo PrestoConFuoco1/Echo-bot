@@ -42,6 +42,16 @@ data TlStateMut = TLSM {
     tlUpdateID :: Integer
     } deriving (Show)
 
+getUpdateID' :: TlStateMut -> Integer
+getUpdateID' (TLSM x) = x
+
+putUpdateID' :: Integer -> TlStateMut -> TlStateMut
+putUpdateID' uid m = m { tlUpdateID = uid }
+
+data TlHandler m = TlHandler {
+    getUpdateID :: m Integer,
+    putUpdateID :: Integer -> m ()
+    }
 
 -----------------------------------------------------------
 data TlReply = TlReply {

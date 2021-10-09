@@ -62,18 +62,19 @@ runWithConf opts path =
     case messager opts of
         Telegram -> runWithConf' dummyTl opts path tlAction
         Vkontakte -> runWithConf' dummyVk opts path vkAction
-        None -> L.logFatal L.simpleLog "No messager parameter supplied, terminating..." >>
-                L.logInfo  L.simpleLog "Use -tl for Telegram and -vk for Vkontakte"
+        None -> L.logFatal logger "No messager parameter supplied, terminating..." >>
+                L.logInfo  logger "Use -tl for Telegram and -vk for Vkontakte"
   where tlAction gen tlConf = do
             let tlConfig = T.Config gen tlConf
-            resources <- T.initResources tlConfig
-            let handle = T.resourcesToHandle resources L.simpleLog
+            resources <- T.initResources logger tlConfig
+            let handle = T.resourcesToHandle resources logger
             forever (mainLoop handle undefined)
         vkAction gen vkConf = do
             let vkConfig = V.Config gen vkConf
-            resources <- V.initResources vkConfig
-            let handle = V.resourcesToHandle resources L.simpleLog
+            resources <- V.initResources logger vkConfig
+            let handle = V.resourcesToHandle resources logger
             forever (mainLoop handle undefined)
+        logger = L.simpleLog
        
  
 runWithConf' :: (BotConfigurable s) => s -> RunOptions -> FilePath -> (EnvironmentCommon -> Conf s -> IO ()) -> IO ()

@@ -13,8 +13,8 @@ import qualified Control.Exception as E (catch, SomeException, Exception (..),
                                          try, throw, SomeException)
 import qualified App.Logger as L
 
-import Telegram.Types (TlConfig (..), defaultTlConfig, Tele)
-import Vkontakte.Types  (VkConfig (..), defaultVkConfig, Vk)
+import Telegram.Types (TlConfig (..), Tele)
+import Vkontakte.Types  (VkConfig (..), Vk)
 
 import Types (EnvironmentCommon (..), helpMsg, repQuestion, repNum, timeout,
                  helpCommand, setRepNumCommand, defStateGen)
@@ -96,7 +96,8 @@ tryGetConfig s logger messager atry = do
    
 loadTeleConfig :: L.Handle IO -> CT.Config -> IO TlConfig
 loadTeleConfig logger conf = do
-    initialUpdateID <- C.lookupDefault (_TC_updID defaultTlConfig) conf "initial_update_id"
+    --initialUpdateID <- C.lookupDefault (_TC_updID defaultTlConfig) conf "initial_update_id"
+    initialUpdateID <- C.require conf "initial_update_id"
     botURL <- C.require conf "bot_url"
     return $ TlConf initialUpdateID botURL
 

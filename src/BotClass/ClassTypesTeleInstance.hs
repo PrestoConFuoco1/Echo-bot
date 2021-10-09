@@ -17,5 +17,5 @@ instance BotClassTypes Tele where
 
     type CallbackQuery Tele = TlCallback
 
-
+    type Hndl Tele = TlHandler
 

@@ -17,5 +17,5 @@ instance BotClassTypes Vk where
 
     type CallbackQuery Vk = VkMyCallback
 
-
+    type Hndl Vk = VkHandler
 
