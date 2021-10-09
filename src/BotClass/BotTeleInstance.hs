@@ -20,11 +20,12 @@ import qualified Data.Aeson.Types as AeT (parseEither, parseJSON, toJSON)
 import qualified Data.Text.Lazy as TL (Text, pack, fromStrict)
 import qualified Data.Text as T (Text, pack)
 import Data.Bifunctor (first)
+import Data.Foldable (asum)
 
 import qualified App.Handle as D
 import qualified GenericPretty as GP
-
-
+import qualified Stuff as S
+import qualified Execute as E
 
 instance BotClassUtility Tele where
 --    getResult :: s -> Rep s -> Maybe Value
@@ -109,6 +110,7 @@ instance BotClass Tele where
         putUpdateID (D.specH h) newUpdateID
         mediaGroups <- getMediaGroups (D.specH h)
         D.logDebug h $ GP.defaultPrettyT mediaGroups
+        mapM_ (sendMediaGroup h) mediaGroups
         purgeMediaGroups (D.specH h)
 
 --    processMessage :: (Monad m) => D.Handle s m -> s -> Msg s -> m (Maybe (m H.HTTPRequest))
@@ -127,5 +129,34 @@ processMessage1 h s m =
                 url = tlUrl $ D.getConstState h s
                 notMediaGroup = fmap (return . fmsg url . first TL.fromStrict) eithMethodParams
             in  notMediaGroup
+
+
+processMediaGroup :: (Monad m) => D.Handle Tele m -> TlMessage -> m ()
+processMediaGroup h m = let
+    chat = _TM_chat m
+    mMediaGroupID = _TM_media_group_id m
+    mPhoto = _TM_photo m >>= S.safeHead :: Maybe TlPhotoSize
+    mMediaGroupIdent = TlMediaGroupIdentifier chat <$> mMediaGroupID
+    mAction = asum [ insertMediaGroupPhoto (D.specH h) <$> mMediaGroupIdent <*> mPhoto ]
+    in S.withMaybe mAction (return ()) (\a -> D.logDebug h "Processing media group" >> a)
+
+
+sendMediaGroup :: (Monad m) => D.Handle Tele m -> TlMediaGroupPair -> m ()
+sendMediaGroup h (TlMediaGroupPair ident items) = do
+    let chat = _TMGI_chat ident
+        items' = map func items
+        sc = D.getConstState h
+        method = "sendMediaGroup"
+        url = tlUrl $ D.getConstState h Tele -- нахрена тут этот параметр? убрать!
+        pars = [unit "chat_id" $ _TC_id chat,
+                unit "media" $ AeT.toJSON items']
+        req = fmsg url (method, pars)
+    E.sendFixedInfo h Tele req
+
+func :: TlPhotoSize -> TlInputMediaPhoto
+func photo =
+    TlInputMediaPhoto {
+        _TIMP_media = _TPS_file_id photo
+    }
 
 

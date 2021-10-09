@@ -20,7 +20,7 @@ data TlMediaGroupIdentifier = TlMediaGroupIdentifier {
 instance GP.PrettyShow TlMediaGroupIdentifier
 
 data TlInputMediaPhoto = TlInputMediaPhoto {
-    _TIMP_media :: TL.Text
+    _TIMP_media :: T.Text
     -- here it is file_id that exists on the Telegram servers
     } deriving (Show, Generic)
 
