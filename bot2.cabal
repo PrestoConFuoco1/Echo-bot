@@ -45,6 +45,8 @@ library
       Telegram.Types
       Types
       Vkontakte.Attachment
+      Vkontakte.Attachment.Functions
+      Vkontakte.Attachment.Types
       Vkontakte.Entity
       Vkontakte.Keyboard
       Vkontakte.Types

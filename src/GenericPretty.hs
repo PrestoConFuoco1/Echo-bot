@@ -99,6 +99,9 @@ defaultPretty :: (PrettyShow a) => a -> String
 --defaultPretty title x = prettyUnit 0 (LayoutUnit title $ prettyShow x)
 defaultPretty x = prettyValue 0 (prettyShow x)
 
+defaultPrettyT :: (PrettyShow a) => a -> T.Text
+defaultPrettyT = T.pack . defaultPretty
+
 textPretty :: (PrettyShow a) => a -> T.Text
 textPretty = T.pack . defaultPretty
 
