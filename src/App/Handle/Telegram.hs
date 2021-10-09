@@ -9,6 +9,7 @@ import Types
 import Data.IORef
 import qualified Data.Map as M
 import qualified HTTPRequests as H
+import qualified Data.Map as M (empty)
 
 data Config = Config {
       configCommonEnv :: EnvironmentCommon
@@ -27,7 +28,7 @@ data Resources = Resources {
 
 initResources :: L.Handle IO -> Config -> IO Resources
 initResources logger (Config common tlConf) = do
-    let initStateTele = TLSM { tlUpdateID = _TC_updID tlConf }
+    let initStateTele = TLSM { tlUpdateID = _TC_updID tlConf, photoMediaGroups = M.empty }
         const_ = TLSC { tlUrl = _TC_url tlConf }
     mut <- newIORef initStateTele
     umap <- newIORef M.empty
@@ -59,5 +60,8 @@ resourcesToTelegramHandler resources logger =
     TlHandler {
           getUpdateID = fmap getUpdateID' $ readIORef (mutState resources)
         , putUpdateID = modifyIORef' (mutState resources) . putUpdateID'
+        , insertMediaGroupPhoto = \k v -> modifyIORef' (mutState resources) $ insertMediaGroupPhoto' k v
+        , purgeMediaGroups = modifyIORef' (mutState resources) $ purgeMediaGroups'
+        , getMediaGroups = fmap getMediaGroups' $ readIORef (mutState resources)
     }
 

@@ -25,12 +25,6 @@ data VkKeyboard = VkKeyboard {
 instance ToJSON VkKeyboard where
     toJSON = genericToJSON defaultOptions {
         fieldLabelModifier = drop 5 }
-
-{-
-instance FromJSON VkKeyboard where
-    parseJSON = genericParseJSON defaultOptions {
-        fieldLabelModifier = drop 5 }
--}
 ----------------------------------------------------
 
 data VkButton = VkButton {
@@ -43,13 +37,7 @@ instance ToJSON VkButton where
     toJSON = genericToJSON defaultOptions {
         fieldLabelModifier = drop 4 }
 
-{-
-instance FromJSON VkButton where
-    parseJSON = genericParseJSON defaultOptions {
-        fieldLabelModifier = drop 4 }
--}
 ----------------------------------------------------
---examples
 
 data VkButtonActions =
       VBACallback VkCallbackButton
@@ -62,14 +50,6 @@ instance ToJSON VkButtonActions where
         object ["type" .= ("callback"::T.Text), "label" .= l, "payload" .= p]
     toJSON (VBAText (VkTextButton l p)) =
         object ["type" .= ("text"::T.Text), "label" .= l, "payload" .= p]
-{-
-instance FromJSON VkButtonActions where
-    parseJSON x = ($ x) $ withObject "button object" $ \o -> do
-        t <- o .: "type" :: Parser T.Text
-        case t of
-            "text" -> fmap VBAText $ parseJSON x
-            "callback" -> fmap VBACallback $ parseJSON x
--}
 
 data VkCallbackButton = VkCallbackButton {
     _VCB_label :: TL.Text,
@@ -95,28 +75,6 @@ instance ToJSON VkTextButton where
     toJSON = genericToJSON defaultOptions {
         fieldLabelModifier = drop 5 }
 
-{-
-instance FromJSON VkTextButton where
-    parseJSON = genericParseJSON defaultOptions {
-        fieldLabelModifier = drop 5 }
--}
-{-
-repNumKeyboardVk :: TL.Text -> [Int] -> TL.Text
-repNumKeyboardVk cmd lst = EL.decodeUtf8 $
-    encode $ toJSON $ VkKeyboard True $
-    [map (VkButton "primary" . VBACallback . repNumButtonVk cmd) lst]
--}
-{-
-repNumButtonVk :: TL.Text -> Int -> VkCallbackButton
-repNumButtonVk cmd n = VkCallbackButton shown $ "{\"" <> cmd <> "\": \"" <> shown <> "\"}"-- (cmd <> " " <> shown)
-  where shown = TL.pack $ show n 
--}
-{-
-repNumKeyboardVkTxt :: TL.Text -> [Int] -> TL.Text
-repNumKeyboardVkTxt cmd lst = EL.decodeUtf8 $
-    encode $ toJSON $ VkKeyboard True $
-    [map (VkButton "primary" . VBAText . repNumButtonVkTxt cmd) lst]
--}
 repNumButtonVkTxt :: TL.Text -> Int -> VkTextButton
 repNumButtonVkTxt cmd n = VkTextButton shown $ VkPayload (cmd <> " " <> shown)
   where shown = TL.pack $ show n 

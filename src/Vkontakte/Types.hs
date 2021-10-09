@@ -6,22 +6,15 @@
 module Vkontakte.Types (module Vkontakte.Types, module VE, module VA, module VKb) where
 
 
-import Data.Aeson (encode, decode)
+import Data.Aeson (decode)
 import Data.Aeson.Types
 import GHC.Generics (Generic)
-import Data.Foldable (asum)
 import System.Random (StdGen, randomR)
-import qualified Stuff as S (echo)
-import qualified Private as S (vkAccessToken, vkGroupID)
-import qualified Data.Text.Lazy.Encoding as EL (decodeUtf8, encodeUtf8)
-import qualified Data.Text.Encoding as E (decodeUtf8, encodeUtf8)
 import qualified Data.Text.Lazy as TL (Text, unpack, pack, toStrict)
 import qualified Data.Text as T (Text, unpack, pack)
 import qualified Data.ByteString.Lazy as BSL (ByteString)
-import Control.Applicative ((<|>))
 
 import GenericPretty
-
 
 import Vkontakte.Entity as VE
 import Vkontakte.Attachment as VA
@@ -32,14 +25,8 @@ import HTTPRequests as H
 defaultVkParams sc = defaultVkParams' (vkAccessToken sc) (apiVersion sc)
 
 defaultVkParams' accTok apiV =
-    [H.unit "access_token" accTok,
-     H.unit "v" apiV ]
-{-
-    [("access_token", Just $ H.PLText accTok),
-     ("v", Just $ H.PText apiV)]
--}
-
-
+    [unit "access_token" accTok,
+     unit "v" apiV ]
 
 parseInitResp :: BSL.ByteString -> Either String (TL.Text, TL.Text, TL.Text)
 parseInitResp = eithParsed
@@ -119,14 +106,6 @@ data VkHandler m = VkHandler {
     }
 
 --------------------------------------------
-
-data GetUpdatesRequest = GetUpdatesRequest {
-    _GUR_act :: TL.Text,
-    _GUR_key :: TL.Text,
-    _GUR_ts  :: TL.Text,
-    _GUR_wait :: Integer
-    } deriving (Show, Eq, Generic)
-
 
 
 

@@ -42,6 +42,8 @@ data RunOptions = RunOptions {
     }
 defaultRunOpts = RunOptions { testConfig = False, messager = None }
 
+qomeFunc :: Messager -> IO ()
+qomeFunc m = runWithConf (defaultRunOpts {messager = m}) "src/bot.conf"
 
 someFunc :: IO ()
 someFunc = do

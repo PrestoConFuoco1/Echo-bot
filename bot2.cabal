@@ -40,8 +40,15 @@ library
       GenericPretty
       HTTPRequests
       Lib
-      Private
       Stuff
+      Telegram.Entity
+      Telegram.ForHandlers
+      Telegram.Keyboard
+      Telegram.MediaGroup
+      Telegram.MediaGroup.Types
+      Telegram.ProcessMessage
+      Telegram.ProcessMessage.Functions
+      Telegram.ProcessMessage.Types
       Telegram.Types
       Types
       Vkontakte.Attachment

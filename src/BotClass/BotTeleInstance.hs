@@ -10,9 +10,10 @@ import BotClass.Class
 import BotClass.ClassTypes
 import BotClass.ClassTypesTeleInstance
 import Telegram.Types
+import Telegram.MediaGroup
 import Types
 
-import qualified HTTPRequests as H
+import HTTPRequests as H
 
 import qualified Data.Aeson as Ae (decode)
 import qualified Data.Aeson.Types as AeT (parseEither, parseJSON, toJSON)
@@ -21,6 +22,8 @@ import qualified Data.Text as T (Text, pack)
 import Data.Bifunctor (first)
 
 import qualified App.Handle as D
+import qualified GenericPretty as GP
+
 
 
 instance BotClassUtility Tele where
@@ -59,16 +62,14 @@ instance BotClass Tele where
 
     --getUpdatesRequest :: (Monad m) => D.Handle s m -> s -> m H.HTTPRequest
     getUpdatesRequest h s = do
- --       curUpdID <- fmap tlUpdateID $ D.getMutState h s
-        let tlHandler = D.specH h
-        curUpdID <- getUpdateID tlHandler
-        return $ req curUpdID
-      where tout = timeout $ D.commonEnv h
+        let
+            tout = timeout $ D.commonEnv h
             url = tlUrl $ D.getConstState h s
             req uid = H.Req H.GET (url <> "getUpdates")
-              [("offset", Just $ H.PIntg uid),
-               ("timeout", Just $ H.PIntg $ fromIntegral tout)]
-
+              [unit "offset" uid,
+               unit "timeout" tout]
+        curUpdID <- getUpdateID (D.specH h)
+        return $ req curUpdID
 
 --    parseHTTPResponse :: s -> BSL.ByteString -> Either String (Rep s)
     parseHTTPResponse _ resp = do -- Either
@@ -86,35 +87,45 @@ instance BotClass Tele where
         AeT.parseEither AeT.parseJSON val
 
     --repNumKeyboard :: s -> [Int] -> T.Text -> H.ParamsList
-    repNumKeyboard d lst cmd = [("reply_markup", Just $ H.PVal obj)]
+    repNumKeyboard d lst cmd = [unit "reply_markup" obj]
       where obj = AeT.toJSON $ repNumKeyboardTele' cmd lst
 
 --    sendTextMsg :: D.Handle s m -> s -> Maybe (Chat s) -> Maybe (User s) -> T.Text
 --        -> m (Either String H.HTTPRequest)
     sendTextMsg h s Nothing _ _ = return $ Left "Telegram: no chat supplied, unable to send messages to users"
-    sendTextMsg h s (Just c) _ text = do
+    sendTextMsg h s (Just c) _ text =
         let
             url = tlUrl $ D.getConstState h s
-        return $ Right $ fmsg url ("sendMessage",
-            [("chat_id", Just . H.PIntg . _TC_id $ c),
-            ("text", Just $ H.PText text)])
+        in  return $ Right $ fmsg url ("sendMessage",
+            [unit "chat_id" $ _TC_id c,
+             unit "text" text])
             
 
 --    epilogue :: D.Handle s m -> s -> [Upd s] -> Rep s -> m ()
     epilogue h s [] _ = return ()
-    epilogue h s us _ =
-        let tlHandler = D.specH h
+    epilogue h s us _ = do
+        let
             newUpdateID = (maximum $ map _TU_update_id us) + 1
-        in  putUpdateID tlHandler newUpdateID
+        putUpdateID (D.specH h) newUpdateID
+        mediaGroups <- getMediaGroups (D.specH h)
+        D.logDebug h $ GP.defaultPrettyT mediaGroups
+        purgeMediaGroups (D.specH h)
 
 --    processMessage :: (Monad m) => D.Handle s m -> s -> Msg s -> m (Maybe (m H.HTTPRequest))
-    processMessage h s m = either
-        (\e -> D.logError h (T.pack e) >> return Nothing)
-        (return . Just)
-            $ sendMessage h s m
-      where sendMessage h s m =
-                let eithMethodParams = sendMessageTele m
-                    url = tlUrl $ D.getConstState h s
-                in  fmap (return . fmsg url . first TL.fromStrict) eithMethodParams
+    processMessage = processMessage1
+
+
+processMessage1 h s m =
+  if isMediaGroup m
+  then processMediaGroup h m >> return Nothing
+  else either
+    (\e -> D.logError h (T.pack e) >> return Nothing)
+    (return . Just)
+        $ sendMessage h s m
+  where sendMessage h s m =
+            let eithMethodParams = sendMessageTele m
+                url = tlUrl $ D.getConstState h s
+                notMediaGroup = fmap (return . fmsg url . first TL.fromStrict) eithMethodParams
+            in  notMediaGroup
 
 
