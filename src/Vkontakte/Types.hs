@@ -22,20 +22,18 @@ import Control.Applicative ((<|>))
 
 import GenericPretty
 
-import qualified HTTPRequests as H
 
 import Vkontakte.Entity as VE
 import Vkontakte.Attachment as VA
 import Vkontakte.Keyboard as VKb
-import qualified HTTPRequests as H
-import ToHTTP
+import HTTPRequests as H
 
 
 defaultVkParams sc = defaultVkParams' (vkAccessToken sc) (apiVersion sc)
 
 defaultVkParams' accTok apiV =
-    [unit "access_token" accTok,
-     unit "v" apiV ]
+    [H.unit "access_token" accTok,
+     H.unit "v" apiV ]
 {-
     [("access_token", Just $ H.PLText accTok),
      ("v", Just $ H.PText apiV)]
@@ -128,13 +126,6 @@ data GetUpdatesRequest = GetUpdatesRequest {
     _GUR_ts  :: TL.Text,
     _GUR_wait :: Integer
     } deriving (Show, Eq, Generic)
-
-instance ToHTTP GetUpdatesRequest where
-    toRequest GetUpdatesRequest {..} =
-           [unit "act" _GUR_act,
-            unit "key" _GUR_key,
-            unit "ts"  _GUR_ts,
-            unit "wait" _GUR_wait]
 
 
 

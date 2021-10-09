@@ -9,7 +9,7 @@ import BotClass.ClassTypesVkInstance
 import Vkontakte.Types
 import Types
 
-import qualified HTTPRequests as H
+import HTTPRequests as H
 
 import qualified Stuff as S (echo, emptyToNothing, withMaybe)
 import Data.Aeson (decode)
@@ -28,7 +28,6 @@ import qualified Data.ByteString.Lazy as BSL (ByteString)
 import qualified App.Handle as D
 import Control.Monad.Writer (Writer, tell, runWriter)
 
-import ToHTTP
 
 instance BotClassUtility Vk where
 --    getResult :: s -> Rep s -> Maybe Value
@@ -62,94 +61,104 @@ instance BotClassUtility Vk where
 
 instance BotClass Vk where
     takesJSON _ = False
+    getUpdatesRequest = getUpdatesRequest1
+    parseHTTPResponse = parseHTTPResponse1
+    isSuccess = isSuccess1
+    parseUpdatesList = parseUpdatesList1
+    sendTextMsg = sendTextMsg1
+    repNumKeyboard = repNumKeyboard1
+    processMessage = processMessage1
+    epilogue = epilogue1
+
+
 
 --    parseUpdatesList :: s -> Rep s -> Either String [Upd s]
-    parseUpdatesList d rep = do
-        val <- maybe (Left "Couldn't parse update list, or failed result") Right $ getResult d rep
-        parseEither parseJSON val
+parseUpdatesList1 d rep = do
+    val <- maybe (Left "Couldn't parse update list, or failed result") Right $ getResult d rep
+    parseEither parseJSON val
 
 
-    --getUpdatesRequest :: (Monad m) => D.Handle s m -> s -> m H.HTTPRequest
-    getUpdatesRequest h s = do
-        --curTS <- fmap vkTs $ D.getMutState h s
-        curTS <- getTimestamp (D.specH h)
-        let constState = D.getConstState h s
-            timeout' = timeout $ D.commonEnv h
-            fullUrl = vkServer constState
-            pars = [unit "act" ("a_check" :: TL.Text),
-                    unit "key" $ vkKey constState,
-                    unit "ts" curTS,
-                    unit "wait" timeout']
-        return $ H.Req H.GET fullUrl pars
+--getUpdatesRequest :: (Monad m) => D.Handle s m -> s -> m H.HTTPRequest
+getUpdatesRequest1 h s = do
+    --curTS <- fmap vkTs $ D.getMutState h s
+    curTS <- getTimestamp (D.specH h)
+    let constState = D.getConstState h s
+        timeout' = timeout $ D.commonEnv h
+        fullUrl = vkServer constState
+        pars = [unit "act" ("a_check" :: TL.Text),
+                unit "key" $ vkKey constState,
+                unit "ts" curTS,
+                unit "wait" timeout']
+    return $ H.Req H.GET fullUrl pars
 
-    --parseHTTPResponse :: s -> BSL.ByteString -> Either String (Rep s)
-    parseHTTPResponse _ resp = do -- Either
-        val <- maybe (Left "Couldn't parse HTTP response") Right $ decode resp
-        repl <- parseEither parseJSON val
-        return repl
+--parseHTTPResponse :: s -> BSL.ByteString -> Either String (Rep s)
+parseHTTPResponse1 _ resp = do -- Either
+    val <- maybe (Left "Couldn't parse HTTP response") Right $ decode resp
+    repl <- parseEither parseJSON val
+    return repl
 
 --    isSuccess :: s -> Rep s -> Bool
-    isSuccess _ r = _VR_failed r == Nothing
+isSuccess1 _ r = _VR_failed r == Nothing
 
 --    sendTextMsg :: (Monad m) => D.Handle s m -> s -> Maybe (Chat s) -> Maybe (User s) -> T.Text
 --        -> m (Either String H.HTTPRequest)
-    sendTextMsg h s mChat mUser "" = return $ Left "Unable to send empty message."
-    sendTextMsg h s mChat Nothing text = return $ Left "VK: no user supplied, unable to send messages to chats."
-    sendTextMsg h s mChat (Just u) text = do
-        let method = "messages.send"
-            sc = D.getConstState h s
-        randomID <- getRandomID (D.specH h)
-        let pars = [unit "user_id" (_VU_id u),
-                    unit "message" text,
-                    unit "random_id" randomID]
-                    -- ++ defaultVkParams (vkAccessToken sc) (apiVersion sc)
-                    ++ defaultVkParams sc
-        return $ Right $ fmsg (vkUrl sc) (method, pars)
+sendTextMsg1 h s mChat mUser "" = return $ Left "Unable to send empty message."
+sendTextMsg1 h s mChat Nothing text = return $ Left "VK: no user supplied, unable to send messages to chats."
+sendTextMsg1 h s mChat (Just u) text = do
+    let method = "messages.send"
+        sc = D.getConstState h s
+    randomID <- getRandomID (D.specH h)
+    let pars = [unit "user_id" (_VU_id u),
+                unit "message" text,
+                unit "random_id" randomID]
+                -- ++ defaultVkParams (vkAccessToken sc) (apiVersion sc)
+                ++ defaultVkParams sc
+    return $ Right $ fmsg (vkUrl sc) (method, pars)
 
 --    repNumKeyboard :: s -> [Int] -> TL.Text -> H.ParamsList
-    repNumKeyboard d lst cmd = [(unit "keyboard" obj)]
-      where obj = toJSON $ repNumKeyboardVkTxt' cmd lst
+repNumKeyboard1 d lst cmd = [unit "keyboard" obj]
+  where obj = toJSON $ repNumKeyboardVkTxt' cmd lst
 
 --    epilogue :: (Monad m) => D.Handle s m -> s -> [Upd s] -> Rep s -> m ()
-    epilogue h s _ rep = case _VR_ts rep of
-        Nothing -> return ()
-        Just x  -> putTimestamp (D.specH h) x
+epilogue1 h s _ rep = case _VR_ts rep of
+    Nothing -> return ()
+    Just x  -> putTimestamp (D.specH h) x
 
 --    processMessage :: (Monad m) => D.Handle s m -> s -> Msg s -> m (Maybe (m H.HTTPRequest))
-    processMessage h s m
-     | null atts && maybeText == Nothing =
-            D.logError h "Unable to send empty message." >> return Nothing
-     | otherwise = do
-        let (maybePars, toLog) = runWriter $ attsToParsVk' atts
-        mapM_ (D.logEntry h) toLog
-        case maybeText of
-            Nothing -> S.withMaybe maybePars
-                (D.logError h "No text found and unable to send any attachments."
-                    >> return Nothing)
-                (return . Just . f h)
-            Just text -> let justPars = maybe [] id maybePars
-                         in  return $ Just (f h justPars)
-    
-      where
-            maybeText = S.emptyToNothing $ _VM_text m
-            atts = _VM_attachments m
+processMessage1 h s m
+ | null atts && maybeText == Nothing =
+        D.logError h "Unable to send empty message." >> return Nothing
+ | otherwise = do
+    let (maybePars, toLog) = runWriter $ attsToParsVk' atts
+    mapM_ (D.logEntry h) toLog
+    S.withMaybe maybeText
+        (S.withMaybe maybePars
+            (D.logError h "No text found and unable to send any attachments." >> 
+             return Nothing)
+            (return . Just . processMessageVk h user maybeText))
+        (\text -> let justPars = maybe [] id maybePars
+            in  return $ Just (processMessageVk h user maybeText justPars))
+
+  where
+        maybeText = S.emptyToNothing $ _VM_text m
+        atts = _VM_attachments m
+        user = _VM_from_id m
 
 
-            f :: (Monad m) => D.Handle Vk m -> H.ParamsList -> m H.HTTPRequest
-            f h extraPars = do
-                let
-                    vkHandler = D.specH h
-                    sc = D.getConstState h dummyVk
-                    method = "messages.send"
-                    user = _VM_from_id m
-                randomID <- getRandomID vkHandler
-                let pars = [unit "user_id" $ _VU_id user,
-                            mUnit "message" maybeText,
-                            unit "random_id" randomID]
-                            ++ defaultVkParams sc
-                return $ fmsg (vkUrl sc) (method, extraPars <> pars)
+processMessageVk :: (Monad m) =>
+    D.Handle Vk m -> VkUser -> Maybe T.Text -> H.ParamsList -> m H.HTTPRequest
+processMessageVk h user maybeText attachmentsEtc = do
+    let
+        sc = D.getConstState h dummyVk
+        method = "messages.send"
+    randomID <- getRandomID (D.specH h)
+    let pars = [unit "user_id" $ _VU_id user,
+                mUnit "message" maybeText,
+                unit "random_id" randomID]
+                ++ defaultVkParams sc
+    return $ fmsg (vkUrl sc) (method, attachmentsEtc ++ pars)
 
-                
+       
 
 
 attsToParsVk' :: [VkAttachment] -> Writer [L.LoggerEntry] (Maybe H.ParamsList)
@@ -213,11 +222,11 @@ sendWallReply = unableToSend "wall reply"
 
 sendSticker [] = Left "No sticker found."
 sendSticker (x:xs) =
-    Right $ ("sticker_id", Just . H.PIntg . _VSt_sticker_id $ x)
+    Right $ unit "sticker_id" (_VSt_sticker_id x)
 
 
 sendMsgSendable :: [T.Text] -> Either String H.ParamsUnit
 sendMsgSendable [] = Left "Empty list of attachments."
-sendMsgSendable lst = Right $ ("attachment", Just $ H.PText s)
+sendMsgSendable lst = Right $ unit "attachment" s
   where s = T.intercalate "," lst
 

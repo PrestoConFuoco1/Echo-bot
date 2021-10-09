@@ -48,10 +48,10 @@ initResources h (Config common vkConf) = do
 -- i think this function can be further splitted to some lesser functions
 initialize :: L.Handle IO -> VkConfig -> IO (Maybe (VkStateConst, VkStateMut))
 initialize logger (VkConf methodsUrl accTok gid apiV) = do
-    let pars = [("group_id", Just . H.PIntg $ gid)] <> defaultVkParams' accTok apiV
+    let pars = [H.unit "group_id" gid] ++ defaultVkParams' accTok apiV
         initReq = H.Req H.GET (methodsUrl <> "groups.getLongPollServer") pars
         takesJson = True
-    initReply <- {- fmap S.echo $ -} H.sendRequest logger takesJson initReq
+    initReply <- H.sendRequest logger takesJson initReq
     let eithParsed = initReply >>= parseInitResp
     initRndNum <- newStdGen
     return $ case eithParsed of
@@ -76,10 +76,7 @@ resourcesToHandle resources logger =
         , D.sendRequest = H.sendRequest logger
         , D.commonEnv = commonEnv resources
         , D.getConstState = const (constState resources)
-{-
-        , D.getMutState = const (readIORef $ mutState resources)
-        , D.putMutState = const (writeIORef $ mutState resources)
--}
+
         , D.insertUser = \u i -> modifyIORef' (usersMap resources) (M.insert u i)
         , D.getUser = \u -> readIORef (usersMap resources) >>= return . M.lookup u
         , D.specH = resourcesToVkHandler resources logger

@@ -15,6 +15,9 @@ module HTTPRequests (
     ParVal (..),
     HttpHandle (..),
     --simpleHttp
+    ToParVal (..),
+    unit,
+    mUnit
 ) where
 
 import Prelude hiding (log)
@@ -39,6 +42,7 @@ newtype HttpHandle = HttpHandle { sendH :: Bool -> HTTPRequest -> IO (Either Str
 --simpleHttp = HttpHandle sendRequest
 
 data HTTPMethod = GET | POST deriving (Show, Eq)
+
 
 
 handleHTTPError :: HttpException -> IO (Either String a)
@@ -136,4 +140,25 @@ addParamsUnit paramsUnit req = req { pars = paramsUnit : pars req }
 {-
 -}
 -------------------------------------------------------------------
+
+class ToParVal a where
+    toParVal :: a -> ParVal
+
+instance ToParVal Integer where
+    toParVal = PIntg
+instance ToParVal Double where
+    toParVal = PFloat
+instance ToParVal Ae.Value where
+    toParVal = PVal
+instance ToParVal TL.Text where
+    toParVal = PLText
+instance ToParVal T.Text where
+    toParVal = PText
+
+unit :: (ToParVal a) => TL.Text -> a -> ParamsUnit
+unit field value = (field, Just $ toParVal value)
+
+mUnit :: (ToParVal a) => TL.Text -> (Maybe a) -> ParamsUnit
+mUnit field mValue = (field, fmap toParVal mValue)
+
 
