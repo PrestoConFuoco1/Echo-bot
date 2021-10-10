@@ -47,7 +47,7 @@ resourcesToHandle resources logger =
           D.log = logger
         , D.sendRequest = H.sendRequest logger
         , D.commonEnv = commonEnv resources
-        , D.getConstState = const (constState resources)
+        , D.getConstState = constState resources
 
         , D.insertUser = \u i -> modifyIORef' (usersMap resources) (M.insert u i)
         , D.getUser = \u -> readIORef (usersMap resources) >>= return . M.lookup u

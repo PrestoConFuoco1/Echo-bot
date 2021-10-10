@@ -19,7 +19,7 @@ data Handle s m = Handle {
     insertUser :: (BotClassTypes s) => User s -> Int -> m (),
     getUser :: (BotClassTypes s) => User s -> m (Maybe Int),
 
-    getConstState :: (BotClassTypes s) => s -> StateC s,
+    getConstState :: (BotClassTypes s) => StateC s,
 
     specH :: (BotClassTypes s) => Hndl s m
     }

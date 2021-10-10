@@ -82,7 +82,7 @@ parseUpdatesList1 d rep = do
 getUpdatesRequest1 h s = do
     --curTS <- fmap vkTs $ D.getMutState h s
     curTS <- getTimestamp (D.specH h)
-    let constState = D.getConstState h s
+    let constState = D.getConstState h
         timeout' = timeout $ D.commonEnv h
         fullUrl = vkServer constState
         pars = [unit "act" ("a_check" :: TL.Text),
@@ -106,7 +106,7 @@ sendTextMsg1 h s mChat mUser "" = return $ Left "Unable to send empty message."
 sendTextMsg1 h s mChat Nothing text = return $ Left "VK: no user supplied, unable to send messages to chats."
 sendTextMsg1 h s mChat (Just u) text = do
     let method = "messages.send"
-        sc = D.getConstState h s
+        sc = D.getConstState h
     randomID <- getRandomID (D.specH h)
     let pars = [unit "user_id" (_VU_id u),
                 unit "message" text,
@@ -149,7 +149,7 @@ processMessageVk :: (Monad m) =>
     D.Handle Vk m -> VkUser -> Maybe T.Text -> H.ParamsList -> m H.HTTPRequest
 processMessageVk h user maybeText attachmentsEtc = do
     let
-        sc = D.getConstState h dummyVk
+        sc = D.getConstState h
         method = "messages.send"
     randomID <- getRandomID (D.specH h)
     let pars = [unit "user_id" $ _VU_id user,

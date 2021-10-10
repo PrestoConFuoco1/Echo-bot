@@ -65,7 +65,7 @@ instance BotClass Tele where
     getUpdatesRequest h s = do
         let
             tout = timeout $ D.commonEnv h
-            url = tlUrl $ D.getConstState h s
+            url = tlUrl $ D.getConstState h
             req uid = H.Req H.GET (url <> "getUpdates")
               [unit "offset" uid,
                unit "timeout" tout]
@@ -96,7 +96,7 @@ instance BotClass Tele where
     sendTextMsg h s Nothing _ _ = return $ Left "Telegram: no chat supplied, unable to send messages to users"
     sendTextMsg h s (Just c) _ text =
         let
-            url = tlUrl $ D.getConstState h s
+            url = tlUrl $ D.getConstState h
         in  return $ Right $ fmsg url ("sendMessage",
             [unit "chat_id" $ _TC_id c,
              unit "text" text])
@@ -126,7 +126,7 @@ processMessage1 h s m =
         $ sendMessage h s m
   where sendMessage h s m =
             let eithMethodParams = sendMessageTele m
-                url = tlUrl $ D.getConstState h s
+                url = tlUrl $ D.getConstState h
                 notMediaGroup = fmap (return . fmsg url . first TL.fromStrict) eithMethodParams
             in  notMediaGroup
 
@@ -147,7 +147,7 @@ sendMediaGroup h (TlMediaGroupPair ident items) = do
         items' = map func items
         sc = D.getConstState h
         method = "sendMediaGroup"
-        url = tlUrl $ D.getConstState h Tele -- нахрена тут этот параметр? убрать!
+        url = tlUrl $ D.getConstState h -- нахрена тут этот параметр? убрать!
         pars = [unit "chat_id" $ _TC_id chat,
                 unit "media" $ AeT.toJSON items']
         req = fmsg url (method, pars)
