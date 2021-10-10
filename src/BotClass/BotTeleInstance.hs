@@ -134,9 +134,10 @@ processMessage1 h s m =
 processMediaGroup :: (Monad m) => D.Handle Tele m -> TlMessage -> m ()
 processMediaGroup h m = let
     chat = _TM_chat m
+    mUser = _TM_from m
     mMediaGroupID = _TM_media_group_id m
     mPhoto = _TM_photo m >>= S.safeHead :: Maybe TlPhotoSize
-    mMediaGroupIdent = TlMediaGroupIdentifier chat <$> mMediaGroupID
+    mMediaGroupIdent = TlMediaGroupIdentifier chat mUser <$> mMediaGroupID
     mAction = asum [ insertMediaGroupPhoto (D.specH h) <$> mMediaGroupIdent <*> mPhoto ]
     in S.withMaybe mAction (return ()) (\a -> D.logDebug h "Processing media group" >> a)
 
@@ -144,6 +145,7 @@ processMediaGroup h m = let
 sendMediaGroup :: (Monad m) => D.Handle Tele m -> TlMediaGroupPair -> m ()
 sendMediaGroup h (TlMediaGroupPair ident items) = do
     let chat = _TMGI_chat ident
+        mUser = _TMGI_user ident
         items' = map func items
         sc = D.getConstState h
         method = "sendMediaGroup"
@@ -151,7 +153,8 @@ sendMediaGroup h (TlMediaGroupPair ident items) = do
         pars = [unit "chat_id" $ _TC_id chat,
                 unit "media" $ AeT.toJSON items']
         req = fmsg url (method, pars)
-    E.sendFixedInfo h Tele req
+    --E.sendFixedInfo h Tele req
+    E.sendNTimes h Tele mUser (return req)
 
 func :: TlPhotoSize -> TlInputMediaPhoto
 func photo =

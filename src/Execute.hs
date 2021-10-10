@@ -111,30 +111,6 @@ handleSetRepNum h s user mChat repnum = do
     D.logInfo h afterLog
     either sendFail (sendFixedInfo h s) eithReqFunc
 
-
-handleMessage :: (BotClass s, Monad m) => D.Handle s m -> s -> Msg s -> m ()
-handleMessage h s m = do
-    let
-        maybeUser = getUser s m
-        defaultRepNum = repNum $ D.commonEnv h
-    mReqFunc <- processMessage h s m
-    S.withMaybe mReqFunc (return ()) $ \req -> do
-        repNraw <- D.findWithDefault h s defaultRepNum maybeUser
-        let repN = validateRepNum repNraw
-        D.logDebug h $ "Sending message " <> S.showT repN <> " times."
-        D.logDebug h $ T.pack $ GP.defaultPretty m
-        reqs <- replicateM repN req
-        eithRespStrList <- mapM (D.sendRequest h $ takesJSON s) reqs
-        let (errs, resps) = partitionEithers $
-                map (>>= parseHTTPResponse s) eithRespStrList
-        mapM_ (D.logError h . T.pack) errs
-
-validateRepNum :: Int -> Int
-validateRepNum x
-  | x > maxRepNum = maxRepNum
-  | x < minRepNum = minRepNum
-  | otherwise     = x
-
 handleCommand :: (BotClass s, Monad m) =>
     D.Handle s m -> s -> Command -> Maybe (Chat s) -> Maybe (User s) -> m ()
 handleCommand h s cmd mChat mUser =
@@ -177,5 +153,36 @@ sendFixedInfo h s request = do
                   then Right $ "Ok: " <> (T.pack $ GP.defaultPretty resp')
                   else Left $ "Failed request: " ++ show resp'
     either (D.logError h . T.pack) (D.logInfo h) eithResp
+
+
+handleMessage :: (BotClass s, Monad m) => D.Handle s m -> s -> Msg s -> m ()
+handleMessage h s m = do
+    let
+        maybeUser = getUser s m
+    mReqFunc <- processMessage h s m
+    S.withMaybe mReqFunc (return ()) $ \req -> do
+        D.logDebug h $ "Sending some copies of message"
+        D.logDebug h $ T.pack $ GP.defaultPretty m
+        sendNTimes h s maybeUser req
+
+sendNTimes :: (BotClass s, Monad m) => D.Handle s m -> s -> Maybe (User s) -> m H.HTTPRequest -> m ()
+sendNTimes h s maybeUser req = do
+    let defaultRepNum = repNum $ D.commonEnv h
+    repNraw <- D.findWithDefault h s defaultRepNum maybeUser
+    let repN = validateRepNum repNraw
+    D.logDebug h $ "Sending message " <> S.showT repN <> " times."
+    reqs <- replicateM repN req
+    eithRespStrList <- mapM (D.sendRequest h $ takesJSON s) reqs
+    let (errs, resps) = partitionEithers $
+            map (>>= parseHTTPResponse s) eithRespStrList
+    mapM_ (D.logError h . T.pack) errs
+
+
+
+validateRepNum :: Int -> Int
+validateRepNum x
+  | x > maxRepNum = maxRepNum
+  | x < minRepNum = minRepNum
+  | otherwise     = x
 
 

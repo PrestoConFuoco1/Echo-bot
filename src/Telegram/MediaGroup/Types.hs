@@ -14,6 +14,7 @@ import Data.Aeson.Types
 
 data TlMediaGroupIdentifier = TlMediaGroupIdentifier {
     _TMGI_chat :: TlChat,
+    _TMGI_user :: Maybe TlUser,
     _TMGI_mediaGroupID :: T.Text
     } deriving (Show, Eq, Ord, Generic)
 

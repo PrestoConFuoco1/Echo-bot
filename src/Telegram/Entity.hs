@@ -36,7 +36,9 @@ data TlUpdate = TlUpdate {
     _TU_update_id :: Integer,
     _TU_event :: TlEvent } deriving (Show, Eq)
 
-data TlEvent = TEMsg TlMessage | TEEdMsg TlMessage | TECallback TlCallback
+data TlEvent = TEMsg TlMessage
+    -- | TEEdMsg TlMessage
+    | TECallback TlCallback
     deriving (Show, Eq)
 {-
 instance ToJSON TlUpdate where
@@ -46,7 +48,7 @@ instance FromJSON TlUpdate where
     parseJSON = withObject "update object" $ \o -> do
         uid <- o .: "update_id"
         ev <- asum [ fmap TEMsg (o .: "message"),
-                     fmap TEEdMsg (o .: "edited_message"),
+--                     fmap TEEdMsg (o .: "edited_message"),
                      fmap TECallback (o .: "callback_query")]
         return $ TlUpdate uid ev
 -----------------------------------------------------------
