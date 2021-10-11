@@ -1,3 +1,6 @@
+{-# LANGUAGE
+    RecordWildCards
+    #-}
 module App.Handle.Vkontakte where
 
 import qualified App.Handle as D
@@ -15,7 +18,10 @@ import System.Random (StdGen, newStdGen, randomR)
 import qualified Stuff as S
 import qualified System.Exit as Q (ExitCode (..), exitWith)
 import qualified Data.Text as T
-
+import qualified Data.Text.Lazy as TL
+import qualified Vkontakte.Exceptions as VkEx
+import qualified Control.Monad.Catch as C (catches, Handler (..), SomeException, displayException)
+import GenericPretty as GP
 
 data Config = Config {
       configCommonEnv :: EnvironmentCommon
@@ -58,7 +64,51 @@ resourcesToHandle resources logger =
         , D.specH = resourcesToVkHandler resources logger
     }
 
+vkErrorHandler :: L.Handle IO -> VkConfig -> Resources -> VkEx.VkException -> IO Resources
+vkErrorHandler logger conf resources VkEx.KeyOutOfDate_GetNew = getNewKey logger conf resources
+vkErrorHandler logger conf resources VkEx.KeyAndTsLosed_GetNew = getNewKeyAndTs logger conf resources
 
+modifyKey :: TL.Text -> Resources -> Resources
+modifyKey key resources =
+    let
+        sc = constState resources
+        sc' = sc { vkKey = key }
+        resources' = resources { constState = sc' }
+    in  resources'
+{-
+modifyTs :: TL.Text -> Resources -> IO Resources
+modifyTs ts resources =
+    let smref = mutState resources
+    sm <- readIORef smref
+    let sm' = sm { vkTs = ts }
+    writeIORef smref sm'
+    return resources
+-}
+getNewKey :: L.Handle IO -> VkConfig -> Resources -> IO Resources
+getNewKey logger config resources = do
+    initData <- getLongPollServer logger config
+    return $ modifyKey (_VID_key initData) resources
+
+getNewKeyAndTs :: L.Handle IO -> VkConfig -> Resources -> IO Resources
+getNewKeyAndTs logger config resources = do
+    initData <- getLongPollServer logger config
+    sm <- readIORef (mutState resources)
+    let sm' = sm { vkTs = _VID_timestamp initData }
+    smRef' <- newIORef sm'
+    let resources' = resources { mutState = smRef' }
+        resources'' = modifyKey (_VID_key initData) resources'
+    return resources''
+
+
+vkHandlers logger conf resources = [
+    C.Handler $ vkErrorHandler logger conf resources
+    , C.Handler $ defaultHandler logger resources
+    ]
+
+defaultHandler :: L.Handle IO -> Resources -> C.SomeException -> IO Resources
+defaultHandler logger resources e = do
+    L.logError logger $ T.pack $ C.displayException e
+    return resources
 
 resourcesToVkHandler :: Resources -> L.Handle IO -> VkHandler IO
 resourcesToVkHandler resources logger = 
@@ -70,31 +120,49 @@ resourcesToVkHandler resources logger =
 
 
 
---initialize :: q -> Conf q -> IO (Maybe (StC q, StM q))
-initialize :: L.Handle IO -> VkConfig -> IO (VkStateConst, VkStateMut)
-initialize logger (VkConf methodsUrl accTok gid apiV) = do
+getLongPollServer :: L.Handle IO -> VkConfig -> IO VkInitData
+getLongPollServer logger VkConf {..} = do
     let
         funcName = "vk_initialize: "
-        pars = [H.unit "group_id" gid] ++ defaultVkParams' accTok apiV
-        initReq = H.Req H.GET (methodsUrl <> "groups.getLongPollServer") pars
+        pars = [H.unit "group_id" _VC_groupID] ++ defaultVkParams' _VC_accessToken _VC_apiV
+        initReq = H.Req H.GET (_VC_vkUrl <> "groups.getLongPollServer") pars
         takesJson = True
     L.logDebug logger $ funcName <> "sending initialize request"
     eithInitReply <- H.sendRequest logger takesJson initReq
     initReply <- either (initRequestFail logger) return eithInitReply
     let eithParsed = parseInitResp initReply
     initData <- either (initRequestParseFail logger) return eithParsed
+    L.logDebug logger $ funcName <> "received initial vk api data"
+    L.logDebug logger $ funcName <> (GP.defaultPrettyT initData)
+    return initData
+
+
+
+--initialize :: q -> Conf q -> IO (Maybe (StC q, StM q))
+initialize :: L.Handle IO -> VkConfig -> IO (VkStateConst, VkStateMut)
+--initialize logger (VkConf methodsUrl accTok gid apiV) = do
+initialize logger conf@(VkConf {..}) = do
+    initData <- getLongPollServer logger conf
     initRndNum <- newStdGen
     return (VKSC {
-        vkKey = _VID_key initData,
-        vkServer = _VID_server initData,
-        vkUrl = methodsUrl,
-        vkAccessToken = accTok,
-        vkGroupID = gid,
-        apiVersion = apiV
+        vkKey = "hahahah" --_VID_key initData
+        , vkServer = _VID_server initData
+        , vkUrl = _VC_vkUrl
+        , vkAccessToken = _VC_accessToken
+        , vkGroupID = _VC_groupID
+        , apiVersion = _VC_apiV
       }, VKSM {
         vkTs = _VID_timestamp initData,
         vkRndGen = initRndNum
       })
+{-
+data VkConfig = VkConf {
+    _VC_vkUrl :: TL.Text,
+    _VC_accessToken :: TL.Text,
+    _VC_groupID :: Integer,
+    _VC_apiV :: T.Text
+    } deriving (Show, Eq, Generic)
+-}
 
 
 initRequestFail :: L.Handle IO -> String -> IO a

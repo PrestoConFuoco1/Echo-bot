@@ -6,6 +6,7 @@ module Lib
 import Config
 import qualified Control.Exception as E
     (catches, Handler (..), SomeException, IOException)
+import qualified Control.Monad.Catch as C (catches, Handler (..))
 import qualified System.IO.Error as E
     (isDoesNotExistError, isPermissionError, isAlreadyInUseError)
 import qualified Data.Configurator.Types as CT (ConfigError (..))
@@ -24,6 +25,8 @@ import BotClass.BotVkInstance
 import BotClass.BotTeleInstance
 import Telegram.Types (Tele(..))
 import Vkontakte.Types (Vk(..))
+import Data.IORef
+import App.Handle as D
 
 data Messager = Vkontakte | Telegram | None
 data RunOptions = RunOptions {
@@ -54,7 +57,7 @@ runWithConf :: RunOptions -> FilePath -> IO ()
 runWithConf opts path =
     case messager opts of
         Telegram -> runWithConf' Tele opts path tlAction
-        Vkontakte -> runWithConf' Vk opts path vkAction
+        Vkontakte -> runWithConf' Vk opts path (\x y -> vkAction x y >> return ())
         None -> L.logFatal logger "No messager parameter supplied, terminating..." >>
                 L.logInfo  logger "Use -tl for Telegram and -vk for Vkontakte"
   where
@@ -68,13 +71,45 @@ runWithConf opts path =
             let vkConfig = V.Config gen vkConf
             resources <- V.initResources logger vkConfig
             let handle = V.resourcesToHandle resources logger
-            forever (execute handle Vk)
- --           forever (mainLoop resources
+ --           forever (execute handle Vk)
+                g (C.Handler f) = C.Handler $ \e -> f e >> return ()
+{-
+            q <- execute handle Vk `C.catches` map g (V.vkHandlers logger vkConf resources)
+            return ()
+-}
+{-
+            mainLoop vkConf (flip V.resourcesToHandle logger) D.log V.vkHandlers (flip execute Vk) resources
+            return ()
+-}
+            forever' resources $ mainLoop
+                vkConf
+                (flip V.resourcesToHandle logger)
+                D.log
+                V.vkHandlers
+                --undefined
+                (flip execute Vk)
+{-
+-}
 
-mainLoop :: a -> (a -> b) -> [E.Handler ()] -> (b -> IO ()) -> IO ()
-mainLoop resources resourcesToHandles errorHandlers action = do
+forever' :: a -> (a -> IO a) -> IO a
+forever' res action = do
+    res' <- action res
+    forever' res' action
+
+mainLoop ::
+    d -- config
+    -> (a -> b) -- resources to handlers
+    -> (b -> L.Handle IO) -- handlers to logger
+    -> (L.Handle IO -> d -> a -> [C.Handler IO a]) -- error handlers
+    -> (b -> IO ()) -- handlers to execute-action
+    -> a -- resources
+    -> IO a
+mainLoop conf resourcesToHandles toLogger errorHandlers action resources = do
     let handle = resourcesToHandles resources
-    action handle `E.catches` errorHandlers -- someHandlers
+        logger = toLogger handle
+    (action handle >> return resources)
+        `C.catches`
+        errorHandlers logger conf resources -- someHandlers
 
  
 runWithConf' :: (BotConfigurable s) => s -> RunOptions -> FilePath -> (EnvironmentCommon -> Conf s -> IO ()) -> IO ()

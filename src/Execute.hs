@@ -43,8 +43,8 @@ execute h s = do
                     errLength = length errs
                 when (errLength > 0) $ do
                     let g (u, e) = do
-                        D.logError h $ funcName <> "Failed to parse update: <" <> T.pack e <> ">, update is:"
-                        D.logError h $ GP.defaultPrettyT u
+                            D.logError h $ funcName <> "Failed to parse update: <" <> T.pack e <> ">, update is:"
+                            D.logError h $ GP.defaultPrettyT u
                     D.logError h $ funcName <> "failed to parse some updates"
                     mapM_ g errs
                     --when (null upds) $ error "failed to parse all updates"

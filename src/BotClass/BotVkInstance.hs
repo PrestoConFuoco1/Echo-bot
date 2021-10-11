@@ -127,8 +127,9 @@ errorMsg3 = "information (key, ts) is losed, needed to obtain it with getLongPol
 
 handleFailedUpdatesRequest1 :: (C.MonadThrow m) => D.Handle Vk m -> VkUpdateReplyError -> m ()
 handleFailedUpdatesRequest1 h e@(VkUpdateReplyError {..}) =
-    let funcName = "handleFailedUpdatesRequest: " in
-    case _VURE_failed of
+    let funcName = "handleFailedUpdatesRequest: "
+        key = vkKey $ D.getConstState h
+    in case _VURE_failed of
   x | x == 1 -> D.logError h errorMsg1 >> S.withMaybe _VURE_ts
         (D.logError h $ funcName <> "no ts found")
         (\ts -> do
@@ -136,6 +137,7 @@ handleFailedUpdatesRequest1 h e@(VkUpdateReplyError {..}) =
             putTimestamp (D.specH h) ts)
     | x == 2 -> do
         D.logError h $ funcName <> errorMsg2
+        D.logError h $ funcName <> "key was \"" <> TL.toStrict key <> "\""
         C.throwM KeyOutOfDate_GetNew
     | x == 3 -> do
         D.logError h $ funcName <> errorMsg3
