@@ -59,6 +59,7 @@ getOpts = foldr f defaultRunOpts
         f "-vk" acc = acc { messager = Vkontakte }
         f "-tl" acc = acc { messager = Telegram }
         f _ acc = acc
+
 runWithConf :: RunOptions -> FilePath -> IO ()
 runWithConf opts path =
     case messager opts of
@@ -70,12 +71,12 @@ runWithConf opts path =
             let tlConfig = T.Config gen tlConf
             resources <- T.initResources logger tlConfig
             let handle = T.resourcesToHandle resources logger
-            forever (mainLoop handle undefined)
+            forever (mainLoop handle Tele)
         vkAction gen vkConf = do
             let vkConfig = V.Config gen vkConf
             resources <- V.initResources logger vkConfig
             let handle = V.resourcesToHandle resources logger
-            forever (mainLoop handle undefined)
+            forever (mainLoop handle Vk)
         logger = L.simpleLog
        
  

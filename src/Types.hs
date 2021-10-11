@@ -1,25 +1,14 @@
-{-# LANGUAGE GeneralizedNewtypeDeriving,
-             MultiParamTypeClasses,
-             TypeFamilies,
-             FlexibleInstances,
-             FunctionalDependencies,
-             OverloadedStrings,
-             DeriveGeneric #-}
+{-# LANGUAGE
+    DeriveGeneric
+    #-}
 module Types where
 
---import qualified HTTPRequests as H
-
 import qualified Stuff as S (Timeout)
---import qualified Logger as L (Handle (..), Priority (..), LoggerEntry)
-import qualified Data.Map as M (Map)
 import Data.IORef (IORef, atomicModifyIORef)
-import Data.Tuple (swap)
-import qualified Data.ByteString.Lazy.Char8 as BSL (ByteString)
---import qualified Data.Text.Lazy as T (Text)
 import qualified Data.Text as T (Text)
-
 import GHC.Generics
 import qualified GenericPretty as GP
+import Data.Aeson.Types (Value)
 
 
 data EnvironmentCommon = EnvironmentCommon { -- never changes
@@ -50,7 +39,7 @@ data Command = Help | SetRepNum
 data Event h u m b  = ECommand Command (Maybe h) (Maybe u)
                     | EMessage m
                     | ECallback b
-                    | EError T.Text
+                    | EError Value
 
 data CallbQuery u c = CSetRepNum u (Maybe c) Int | CError String
 

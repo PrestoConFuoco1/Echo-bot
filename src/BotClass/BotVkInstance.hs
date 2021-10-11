@@ -1,30 +1,23 @@
-{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE
+    TypeFamilies
+    , RecordWildCards
+    #-}
 
 
 module BotClass.BotVkInstance where
 
 import BotClass.Class
-import BotClass.ClassTypes
 import BotClass.ClassTypesVkInstance
 import Vkontakte.Types
-import Types
+import Types (timeout)
 
 import HTTPRequests as H
 
-import qualified Stuff as S (echo, emptyToNothing, withMaybe)
+import qualified Stuff as S (emptyToNothing, withMaybe)
 import Data.Aeson (decode)
-import Data.Aeson.Types (Parser, parseJSON, toJSON, parseEither, (.:), withObject)
-import Data.Foldable (asum)
+import Data.Aeson.Types as AeT (Parser, parseJSON, toJSON, parseEither)
 import qualified Data.Text.Lazy as TL (Text, pack, intercalate, toStrict)
 import qualified Data.Text as T (Text, pack, intercalate)
-import qualified App.Logger as L
-
-import Data.Bifunctor (first)
-
-import System.Random (StdGen, newStdGen, randomR)
-
-import qualified Data.ByteString.Lazy as BSL (ByteString)
-
 import qualified App.Handle as D
 import Control.Monad.Writer (Writer, runWriter)
 
@@ -34,8 +27,13 @@ instance BotClassUtility Vk where
     getResult _ = _VR_updates
 
 --    getMsg :: s -> Upd s -> Maybe (Msg s)
-    getMsg _ (VkUpdate _ (VEMsg m)) = Just m
-    getMsg _ _ = Nothing
+    getMsg _ VkUpdate {..} = case _VU_object of
+        VEMsg m -> Just m
+        _       -> Nothing
+
+
+--   getUpdateValue :: s -> Upd s -> Value
+    getUpdateValue _ u = _VU_value u
 
 --    getChat :: s -> Msg s -> Maybe (Chat s)
     getChat d m = Nothing
@@ -47,8 +45,9 @@ instance BotClassUtility Vk where
     getUserID _ = T.pack . show . _VU_id
 --
 --    getCallbackQuery :: s -> Upd s -> Maybe (CallbackQuery s)
-    getCallbackQuery d (VkUpdate _ (VECallback c)) = Just c
-    getCallbackQuery d _ = Nothing
+    getCallbackQuery _ VkUpdate {..} = case _VU_object of
+        VECallback c -> Just c
+        _            -> Nothing
 --
 --    getCallbackUser :: s -> CallbackQuery s -> User s
     getCallbackUser d = _VMC_from_id
@@ -64,18 +63,25 @@ instance BotClass Vk where
     getUpdatesRequest = getUpdatesRequest1
     parseHTTPResponse = parseHTTPResponse1
     isSuccess = isSuccess1
-    parseUpdatesList = parseUpdatesList1
+    --parseUpdatesList = parseUpdatesList1
+--    parseUpdatesValueList :: s -> Rep s -> Either String [Value]
+    parseUpdatesValueList s rep = do
+        res <- maybe (Left "Couldn't parse update list") Right $ getResult s rep
+        AeT.parseEither AeT.parseJSON res
+
+
+
+--    parseUpdate :: s -> Value -> Either String (Upd s)
+    parseUpdate s = AeT.parseEither AeT.parseJSON
+
+
+
     sendTextMsg = sendTextMsg1
     repNumKeyboard = repNumKeyboard1
     processMessage = processMessage1
     epilogue = epilogue1
 
 
-
---    parseUpdatesList :: s -> Rep s -> Either String [Upd s]
-parseUpdatesList1 d rep = do
-    val <- maybe (Left "Couldn't parse update list, or failed result") Right $ getResult d rep
-    parseEither parseJSON val
 
 
 --getUpdatesRequest :: (Monad m) => D.Handle s m -> s -> m H.HTTPRequest
@@ -126,20 +132,23 @@ epilogue1 h s _ rep = case _VR_ts rep of
 
 --    processMessage :: (Monad m) => D.Handle s m -> s -> Msg s -> m (Maybe (m H.HTTPRequest))
 processMessage1 h s m
- | null atts && maybeText == Nothing =
-        D.logError h "Unable to send empty message." >> return Nothing
+ | null atts && maybeText == Nothing = do
+        D.logError h $ funcName <> "Unable to send empty message."
+        return Nothing
  | otherwise = do
     let (maybePars, toLog) = runWriter $ attsToParsVk' atts
+    D.logDebug h $ funcName <> "processing vk attachments"
     mapM_ (D.logEntry h) toLog
     S.withMaybe maybeText
         (S.withMaybe maybePars
-            (D.logError h "No text found and unable to send any attachments." >> 
+            (D.logError h (funcName <> "no text found and unable to send any attachments.") >> 
              return Nothing)
             (return . Just . processMessageVk h user maybeText))
         (\text -> let justPars = maybe [] id maybePars
             in  return $ Just (processMessageVk h user maybeText justPars))
 
   where
+        funcName = "vk_processMessage: "
         maybeText = S.emptyToNothing $ _VM_text m
         atts = _VM_attachments m
         user = _VM_from_id m

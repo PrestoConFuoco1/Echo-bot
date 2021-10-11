@@ -1,8 +1,9 @@
-{-# LANGUAGE TypeFamilies,
-             FlexibleContexts,
-             ConstrainedClassMethods,
-             GeneralizedNewtypeDeriving,
-             OverloadedStrings #-}
+{-# LANGUAGE TypeFamilies
+             , FlexibleContexts
+             , ConstrainedClassMethods
+             , GeneralizedNewtypeDeriving
+             , RecordWildCards
+    #-}
 
 module BotClass.BotTeleInstance where
 
@@ -32,8 +33,12 @@ instance BotClassUtility Tele where
     getResult _ = _TR_result
 
 --    getMsg :: s -> Upd s -> Maybe (Msg s)
-    getMsg _ (TlUpdate _ (TEMsg m)) = Just m
-    getMsg _ _ = Nothing
+    getMsg _ TlUpdate {..} = case _TU_event of
+        TEMsg m -> Just m
+        _       -> Nothing
+
+--   getUpdateValue :: s -> Upd s -> Value
+    getUpdateValue _ u = _TU_value u
 
 --    getChat :: s -> Msg s -> Maybe (Chat s)
     getChat _ = Just . _TM_chat
@@ -45,8 +50,10 @@ instance BotClassUtility Tele where
     getUserID _ = T.pack . show . _TUs_id
 
 --    getCallbackQuery :: s -> Upd s -> Maybe (CallbackQuery s)
-    getCallbackQuery _ (TlUpdate _ (TECallback cb)) = Just cb
-    getCallbackQuery _ _ = Nothing
+    getCallbackQuery _ TlUpdate {..} = case _TU_event of
+        TECallback cb -> Just cb
+        _             -> Nothing
+
 
 
 --    getCallbackUser :: s -> CallbackQuery s -> User s
@@ -82,10 +89,15 @@ instance BotClass Tele where
     isSuccess _ = _TR_ok
 
 
---    parseUpdatesList :: s -> Rep s -> Either String [Upd s]
-    parseUpdatesList d rep = do -- Either
-        val <- maybe (Left "Couldn't parse update list") Right $ getResult d rep
-        AeT.parseEither AeT.parseJSON val
+--    parseUpdatesValueList :: s -> Rep s -> Either String [Value]
+    parseUpdatesValueList s rep = do
+        res <- maybe (Left "Couldn't parse update list") Right $ getResult s rep
+        AeT.parseEither AeT.parseJSON res
+        --Left "fuck error"
+
+--    parseUpdate :: s -> Value -> Either String (Upd s)
+    parseUpdate s = AeT.parseEither AeT.parseJSON
+
 
     --repNumKeyboard :: s -> [Int] -> T.Text -> H.ParamsList
     repNumKeyboard d lst cmd = [unit "reply_markup" obj]
@@ -106,9 +118,11 @@ instance BotClass Tele where
     epilogue h s [] _ = return ()
     epilogue h s us _ = do
         let
+            funcName = "tl_epilogue: "
             newUpdateID = (maximum $ map _TU_update_id us) + 1
         putUpdateID (D.specH h) newUpdateID
         mediaGroups <- getMediaGroups (D.specH h)
+        D.logDebug h $ funcName <> "ready to process some media groups, if any"
         D.logDebug h $ GP.defaultPrettyT mediaGroups
         mapM_ (sendMediaGroup h) mediaGroups
         purgeMediaGroups (D.specH h)
@@ -121,10 +135,13 @@ processMessage1 h s m =
   if isMediaGroup m
   then processMediaGroup h m >> return Nothing
   else either
-    (\e -> D.logError h (T.pack e) >> return Nothing)
+    (\e -> do
+        D.logError h $ funcName <> T.pack e
+        return Nothing)
     (return . Just)
         $ sendMessage h s m
-  where sendMessage h s m =
+  where funcName = "tl_processMessage: "
+        sendMessage h s m =
             let eithMethodParams = sendMessageTele m
                 url = tlUrl $ D.getConstState h
                 notMediaGroup = fmap (return . fmsg url . first TL.fromStrict) eithMethodParams
@@ -133,13 +150,17 @@ processMessage1 h s m =
 
 processMediaGroup :: (Monad m) => D.Handle Tele m -> TlMessage -> m ()
 processMediaGroup h m = let
+    funcName = "processMediaGroup: "
     chat = _TM_chat m
     mUser = _TM_from m
     mMediaGroupID = _TM_media_group_id m
     mPhoto = _TM_photo m >>= S.safeHead :: Maybe TlPhotoSize
     mMediaGroupIdent = TlMediaGroupIdentifier chat mUser <$> mMediaGroupID
     mAction = asum [ insertMediaGroupPhoto (D.specH h) <$> mMediaGroupIdent <*> mPhoto ]
-    in S.withMaybe mAction (return ()) (\a -> D.logDebug h "Processing media group" >> a)
+    in S.withMaybe mAction (return ()) $
+         \a -> do
+            D.logDebug h $ funcName <> "processing media group"
+            a
 
 
 sendMediaGroup :: (Monad m) => D.Handle Tele m -> TlMediaGroupPair -> m ()

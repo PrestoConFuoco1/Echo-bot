@@ -31,6 +31,7 @@ data TlConfig = TlConf {
         _TC_updID :: Integer,
         _TC_url :: TL.Text
     } deriving (Show, Generic)
+instance PrettyShow TlConfig
 
 -----------------------------------------------------------
 
@@ -78,4 +79,3 @@ data TlHandler m = TlHandler {
     getMediaGroups :: m [TlMediaGroupPair]
     }
 
-instance PrettyShow TlConfig

@@ -42,20 +42,22 @@ instance FromJSON VkReply where
 ----------------------------------------------
 
 data VkUpdate = VkUpdate {
-    _VU_type :: T.Text,
-    _VU_object :: VkEvent
+    _VU_type :: T.Text
+    , _VU_value :: Value
+    , _VU_object :: VkEvent
     } deriving (Eq, Show)
 
 data VkEvent = VEMsg VkMessage
-             | VEMsgEdit VkMessage
+            -- | VEMsgEdit VkMessage
              | VECallback VkMyCallback
+             | VEUnexpectedEvent
              deriving (Eq, Show)
 
 instance ToJSON VkUpdate where
     toJSON = undefined
 
 instance FromJSON VkUpdate where
-    parseJSON = withObject "update object" $ \o -> do
+    parseJSON value = ($value) $ withObject "update object" $ \o -> do
         updType <- o .: "type" :: Parser T.Text
         event <- case updType of
 -- API version >= 5.103 will be used
@@ -64,11 +66,15 @@ instance FromJSON VkUpdate where
 -- then it is callback update.
                 q <- o .: "object"
                 msg <- q .: "message" :: Parser Value
-                asum [ fmap VECallback $ parseCallback msg, fmap VEMsg $ parseJSON msg]
+                asum [
+                    fmap VECallback $ parseCallback msg,
+                    fmap VEMsg $ parseJSON msg
+                    ]
                 
-            "message_edit" -> fmap VEMsgEdit $ o .: "object"
-            str -> fail $ T.unpack $ "Failed to parse the event object of type \"" <> str <> "\"."
-        return $ VkUpdate updType {-$ S.echo -} event
+ --           "message_edit" -> fmap VEMsgEdit $ o .: "object"
+ --           str -> fail $ T.unpack $ "Failed to parse the event object of type \"" <> str <> "\"."
+            str -> return VEUnexpectedEvent
+        return $ VkUpdate updType value event
 
 parseCallback :: Value -> Parser VkMyCallback
 parseCallback = withObject "Expected message object with payload" $ \msg -> do

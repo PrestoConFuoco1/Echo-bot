@@ -33,24 +33,36 @@ instance FromJSON TlReply where
 -----------------------------------------------------------
 
 data TlUpdate = TlUpdate {
-    _TU_update_id :: Integer,
-    _TU_event :: TlEvent } deriving (Show, Eq)
+    _TU_update_id :: Integer
+    , _TU_event :: TlEvent
+    , _TU_value :: Value
+    } deriving (Show, Eq)
 
 data TlEvent = TEMsg TlMessage
     -- | TEEdMsg TlMessage
     | TECallback TlCallback
+    -- | TEUnexpectedEvent TlUnexpectedEvent
+    | TEUnexpectedEvent
     deriving (Show, Eq)
+
+{-
+data TlUnexpectedEvent = TlUnexpectedEvent {
+    _TUE_body :: Value
+    } deriving (Show, Eq) 
+-}
 {-
 instance ToJSON TlUpdate where
     toJSON TlUpdate{..} = undefined
 -}
 instance FromJSON TlUpdate where
-    parseJSON = withObject "update object" $ \o -> do
+    parseJSON value = ($ value) $ withObject "update object" $ \o -> do
         uid <- o .: "update_id"
-        ev <- asum [ fmap TEMsg (o .: "message"),
---                     fmap TEEdMsg (o .: "edited_message"),
-                     fmap TECallback (o .: "callback_query")]
-        return $ TlUpdate uid ev
+        ev <- asum [ fmap TEMsg (o .: "message")
+--                   , fmap TEEdMsg (o .: "edited_message")
+                     , fmap TECallback (o .: "callback_query")
+                     -- , return $ TEUnexpectedEvent x
+                   ]
+        return $ TlUpdate uid ev value
 -----------------------------------------------------------
 
 data TlMessage = TlMessage {

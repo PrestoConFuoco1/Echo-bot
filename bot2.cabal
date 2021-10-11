@@ -36,6 +36,7 @@ library
       BotClass.ClassTypesTeleInstance
       BotClass.ClassTypesVkInstance
       Config
+      Exceptions
       Execute
       GenericPretty
       HTTPRequests
@@ -70,6 +71,7 @@ library
     , bytestring
     , configurator
     , containers
+    , exceptions
     , http-conduit
     , mtl
     , random
@@ -94,6 +96,7 @@ executable bot2-exe
     , bytestring
     , configurator
     , containers
+    , exceptions
     , http-conduit
     , mtl
     , random
@@ -119,6 +122,7 @@ test-suite bot2-test
     , bytestring
     , configurator
     , containers
+    , exceptions
     , http-conduit
     , mtl
     , random

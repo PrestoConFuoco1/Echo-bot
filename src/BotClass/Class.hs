@@ -7,13 +7,11 @@
 module BotClass.Class where
 
 import qualified HTTPRequests as H
-import qualified Stuff as S (Timeout)
 import Data.Aeson (Value)
 import qualified Data.Text as T (Text)
 import qualified Data.Text.Lazy as TL (Text)
 import qualified App.Handle as D
 import qualified Data.ByteString.Lazy.Char8 as BSL (ByteString)
-import qualified GenericPretty as GP
 import BotClass.ClassTypes
 
 
@@ -23,6 +21,7 @@ class (BotClassTypes s) => BotClassUtility s where
     getResult :: s -> Rep s -> Maybe Value
 
     getMsg :: s -> Upd s -> Maybe (Msg s)
+    getUpdateValue :: s -> Upd s -> Value
 
     getChat :: s -> Msg s -> Maybe (Chat s)
     getUser :: s -> Msg s -> Maybe (User s)
@@ -35,6 +34,8 @@ class (BotClassTypes s) => BotClassUtility s where
     getCallbackData :: s -> CallbackQuery s -> Maybe T.Text
     getCallbackChat :: s -> CallbackQuery s -> Maybe (Chat s)
 
+ --   unexpectedEvent
+
 
 
 class (BotClassUtility s) => BotClass s where
@@ -45,7 +46,8 @@ class (BotClassUtility s) => BotClass s where
 
     isSuccess :: s -> Rep s -> Bool
 
-    parseUpdatesList :: s -> Rep s -> Either String [Upd s]
+    parseUpdatesValueList :: s -> Rep s -> Either String [Value]
+    parseUpdate :: s -> Value -> Either String (Upd s)
 
     sendTextMsg :: (Monad m) => D.Handle s m -> s -> Maybe (Chat s) -> Maybe (User s) -> T.Text
         -> m (Either String H.HTTPRequest)

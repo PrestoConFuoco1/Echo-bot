@@ -34,6 +34,7 @@ dependencies:
 - random
 - configurator
 - mtl
+- exceptions
  
 
 library:
