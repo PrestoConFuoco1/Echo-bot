@@ -1,5 +1,6 @@
 {-# LANGUAGE
     DeriveGeneric
+    , DeriveAnyClass
     #-}
 module Types where
 
@@ -9,7 +10,7 @@ import qualified Data.Text as T (Text)
 import GHC.Generics
 import qualified GenericPretty as GP
 import Data.Aeson.Types (Value)
-
+import GenericPretty
 
 data EnvironmentCommon = EnvironmentCommon { -- never changes
     helpMsg :: T.Text,
@@ -42,6 +43,11 @@ data Event h u m b  = ECommand Command (Maybe h) (Maybe u)
                     | EError Value
 
 data CallbQuery u c = CSetRepNum u (Maybe c) Int | CError String
+
+data UpdateResponse r e =
+    UpdateResponse r
+    | UpdateError e
+    deriving (Show, Generic, PrettyShow)
 
 instance Show (Event h u m b) where
     show (ECommand _ _ _) = "Command"

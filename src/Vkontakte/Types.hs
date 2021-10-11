@@ -28,20 +28,6 @@ defaultVkParams' accTok apiV =
     [unit "access_token" accTok,
      unit "v" apiV ]
 
-parseInitResp :: BSL.ByteString -> Either String (TL.Text, TL.Text, TL.Text)
-parseInitResp = eithParsed
-  where parseInitRep = withObject "object: key, server, ts" $ \o' -> do -- Parser a
-            o <- o' .: "response"
-            key <- o .: "key" :: Parser TL.Text
-            server <- o .: "server" :: Parser TL.Text
-            ts <- o .: "ts" :: Parser TL.Text
-            return (key, server, ts)
-        initReplyToJSON =
-                maybe (Left "Couldn't parse getLongPollServer reply") Right
-                . decode
-        eithParsed x = return x >>= initReplyToJSON >>= parseEither parseInitRep
-
-
 
 
 --newtype Vk = Vk ()

@@ -10,6 +10,8 @@ instance BotClassTypes Tele where
     type StateC Tele = TlStateConst
     type StateM Tele = TlStateMut
     type Rep Tele = TlReply
+    type RepErr Tele = TlUpdateReplyError
+    type RepSucc Tele = TlUpdateReplySuccess
     type Upd Tele = TlUpdate
     type Msg Tele = TlMessage
     type Chat Tele = TlChat

@@ -9,7 +9,7 @@ import Data.Aeson.Types
 import GHC.Generics (Generic)
 import Data.Foldable (asum)
 import System.Random (StdGen)
-import qualified Stuff as S (echo)
+import qualified Stuff as S (showTL)
 import qualified Data.Text.Lazy.Encoding as EL (decodeUtf8, encodeUtf8)
 import qualified Data.Text.Encoding as E (decodeUtf8, encodeUtf8)
 import qualified Data.Text.Lazy as TL (Text, unpack, pack, toStrict)
@@ -22,7 +22,7 @@ import GenericPretty
 import qualified HTTPRequests as H
 
 import Vkontakte.Attachment
-
+import Types
 
 data VkReply = VkReply {
     _VR_ts :: Maybe TL.Text,
@@ -30,13 +30,40 @@ data VkReply = VkReply {
     _VR_failed :: Maybe Int
     } deriving (Eq, Show, Generic)
 
-instance ToJSON VkReply where
-    toJSON = genericToJSON defaultOptions {
-        fieldLabelModifier = drop 4 }
-
 instance FromJSON VkReply where
     parseJSON = genericParseJSON defaultOptions {
         fieldLabelModifier = drop 4 }
+
+data VkUpdateReplySuccess = VkUpdateReplySuccess {
+    _VURS_updates :: Value
+    , _VURS_ts :: Maybe TL.Text
+    } deriving (Show, Eq, Generic)
+
+data VkUpdateReplyError = VkUpdateReplyError {
+    _VURE_failed :: Int
+    , _VURE_ts :: Maybe TL.Text
+    } deriving (Show, Eq, Generic)
+
+parseUpdatesResponse2 :: Value -> Either String (UpdateResponse VkUpdateReplySuccess VkUpdateReplyError)
+parseUpdatesResponse2 = parseEither $ withObject "Vkontakte update object" $ \o -> do
+    ts <- asum [
+        o .:? "ts"
+        , fmap (fmap S.showTL) $            (o .:? "ts" :: Parser (Maybe Integer))
+        ]
+    let success = do
+            updates <- o .: "updates"
+            return $ VkUpdateReplySuccess {
+                _VURS_updates = updates
+                , _VURS_ts = ts
+                }
+        err = do
+            failed <- o .: "failed"
+            return $ VkUpdateReplyError {
+                _VURE_failed = failed
+                , _VURE_ts = ts
+                }
+    asum [ fmap UpdateResponse success,
+           fmap UpdateError err ]
 
 
 ----------------------------------------------
@@ -52,10 +79,6 @@ data VkEvent = VEMsg VkMessage
              | VECallback VkMyCallback
              | VEUnexpectedEvent
              deriving (Eq, Show)
-
-instance ToJSON VkUpdate where
-    toJSON = undefined
-
 instance FromJSON VkUpdate where
     parseJSON value = ($value) $ withObject "update object" $ \o -> do
         updType <- o .: "type" :: Parser T.Text
@@ -169,6 +192,8 @@ instance FromJSON VkPayload where
         fieldLabelModifier = drop 4 }
 
 instance PrettyShow VkReply
+instance PrettyShow VkUpdateReplyError
+instance PrettyShow VkUpdateReplySuccess
 
 instance PrettyShow VkUser
 instance PrettyShow VkMessage

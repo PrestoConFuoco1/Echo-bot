@@ -13,7 +13,7 @@ import Data.Foldable (asum)
 import qualified Data.Text as T (Text, unpack, pack)
 import GenericPretty
 import Telegram.ProcessMessage.Types
-
+import Types
 
 data TlReply = TlReply {
     _TR_ok :: Bool,
@@ -29,6 +29,32 @@ instance ToJSON TlReply where
 instance FromJSON TlReply where
     parseJSON = genericParseJSON defaultOptions {
         fieldLabelModifier = drop 4 }
+
+data TlUpdateReplySuccess = TlUpdateReplySuccess {
+    _TURS_result :: Value
+    } deriving (Show, Eq, Generic)
+
+data TlUpdateReplyError = TlUpdateReplyError {
+    _TURE_error_code :: Integer
+    , _TURE_description :: Maybe T.Text
+    } deriving (Show, Eq, Generic)
+
+parseUpdatesResponse1 :: Value -> Either String (UpdateResponse TlUpdateReplySuccess TlUpdateReplyError)
+parseUpdatesResponse1 = parseEither $ withObject "Telegram updates object" $ \o -> do
+    ok <- o .: "ok"
+    case ok of
+        True -> do
+            res <- o .: "result"
+            return $ UpdateResponse $ TlUpdateReplySuccess {
+                _TURS_result = res
+                }
+        False -> do
+            errCode <- o .: "error_code"
+            description <- o .: "description"
+            return $ UpdateError $ TlUpdateReplyError {
+                _TURE_error_code = errCode
+                , _TURE_description = description
+                }
 
 -----------------------------------------------------------
 
@@ -157,6 +183,8 @@ instance FromJSON TlCallback where
 
 
 instance PrettyShow TlReply
+instance PrettyShow TlUpdateReplyError
+instance PrettyShow TlUpdateReplySuccess
 instance PrettyShow TlUser
 instance PrettyShow TlChat
 

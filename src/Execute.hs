@@ -15,8 +15,8 @@ import Data.Either (partitionEithers)
 import qualified Control.Monad.Catch as C
 import qualified Exceptions as Ex
 
-mainLoop :: (BotClass s, C.MonadThrow m) => D.Handle s m -> s -> m ()
-mainLoop h s = do
+execute :: (BotClass s, C.MonadThrow m) => D.Handle s m -> s -> m ()
+execute h s = do
     --let env = commonEnv h
     let funcName = "mainLoop: "
         respParseFail =
@@ -28,14 +28,13 @@ mainLoop h s = do
 
     request <- getUpdatesRequest h s
     eithRespStr <- D.sendRequest h (takesJSON s) request -- Either String a
-    let eithResp = eithRespStr >>= parseHTTPResponse s
-    -- ($ eithResp) $ either respParseFail $ \resp -> do
-    S.withEither eithResp respParseFail $ \resp -> do
+    let eithResp = eithRespStr >>= parseUpdatesResponse s
+    S.withEither eithResp respParseFail $ \resp' -> do
         D.logDebug h $ funcName <> "got and successfully parsed server reply:"
-        D.logDebug h $ T.pack $ GP.defaultPretty resp
-        if not $ isSuccess s resp
-        then undefined
-        else do
+        D.logDebug h $ T.pack $ GP.defaultPretty resp'
+        case resp' of
+          UpdateError updErr -> handleFailedUpdatesRequest h updErr
+          UpdateResponse resp -> do
             let eithUpdValueList = parseUpdatesValueList s resp
             S.withEither eithUpdValueList updLstParseFail
                 $ \updValues -> do

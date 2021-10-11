@@ -62,9 +62,9 @@ data ParVal = PIntg Integer
         deriving (Eq)
 
 instance Ae.ToJSON ParVal where
-    toJSON (PIntg n) = Ae.toJSON n
+    toJSON (PIntg n) = Ae.toJSON $ S.showT n
     toJSON (PVal v)  = v
-    toJSON (PFloat x) = Ae.toJSON x
+    toJSON (PFloat x) = Ae.toJSON $ S.showT x
     toJSON (PLText x) = Ae.toJSON x
     toJSON (PText x) = Ae.toJSON x
 

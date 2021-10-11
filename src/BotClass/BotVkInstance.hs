@@ -9,6 +9,7 @@ module BotClass.BotVkInstance where
 import BotClass.Class
 import BotClass.ClassTypesVkInstance
 import Vkontakte.Types
+import Vkontakte.Exceptions
 import Types (timeout)
 
 import HTTPRequests as H
@@ -20,11 +21,14 @@ import qualified Data.Text.Lazy as TL (Text, pack, intercalate, toStrict)
 import qualified Data.Text as T (Text, pack, intercalate)
 import qualified App.Handle as D
 import Control.Monad.Writer (Writer, runWriter)
-
+import Data.List (elem)
+import qualified Control.Monad.Catch as C
+import GenericPretty
+import qualified Exceptions as Ex
 
 instance BotClassUtility Vk where
 --    getResult :: s -> Rep s -> Maybe Value
-    getResult _ = _VR_updates
+    getResult _ = Just . _VURS_updates
 
 --    getMsg :: s -> Upd s -> Maybe (Msg s)
     getMsg _ VkUpdate {..} = case _VU_object of
@@ -63,8 +67,11 @@ instance BotClass Vk where
     getUpdatesRequest = getUpdatesRequest1
     parseHTTPResponse = parseHTTPResponse1
     isSuccess = isSuccess1
+    parseUpdatesResponse = parseUpdatesResponse1
     --parseUpdatesList = parseUpdatesList1
 --    parseUpdatesValueList :: s -> Rep s -> Either String [Value]
+    --handleFailedUpdatesRequest :: (C.MonadThrow m) => D.Handle s m -> Rep s -> m ()
+    handleFailedUpdatesRequest = handleFailedUpdatesRequest1
     parseUpdatesValueList s rep = do
         res <- maybe (Left "Couldn't parse update list") Right $ getResult s rep
         AeT.parseEither AeT.parseJSON res
@@ -91,8 +98,9 @@ getUpdatesRequest1 h s = do
     let constState = D.getConstState h
         timeout' = timeout $ D.commonEnv h
         fullUrl = vkServer constState
-        pars = [unit "act" ("a_check" :: TL.Text),
+        pars = [unit "act" ("a_check" :: T.Text),
                 unit "key" $ vkKey constState,
+                --unit "key" ("hahahahaha"::T.Text),
                 unit "ts" curTS,
                 unit "wait" timeout']
     return $ H.Req H.GET fullUrl pars
@@ -105,6 +113,38 @@ parseHTTPResponse1 _ resp = do -- Either
 
 --    isSuccess :: s -> Rep s -> Bool
 isSuccess1 _ r = _VR_failed r == Nothing
+
+--    parseUpdatesResponse :: s -> BSL.ByteString -> Either String (UpdateResponse (RepSucc s) (RepErr s))
+parseUpdatesResponse1 _ resp = do -- Either
+    val <- maybe (Left "Couldn't parse updates response into aeson Value") Right $ decode resp
+    repl <- parseUpdatesResponse2 val
+    return repl
+
+
+errorMsg1 = "events history is out of date or losed, ready to use new ts got from vk server"
+errorMsg2 = "key is out of date, needed to obtain a new one with getLongPollServer"
+errorMsg3 = "information (key, ts) is losed, needed to obtain it with getLongPollServer"
+
+handleFailedUpdatesRequest1 :: (C.MonadThrow m) => D.Handle Vk m -> VkUpdateReplyError -> m ()
+handleFailedUpdatesRequest1 h e@(VkUpdateReplyError {..}) =
+    let funcName = "handleFailedUpdatesRequest: " in
+    case _VURE_failed of
+  x | x == 1 -> D.logError h errorMsg1 >> S.withMaybe _VURE_ts
+        (D.logError h $ funcName <> "no ts found")
+        (\ts -> do
+            D.logInfo h $ funcName <> "using new ts"
+            putTimestamp (D.specH h) ts)
+    | x == 2 -> do
+        D.logError h $ funcName <> errorMsg2
+        C.throwM KeyOutOfDate_GetNew
+    | x == 3 -> do
+        D.logError h $ funcName <> errorMsg3
+        C.throwM KeyAndTsLosed_GetNew
+    | otherwise -> do
+        D.logFatal h $ "failed to get updates and unable to handle error"
+        D.logFatal h $ defaultPrettyT e
+        C.throwM Ex.UnableToHandleError
+
 
 --    sendTextMsg :: (Monad m) => D.Handle s m -> s -> Maybe (Chat s) -> Maybe (User s) -> T.Text
 --        -> m (Either String H.HTTPRequest)
@@ -126,7 +166,7 @@ repNumKeyboard1 d lst cmd = [unit "keyboard" obj]
   where obj = toJSON $ repNumKeyboardVkTxt' cmd lst
 
 --    epilogue :: (Monad m) => D.Handle s m -> s -> [Upd s] -> Rep s -> m ()
-epilogue1 h s _ rep = case _VR_ts rep of
+epilogue1 h s _ rep = case _VURS_ts rep of
     Nothing -> return ()
     Just x  -> putTimestamp (D.specH h) x
 

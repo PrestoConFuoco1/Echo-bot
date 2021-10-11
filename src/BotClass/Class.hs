@@ -13,12 +13,13 @@ import qualified Data.Text.Lazy as TL (Text)
 import qualified App.Handle as D
 import qualified Data.ByteString.Lazy.Char8 as BSL (ByteString)
 import BotClass.ClassTypes
-
+import qualified Control.Monad.Catch as C
+import Types
 
 fmsg url (method, params) = H.Req H.POST (url <> method) params
 
 class (BotClassTypes s) => BotClassUtility s where
-    getResult :: s -> Rep s -> Maybe Value
+    getResult :: s -> RepSucc s -> Maybe Value
 
     getMsg :: s -> Upd s -> Maybe (Msg s)
     getUpdateValue :: s -> Upd s -> Value
@@ -46,7 +47,11 @@ class (BotClassUtility s) => BotClass s where
 
     isSuccess :: s -> Rep s -> Bool
 
-    parseUpdatesValueList :: s -> Rep s -> Either String [Value]
+    parseUpdatesResponse :: s -> BSL.ByteString -> Either String (UpdateResponse (RepSucc s) (RepErr s))
+    handleFailedUpdatesRequest :: (C.MonadThrow m) => D.Handle s m -> RepErr s -> m ()
+
+
+    parseUpdatesValueList :: s -> RepSucc s -> Either String [Value]
     parseUpdate :: s -> Value -> Either String (Upd s)
 
     sendTextMsg :: (Monad m) => D.Handle s m -> s -> Maybe (Chat s) -> Maybe (User s) -> T.Text
@@ -56,4 +61,4 @@ class (BotClassUtility s) => BotClass s where
 
     processMessage :: (Monad m) => D.Handle s m -> s -> Msg s -> m (Maybe (m H.HTTPRequest))
 
-    epilogue :: (Monad m) => D.Handle s m -> s -> [Upd s] -> Rep s -> m ()
+    epilogue :: (Monad m) => D.Handle s m -> s -> [Upd s] -> RepSucc s -> m ()

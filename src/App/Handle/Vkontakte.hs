@@ -3,6 +3,7 @@ module App.Handle.Vkontakte where
 import qualified App.Handle as D
 import qualified App.Logger as L
 import Vkontakte.Types
+import Vkontakte.Initialize
 --import Vkontakte.Entity
 import BotClass.ClassTypesVkInstance
 import Types
@@ -12,11 +13,13 @@ import qualified HTTPRequests as H
 
 import System.Random (StdGen, newStdGen, randomR)
 import qualified Stuff as S
+import qualified System.Exit as Q (ExitCode (..), exitWith)
+import qualified Data.Text as T
 
 
 data Config = Config {
       configCommonEnv :: EnvironmentCommon
-    , configTelegram :: VkConfig
+    , configVkontakte :: VkConfig
     }
 
 data Resources = Resources {
@@ -32,42 +35,15 @@ data Resources = Resources {
 
 initResources :: L.Handle IO -> Config -> IO Resources
 initResources h (Config common vkConf) = do
-    mStates <- initialize h vkConf
-    S.withMaybe mStates undefined $ \(sc, sm) -> do
-        umap <- newIORef M.empty
-        mut <- newIORef sm
-        return Resources {
-            commonEnv = common,
-            constState = sc,
-            mutState = mut,
-            usersMap = umap
-            }
-
-
---initialize :: q -> Conf q -> IO (Maybe (StC q, StM q))
--- i think this function can be further splitted to some lesser functions
-initialize :: L.Handle IO -> VkConfig -> IO (Maybe (VkStateConst, VkStateMut))
-initialize logger (VkConf methodsUrl accTok gid apiV) = do
-    let pars = [H.unit "group_id" gid] ++ defaultVkParams' accTok apiV
-        initReq = H.Req H.GET (methodsUrl <> "groups.getLongPollServer") pars
-        takesJson = True
-    initReply <- H.sendRequest logger takesJson initReq
-    let eithParsed = initReply >>= parseInitResp
-    initRndNum <- newStdGen
-    return $ case eithParsed of
-        Left _ -> Nothing
-        Right (k, s, t) -> Just (VKSC {
-            vkKey = k,
-            vkServer = s,
-            vkUrl = methodsUrl,
-            vkAccessToken = accTok,
-            vkGroupID = gid,
-            apiVersion = apiV
-          }, VKSM {
-            vkTs = t,
-            vkRndGen = initRndNum
-          })
-
+    (sc, sm) <- initialize h vkConf
+    umap <- newIORef M.empty
+    mut <- newIORef sm
+    return Resources {
+        commonEnv = common,
+        constState = sc,
+        mutState = mut,
+        usersMap = umap
+        }
 
 resourcesToHandle :: Resources -> L.Handle IO -> D.Handle Vk IO
 resourcesToHandle resources logger =
@@ -82,6 +58,8 @@ resourcesToHandle resources logger =
         , D.specH = resourcesToVkHandler resources logger
     }
 
+
+
 resourcesToVkHandler :: Resources -> L.Handle IO -> VkHandler IO
 resourcesToVkHandler resources logger = 
     VkHandler {
@@ -90,4 +68,45 @@ resourcesToVkHandler resources logger =
         , putTimestamp = modifyIORef' (mutState resources) . putTimestamp'
         }
 
+
+
+--initialize :: q -> Conf q -> IO (Maybe (StC q, StM q))
+initialize :: L.Handle IO -> VkConfig -> IO (VkStateConst, VkStateMut)
+initialize logger (VkConf methodsUrl accTok gid apiV) = do
+    let
+        funcName = "vk_initialize: "
+        pars = [H.unit "group_id" gid] ++ defaultVkParams' accTok apiV
+        initReq = H.Req H.GET (methodsUrl <> "groups.getLongPollServer") pars
+        takesJson = True
+    L.logDebug logger $ funcName <> "sending initialize request"
+    eithInitReply <- H.sendRequest logger takesJson initReq
+    initReply <- either (initRequestFail logger) return eithInitReply
+    let eithParsed = parseInitResp initReply
+    initData <- either (initRequestParseFail logger) return eithParsed
+    initRndNum <- newStdGen
+    return (VKSC {
+        vkKey = _VID_key initData,
+        vkServer = _VID_server initData,
+        vkUrl = methodsUrl,
+        vkAccessToken = accTok,
+        vkGroupID = gid,
+        apiVersion = apiV
+      }, VKSM {
+        vkTs = _VID_timestamp initData,
+        vkRndGen = initRndNum
+      })
+
+
+initRequestFail :: L.Handle IO -> String -> IO a
+initRequestFail logger err = do
+    L.logFatal logger $ "Failed to get initial data"
+    L.logFatal logger $ T.pack err
+    Q.exitWith $ Q.ExitFailure 1
+
+initRequestParseFail :: L.Handle IO -> String -> IO a
+initRequestParseFail logger err = do
+    L.logFatal logger $ "Failed to parse initial data"
+    L.logFatal logger $ T.pack err
+    Q.exitWith $ Q.ExitFailure 1
+ 
 

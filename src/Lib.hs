@@ -4,22 +4,12 @@ module Lib
 
 
 import Config
-
-import Data.IORef (newIORef)
-import qualified Data.Map as M (Map, empty, insert, findWithDefault)
-import Data.Foldable (asum)
 import qualified Control.Exception as E
     (catches, Handler (..), SomeException, IOException)
 import qualified System.IO.Error as E
     (isDoesNotExistError, isPermissionError, isAlreadyInUseError)
-
 import qualified Data.Configurator.Types as CT (ConfigError (..))
-
 import qualified System.Exit as Q (ExitCode (..), exitWith)
-
-import qualified Data.Text.Lazy as T (Text, pack, words, unpack)
-
-import qualified GenericPretty as GP
 import System.Environment (getArgs)
 import System.IO (hPutStrLn, stderr)
 import qualified App.Logger as L
@@ -32,8 +22,8 @@ import BotClass.ClassTypes
 import Types
 import BotClass.BotVkInstance
 import BotClass.BotTeleInstance
-import Telegram.Types
-import Vkontakte.Types
+import Telegram.Types (Tele(..))
+import Vkontakte.Types (Vk(..))
 
 data Messager = Vkontakte | Telegram | None
 data RunOptions = RunOptions {
@@ -63,29 +53,37 @@ getOpts = foldr f defaultRunOpts
 runWithConf :: RunOptions -> FilePath -> IO ()
 runWithConf opts path =
     case messager opts of
-        Telegram -> runWithConf' dummyTl opts path tlAction
-        Vkontakte -> runWithConf' dummyVk opts path vkAction
+        Telegram -> runWithConf' Tele opts path tlAction
+        Vkontakte -> runWithConf' Vk opts path vkAction
         None -> L.logFatal logger "No messager parameter supplied, terminating..." >>
                 L.logInfo  logger "Use -tl for Telegram and -vk for Vkontakte"
-  where tlAction gen tlConf = do
+  where
+        logger = L.simpleLog
+        tlAction gen tlConf = do
             let tlConfig = T.Config gen tlConf
             resources <- T.initResources logger tlConfig
             let handle = T.resourcesToHandle resources logger
-            forever (mainLoop handle Tele)
+            forever (execute handle Tele)
         vkAction gen vkConf = do
             let vkConfig = V.Config gen vkConf
             resources <- V.initResources logger vkConfig
             let handle = V.resourcesToHandle resources logger
-            forever (mainLoop handle Vk)
-        logger = L.simpleLog
-       
+            forever (execute handle Vk)
+ --           forever (mainLoop resources
+
+mainLoop :: a -> (a -> b) -> [E.Handler ()] -> (b -> IO ()) -> IO ()
+mainLoop resources resourcesToHandles errorHandlers action = do
+    let handle = resourcesToHandles resources
+    action handle `E.catches` errorHandlers -- someHandlers
+
  
 runWithConf' :: (BotConfigurable s) => s -> RunOptions -> FilePath -> (EnvironmentCommon -> Conf s -> IO ()) -> IO ()
 runWithConf' s opts path todo = do
-    let f (E.Handler g) = E.Handler (\e -> g e >>
+    let f (E.Handler g) = E.Handler $ \e -> do
+            g e
             L.logFatal L.simpleLog 
                 "Failed to get required data from configuration files, terminating..."
-            >> Q.exitWith (Q.ExitFailure 1))
+            Q.exitWith $ Q.ExitFailure 1
     (gen, conf) <- loadConfig s L.simpleLog path `E.catches` map f (configHandlers L.simpleLog)
     L.logDebug L.simpleLog "Successfully got bot configuration."
     when (testConfig opts) $ Q.exitWith (Q.ExitSuccess)

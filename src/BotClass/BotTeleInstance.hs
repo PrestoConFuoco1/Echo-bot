@@ -29,8 +29,8 @@ import qualified Stuff as S
 import qualified Execute as E
 
 instance BotClassUtility Tele where
---    getResult :: s -> Rep s -> Maybe Value
-    getResult _ = _TR_result
+--    getResult :: s -> RepSucc s -> Maybe Value
+    getResult _ = Just . _TURS_result
 
 --    getMsg :: s -> Upd s -> Maybe (Msg s)
     getMsg _ TlUpdate {..} = case _TU_event of
@@ -88,12 +88,20 @@ instance BotClass Tele where
 --    isSuccess :: s -> Rep s -> Bool
     isSuccess _ = _TR_ok
 
+--    parseUpdatesResponse :: s -> BSL.ByteString -> Either String (UpdateResponse (RepSucc s) (RepErr s))
+    parseUpdatesResponse _ resp = do -- Either
+        val <- maybe (Left "Couldn't parse updates response into aeson Value") Right $ Ae.decode resp
+        repl <- parseUpdatesResponse1 val
+        return repl
 
---    parseUpdatesValueList :: s -> Rep s -> Either String [Value]
+--    handleFailedUpdatesRequest :: (C.MonadThrow m) => D.Handle s m -> RepErr s -> m ()
+    handleFailedUpdatesRequest = undefined
+
+--    parseUpdatesValueList :: s -> RepSucc s -> Either String [Value]
     parseUpdatesValueList s rep = do
         res <- maybe (Left "Couldn't parse update list") Right $ getResult s rep
         AeT.parseEither AeT.parseJSON res
-        --Left "fuck error"
+        --Left "debug error"
 
 --    parseUpdate :: s -> Value -> Either String (Upd s)
     parseUpdate s = AeT.parseEither AeT.parseJSON

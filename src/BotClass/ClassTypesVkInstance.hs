@@ -10,6 +10,11 @@ instance BotClassTypes Vk where
     type StateC Vk = VkStateConst
     type StateM Vk = VkStateMut
     type Rep Vk = VkReply
+
+    type RepErr Vk = VkUpdateReplyError
+    type RepSucc Vk = VkUpdateReplySuccess
+ 
+
     type Upd Vk = VkUpdate
     type Msg Vk = VkMessage
     type Chat Vk = VkChat
