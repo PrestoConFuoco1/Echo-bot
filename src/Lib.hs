@@ -27,13 +27,19 @@ import Telegram.Types (Tele(..))
 import Vkontakte.Types (Vk(..))
 import Data.IORef
 import App.Handle as D
+import qualified Stuff as S (withMaybe)
+import Data.List (isPrefixOf)
 
 data Messager = Vkontakte | Telegram | None
 data RunOptions = RunOptions {
-    testConfig :: Bool,
-    messager :: Messager
+    testConfig :: Bool
+    , loggerSettings :: L.Priority -> Bool
+    , messager :: Messager
     }
-defaultRunOpts = RunOptions { testConfig = False, messager = None }
+defaultRunOpts = RunOptions {
+    testConfig = False
+    , loggerSettings = const True
+    , messager = None }
 
 qomeFunc :: Messager -> IO ()
 qomeFunc m = runWithConf (defaultRunOpts {messager = m}) "src/bot.conf"
@@ -51,7 +57,15 @@ getOpts = foldr f defaultRunOpts
   where f "--test-config" acc = acc { testConfig = True }
         f "-vk" acc = acc { messager = Vkontakte }
         f "-tl" acc = acc { messager = Telegram }
+        f str acc
+            | "-l" `isPrefixOf` str =
+                let newSettings accFunc f = \x -> f x && accFunc x
+                    accF = loggerSettings acc
+                in  S.withMaybe (getLoggerSettings $ drop 2 str)
+                        acc (\x -> acc { loggerSettings = newSettings accF x })
         f _ acc = acc
+
+getLoggerSettings = undefined
 
 runWithConf :: RunOptions -> FilePath -> IO ()
 runWithConf opts path =
@@ -80,24 +94,12 @@ runWithConf opts path =
             resources <- V.initResources logger vkConfig
             let handle = V.resourcesToHandle resources logger
  --           forever (execute handle Vk)
-                g (C.Handler f) = C.Handler $ \e -> f e >> return ()
-{-
-            q <- execute handle Vk `C.catches` map g (V.vkHandlers logger vkConf resources)
-            return ()
--}
-{-
-            mainLoop vkConf (flip V.resourcesToHandle logger) D.log V.vkHandlers (flip execute Vk) resources
-            return ()
--}
             forever' resources $ mainLoop
                 vkConf
                 (flip V.resourcesToHandle logger)
                 D.log
                 V.vkHandlers
-                --undefined
                 (flip execute Vk)
-{-
--}
 
 forever' :: a -> (a -> IO a) -> IO a
 forever' res action = do
