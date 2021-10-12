@@ -22,6 +22,7 @@ import qualified Data.Text.Lazy as TL
 import qualified Vkontakte.Exceptions as VkEx
 import qualified Control.Monad.Catch as C (catches, Handler (..), SomeException, displayException)
 import GenericPretty as GP
+import qualified Data.ByteString.Lazy.Char8 as BSL (ByteString, unpack) --, toStrict)
 
 data Config = Config {
       configCommonEnv :: EnvironmentCommon
@@ -132,7 +133,7 @@ getLongPollServer logger VkConf {..} = do
     eithInitReply <- H.sendRequest logger takesJson initReq
     initReply <- either (initRequestFail logger) return eithInitReply
     let eithParsed = parseInitResp initReply
-    initData <- either (initRequestParseFail logger) return eithParsed
+    initData <- either (initRequestParseFail logger initReply) return eithParsed
     L.logDebug logger $ funcName <> "received initial vk api data"
     L.logDebug logger $ funcName <> (GP.defaultPrettyT initData)
     return initData
@@ -173,9 +174,10 @@ initRequestFail logger err = do
     L.logFatal logger $ T.pack err
     Q.exitWith $ Q.ExitFailure 1
 
-initRequestParseFail :: L.Handle IO -> String -> IO a
-initRequestParseFail logger err = do
+initRequestParseFail :: L.Handle IO -> BSL.ByteString -> String -> IO a
+initRequestParseFail logger s err = do
     L.logFatal logger $ "Failed to parse initial data"
+    L.logFatal logger $ "response: " <> (T.pack $ BSL.unpack s)
     L.logFatal logger $ T.pack err
     Q.exitWith $ Q.ExitFailure 1
  

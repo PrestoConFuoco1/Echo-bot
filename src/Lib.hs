@@ -29,6 +29,7 @@ import Data.IORef
 import App.Handle as D
 import qualified Stuff as S (withMaybe)
 import Data.List (isPrefixOf)
+import Text.Read (readMaybe)
 
 data Messager = Vkontakte | Telegram | None
 data RunOptions = RunOptions {
@@ -41,6 +42,7 @@ defaultRunOpts = RunOptions {
     , loggerSettings = const True
     , messager = None }
 
+-- for ghci
 qomeFunc :: Messager -> IO ()
 qomeFunc m = runWithConf (defaultRunOpts {messager = m}) "src/bot.conf"
 
@@ -59,13 +61,12 @@ getOpts = foldr f defaultRunOpts
         f "-tl" acc = acc { messager = Telegram }
         f str acc
             | "-l" `isPrefixOf` str =
-                let newSettings accFunc f = \x -> f x && accFunc x
-                    accF = loggerSettings acc
-                in  S.withMaybe (getLoggerSettings $ drop 2 str)
-                        acc (\x -> acc { loggerSettings = newSettings accF x })
+                S.withMaybe (getLoggerSettings $ drop 2 str)
+                    acc (\x -> acc { loggerSettings = x })
         f _ acc = acc
 
-getLoggerSettings = undefined
+getLoggerSettings :: String -> Maybe (L.Priority -> Bool)
+getLoggerSettings str = fmap (\x -> (>= x)) $ readMaybe str
 
 runWithConf :: RunOptions -> FilePath -> IO ()
 runWithConf opts path =
@@ -77,7 +78,7 @@ runWithConf opts path =
                 L.logInfo  logger "Use -tl for Telegram and -vk for Vkontakte"
   where
         func a = \x y -> a x y >> return ()
-        logger = L.simpleLog
+        logger = L.simpleLog $ loggerSettings opts
         tlAction gen tlConf = do
             let tlConfig = T.Config gen tlConf
             resources <- T.initResources logger tlConfig
@@ -124,13 +125,14 @@ mainLoop conf resourcesToHandles toLogger errorHandlers action resources = do
  
 runWithConf' :: (BotConfigurable s) => s -> RunOptions -> FilePath -> (EnvironmentCommon -> Conf s -> IO ()) -> IO ()
 runWithConf' s opts path todo = do
-    let f (E.Handler g) = E.Handler $ \e -> do
+    let logger = L.simpleLog $ loggerSettings opts
+        f (E.Handler g) = E.Handler $ \e -> do
             g e
-            L.logFatal L.simpleLog 
+            L.logFatal logger
                 "Failed to get required data from configuration files, terminating..."
             Q.exitWith $ Q.ExitFailure 1
-    (gen, conf) <- loadConfig s L.simpleLog path `E.catches` map f (configHandlers L.simpleLog)
-    L.logDebug L.simpleLog "Successfully got bot configuration."
+    (gen, conf) <- loadConfig s logger path `E.catches` map f (configHandlers logger)
+    L.logDebug logger "Successfully got bot configuration."
     when (testConfig opts) $ Q.exitWith (Q.ExitSuccess)
     todo gen conf
 
@@ -144,10 +146,10 @@ configHandlers h =
             L.logFatal h
                 "Failed to get required data from configuration files, terminating..."
             >> Q.exitWith (Q.ExitFailure 1))
-    in  map f [E.Handler (handleIOError L.simpleLog),
-                     E.Handler (handleConfigError L.simpleLog),
-                     E.Handler (handleConfig2Error L.simpleLog),
-                     E.Handler (handleOthers L.simpleLog)]
+    in  map f [E.Handler (handleIOError h),
+                     E.Handler (handleConfigError h),
+                     E.Handler (handleConfig2Error h),
+                     E.Handler (handleOthers h)]
  
 
 handleIOError :: L.Handle IO -> E.IOException -> IO ()

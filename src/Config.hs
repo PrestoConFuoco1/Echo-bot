@@ -111,5 +111,5 @@ loadVkConfig logger conf = do
 
 
 logKeyException :: L.Handle IO -> CT.KeyError -> IO ()
-logKeyException logger = L.logError L.simpleLog . f
+logKeyException logger = L.logError L.totalLog . f
   where f (CT.KeyError name) = "No field with name " <> {-TL.fromStrict-} name <> " found."
