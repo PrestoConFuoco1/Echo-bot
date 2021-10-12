@@ -24,11 +24,14 @@ data Handle s m = Handle {
     specH :: (BotClassTypes s) => Hndl s m
     }
 {-
+-}
+
 data Resources l b = Resources {
     loggerResource :: l
     , botResources :: b
     }
--}
+
+
 
 findWithDefault :: (BotClassTypes s, Monad m) => Handle s m -> s -> Int -> Maybe (User s) -> m Int
 findWithDefault h s def mUser =

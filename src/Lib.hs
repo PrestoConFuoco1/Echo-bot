@@ -35,11 +35,13 @@ data Messager = Vkontakte | Telegram | None
 data RunOptions = RunOptions {
     testConfig :: Bool
     , loggerSettings :: L.Priority -> Bool
+    , logPath :: FilePath
     , messager :: Messager
     }
 defaultRunOpts = RunOptions {
     testConfig = False
     , loggerSettings = const True
+    , logPath = "./bot.log"
     , messager = None }
 
 -- for ghci
@@ -56,10 +58,14 @@ someFunc = do
 
 getOpts :: [String] -> RunOptions
 getOpts = foldr f defaultRunOpts
-  where f "--test-config" acc = acc { testConfig = True }
+  where logpath = "--logpath=" :: String
+        logPathLength = length logpath
+        f "--test-config" acc = acc { testConfig = True }
         f "-vk" acc = acc { messager = Vkontakte }
         f "-tl" acc = acc { messager = Telegram }
         f str acc
+            | "--logpath=" `isPrefixOf` str =
+                acc { logPath = drop logPathLength str }
             | "-l" `isPrefixOf` str =
                 S.withMaybe (getLoggerSettings $ drop 2 str)
                     acc (\x -> acc { loggerSettings = x })
@@ -74,13 +80,13 @@ runWithConf opts path =
         Telegram -> runWithConf' Tele opts path $ func tlAction
         --Vkontakte -> runWithConf' Vk opts path (\x y -> vkAction x y >> return ())
         Vkontakte -> runWithConf' Vk opts path $ func vkAction
-        None -> L.logFatal logger "No messager parameter supplied, terminating..." >>
-                L.logInfo  logger "Use -tl for Telegram and -vk for Vkontakte"
+        None -> L.logFatal L.simpleHandle "No messager parameter supplied, terminating..." >>
+                L.logInfo  L.simpleHandle "Use -tl for Telegram and -vk for Vkontakte"
   where
-        func a = \x y -> a x y >> return ()
-        logger = L.simpleHandle $ loggerSettings opts
+        func a = \x y z -> a x y z >> return ()
+        --logger = L.simpleCondHandle $ loggerSettings opts
 
-        tlAction gen tlConf = do
+        tlAction logger gen tlConf = do
             let tlConfig = T.Config gen tlConf
             resources <- T.initResources logger tlConfig
             let handle = T.resourcesToHandle resources logger
@@ -92,11 +98,11 @@ runWithConf opts path =
                 T.tlHandlers
                 (flip execute Tele)
 
-        vkAction gen vkConf = do
+        vkAction logger gen vkConf = do
             let vkConfig = V.Config gen vkConf
             resources <- V.initResources logger vkConfig
             let handle = V.resourcesToHandle resources logger
- --           forever (execute handle Vk)
+--           forever (execute handle Vk)
             forever' resources $ mainLoop
                 vkConf
                 (flip V.resourcesToHandle logger)
@@ -125,9 +131,9 @@ mainLoop conf resourcesToHandles toLogger errorHandlers action resources = do
         errorHandlers logger conf resources -- someHandlers
 
  
-runWithConf' :: (BotConfigurable s) => s -> RunOptions -> FilePath -> (EnvironmentCommon -> Conf s -> IO ()) -> IO ()
+runWithConf' :: (BotConfigurable s) => s -> RunOptions -> FilePath -> (L.Handle IO -> EnvironmentCommon -> Conf s -> IO ()) -> IO ()
 runWithConf' s opts path todo = do
-    let logger = L.simpleHandle $ loggerSettings opts
+    let logger = L.simpleCondHandle $ loggerSettings opts
         f (E.Handler g) = E.Handler $ \e -> do
             g e
             L.logFatal logger
@@ -136,7 +142,7 @@ runWithConf' s opts path todo = do
     (gen, conf) <- loadConfig s logger path `E.catches` map f (configHandlers logger)
     L.logDebug logger "Successfully got bot configuration."
     when (testConfig opts) $ Q.exitWith (Q.ExitSuccess)
-    todo gen conf
+    todo logger gen conf
 
 
 
