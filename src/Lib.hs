@@ -6,7 +6,7 @@ module Lib
 import Config
 import qualified Control.Exception as E
     (catches, Handler (..), SomeException, IOException)
-import qualified Control.Monad.Catch as C (catches, Handler (..))
+import qualified Control.Monad.Catch as C (catches, Handler (..), bracket)
 import qualified System.IO.Error as E
     (isDoesNotExistError, isPermissionError, isAlreadyInUseError)
 import qualified Data.Configurator.Types as CT (ConfigError (..))
@@ -75,7 +75,7 @@ getLoggerSettings :: String -> Maybe (L.Priority -> Bool)
 getLoggerSettings str = fmap (\x -> (>= x)) $ readMaybe str
 
 runWithConf :: RunOptions -> FilePath -> IO ()
-runWithConf opts path =
+runWithConf opts path = do
     case messager opts of
         Telegram -> runWithConf' Tele opts path $ func tlAction
         --Vkontakte -> runWithConf' Vk opts path (\x y -> vkAction x y >> return ())
@@ -133,16 +133,30 @@ mainLoop conf resourcesToHandles toLogger errorHandlers action resources = do
  
 runWithConf' :: (BotConfigurable s) => s -> RunOptions -> FilePath -> (L.Handle IO -> EnvironmentCommon -> Conf s -> IO ()) -> IO ()
 runWithConf' s opts path todo = do
-    let logger = L.simpleCondHandle $ loggerSettings opts
-        f (E.Handler g) = E.Handler $ \e -> do
-            g e
-            L.logFatal logger
-                "Failed to get required data from configuration files, terminating..."
-            Q.exitWith $ Q.ExitFailure 1
-    (gen, conf) <- loadConfig s logger path `E.catches` map f (configHandlers logger)
-    L.logDebug logger "Successfully got bot configuration."
-    when (testConfig opts) $ Q.exitWith (Q.ExitSuccess)
-    todo logger gen conf
+    let
+        loggerConfig = L.LoggerConfig {
+            L.lcFilter = loggerSettings opts
+            , L.lcPath = logPath opts
+            }
+        --logger = L.simpleCondHandle $ loggerSettings opts
+    C.bracket
+        (L.initializeSelfSufficientLoggerResources loggerConfig)
+        (\r -> L.closeSelfSufficientLogger r) $ \r -> do
+ --   logger <- L.initializeSelfSufficientLogger loggerConfig
+            let
+                logger = L.Handle $
+                    L.selfSufficientLogger r $
+                        L.lcFilter loggerConfig
+                f (E.Handler g) = E.Handler $ \e -> do
+                    g e
+                    L.logFatal logger
+                        "Failed to get required data from configuration files, terminating..."
+                    Q.exitWith $ Q.ExitFailure 1
+         
+            (gen, conf) <- loadConfig s logger path `E.catches` map f (configHandlers logger)
+            L.logDebug logger "Successfully got bot configuration."
+            when (testConfig opts) $ Q.exitWith (Q.ExitSuccess)
+            todo logger gen conf
 
 
 

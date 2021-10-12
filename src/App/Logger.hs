@@ -79,8 +79,9 @@ initializeDefaultHandler e = do
     logFatal simpleHandle $ T.pack $ C.displayException e
     Q.exitWith (Q.ExitFailure 1)
 
-initializeSelfSufficientLogger :: LoggerConfig -> IO (Handle IO)
-initializeSelfSufficientLogger conf = do
+--initializeSelfSufficientLoggerResources :: LoggerConfig -> IO (Handle IO)
+initializeSelfSufficientLoggerResources :: LoggerConfig -> IO (IORef LoggerResources)
+initializeSelfSufficientLoggerResources conf = do
     h <- pathToHandle (lcPath conf) `C.catches`
         [C.Handler initializeErrorHandler,
          C.Handler initializeDefaultHandler]
@@ -88,12 +89,21 @@ initializeSelfSufficientLogger conf = do
             flHandle = h
             }
     resourcesRef <- newIORef resources
-    return $ Handle $ selfSufficientLogger resourcesRef (lcFilter conf)
+    return resourcesRef
+
+    --return $ Handle $ selfSufficientLogger resourcesRef (lcFilter conf)
+
+closeSelfSufficientLogger :: IORef LoggerResources -> IO ()
+closeSelfSufficientLogger resourcesRef = do
+    resources <- readIORef resourcesRef
+    S.hClose $ flHandle resources
+
 
 selfSufficientLogger :: IORef LoggerResources -> (Priority -> Bool) -> Priority -> T.Text -> IO ()
 selfSufficientLogger resourcesRef pred pri s = do
     resources <- readIORef resourcesRef
-    let action = T.hPutStrLn (flHandle resources) (logString pri s)
+    let action = --T.hPutStrLn (flHandle resources) (logString pri s)
+                  T.hPutStrLn S.stderr (logString pri s)
         errHandler = \e -> loggerHandler resources e >>= writeIORef resourcesRef
     action `C.catch` errHandler
 
