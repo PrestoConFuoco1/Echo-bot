@@ -10,6 +10,10 @@ import Data.IORef
 import qualified Data.Map as M
 import qualified HTTPRequests as H
 import qualified Data.Map as M (empty)
+import qualified System.Exit as Q (ExitCode (..), exitWith)
+import qualified Control.Monad.Catch as C
+import qualified Telegram.Exceptions as TlEx
+import qualified Data.Text as T
 
 data Config = Config {
       configCommonEnv :: EnvironmentCommon
@@ -64,4 +68,26 @@ resourcesToTelegramHandler resources logger =
         , purgeMediaGroups = modifyIORef' (mutState resources) $ purgeMediaGroups'
         , getMediaGroups = fmap getMediaGroups' $ readIORef (mutState resources)
     }
+
+
+
+tlErrorHandler :: L.Handle IO -> TlConfig -> Resources -> TlEx.TlException -> IO Resources
+tlErrorHandler logger conf resources TlEx.TlException = do
+    L.logFatal logger "Unable to handle any telegram errors, error is logged"
+    Q.exitWith (Q.ExitFailure 1)
+
+
+defaultHandler :: L.Handle IO -> Resources -> C.SomeException -> IO Resources
+defaultHandler logger resources e = do
+    L.logFatal logger $ "unable to handle exception"
+    L.logFatal logger $ T.pack $ C.displayException e
+    Q.exitWith (Q.ExitFailure 1)
+
+
+
+tlHandlers logger conf resources = [
+    C.Handler $ tlErrorHandler logger conf resources
+    , C.Handler $ defaultHandler logger resources
+    ]
+
 

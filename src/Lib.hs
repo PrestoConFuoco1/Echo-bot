@@ -56,17 +56,25 @@ getOpts = foldr f defaultRunOpts
 runWithConf :: RunOptions -> FilePath -> IO ()
 runWithConf opts path =
     case messager opts of
-        Telegram -> runWithConf' Tele opts path tlAction
-        Vkontakte -> runWithConf' Vk opts path (\x y -> vkAction x y >> return ())
+        Telegram -> runWithConf' Tele opts path $ func tlAction
+        --Vkontakte -> runWithConf' Vk opts path (\x y -> vkAction x y >> return ())
+        Vkontakte -> runWithConf' Vk opts path $ func vkAction
         None -> L.logFatal logger "No messager parameter supplied, terminating..." >>
                 L.logInfo  logger "Use -tl for Telegram and -vk for Vkontakte"
   where
+        func a = \x y -> a x y >> return ()
         logger = L.simpleLog
         tlAction gen tlConf = do
             let tlConfig = T.Config gen tlConf
             resources <- T.initResources logger tlConfig
             let handle = T.resourcesToHandle resources logger
-            forever (execute handle Tele)
+            --forever (execute handle Tele)
+            forever' resources $ mainLoop
+                tlConf
+                (flip T.resourcesToHandle logger)
+                D.log
+                T.tlHandlers
+                (flip execute Tele)
         vkAction gen vkConf = do
             let vkConfig = V.Config gen vkConf
             resources <- V.initResources logger vkConfig

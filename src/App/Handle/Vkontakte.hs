@@ -107,8 +107,9 @@ vkHandlers logger conf resources = [
 
 defaultHandler :: L.Handle IO -> Resources -> C.SomeException -> IO Resources
 defaultHandler logger resources e = do
-    L.logError logger $ T.pack $ C.displayException e
-    return resources
+    L.logFatal logger $ "unable to handle exception"
+    L.logFatal logger $ T.pack $ C.displayException e
+    Q.exitWith (Q.ExitFailure 1)
 
 resourcesToVkHandler :: Resources -> L.Handle IO -> VkHandler IO
 resourcesToVkHandler resources logger = 
@@ -145,7 +146,8 @@ initialize logger conf@(VkConf {..}) = do
     initData <- getLongPollServer logger conf
     initRndNum <- newStdGen
     return (VKSC {
-        vkKey = "hahahah" --_VID_key initData
+        --vkKey = "hahahah"
+        vkKey = _VID_key initData
         , vkServer = _VID_server initData
         , vkUrl = _VC_vkUrl
         , vkAccessToken = _VC_accessToken

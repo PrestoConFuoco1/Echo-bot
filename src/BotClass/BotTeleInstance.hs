@@ -26,7 +26,9 @@ import Data.Foldable (asum)
 import qualified App.Handle as D
 import qualified GenericPretty as GP
 import qualified Stuff as S
-import qualified Execute as E
+import qualified Execute.Logic as E
+import qualified Control.Monad.Catch as C
+import qualified Telegram.Exceptions as Ex
 
 instance BotClassUtility Tele where
 --    getResult :: s -> RepSucc s -> Maybe Value
@@ -95,7 +97,11 @@ instance BotClass Tele where
         return repl
 
 --    handleFailedUpdatesRequest :: (C.MonadThrow m) => D.Handle s m -> RepErr s -> m ()
-    handleFailedUpdatesRequest = undefined
+    handleFailedUpdatesRequest h err = do
+        let funcName = "tl_handleFailedUpdatesRequest: "
+        D.logError h $ funcName <> "got telegram error"
+        D.logError h $ GP.defaultPrettyT err
+        C.throwM Ex.TlException
 
 --    parseUpdatesValueList :: s -> RepSucc s -> Either String [Value]
     parseUpdatesValueList s rep = do

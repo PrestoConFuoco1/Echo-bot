@@ -38,11 +38,13 @@ library
       Config
       Exceptions
       Execute
+      Execute.Logic
       GenericPretty
       HTTPRequests
       Lib
       Stuff
       Telegram.Entity
+      Telegram.Exceptions
       Telegram.ForHandlers
       Telegram.Keyboard
       Telegram.MediaGroup
