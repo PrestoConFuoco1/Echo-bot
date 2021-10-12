@@ -28,14 +28,16 @@ logFatal = (`log` Fatal)
 fileHandleToLogger :: S.Handle -> Handle IO
 fileHandleToLogger h = Handle $ fileLogger h
 
-totalLog = simpleLog (const True)
+totalHandle = simpleHandle (const True)
 
-simpleLog :: (Priority -> Bool) -> Handle IO
+simpleHandle :: (Priority -> Bool) -> Handle IO
 --simpleLog = Handle $ \p s -> S.hPutStrLn S.stderr $ '[' : show p ++ "]: " ++ T.unpack s
-simpleLog pred = Handle $ \p s -> when (pred p) $ fileLogger S.stderr p s
+simpleHandle pred = Handle $ \p s -> when (pred p) $ fileLogger S.stderr p s
 
 fileLogger :: S.Handle -> Priority -> T.Text -> IO ()
 fileLogger h p s = S.hPutStrLn S.stderr $ '[' : show p ++ "]: " ++ T.unpack s
+
+
 
 emptyLogger :: Handle IO
 emptyLogger = Handle $ \p s -> return ()

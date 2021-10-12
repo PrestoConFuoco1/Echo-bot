@@ -78,7 +78,8 @@ runWithConf opts path =
                 L.logInfo  logger "Use -tl for Telegram and -vk for Vkontakte"
   where
         func a = \x y -> a x y >> return ()
-        logger = L.simpleLog $ loggerSettings opts
+        logger = L.simpleHandle $ loggerSettings opts
+
         tlAction gen tlConf = do
             let tlConfig = T.Config gen tlConf
             resources <- T.initResources logger tlConfig
@@ -90,6 +91,7 @@ runWithConf opts path =
                 D.log
                 T.tlHandlers
                 (flip execute Tele)
+
         vkAction gen vkConf = do
             let vkConfig = V.Config gen vkConf
             resources <- V.initResources logger vkConfig
@@ -125,7 +127,7 @@ mainLoop conf resourcesToHandles toLogger errorHandlers action resources = do
  
 runWithConf' :: (BotConfigurable s) => s -> RunOptions -> FilePath -> (EnvironmentCommon -> Conf s -> IO ()) -> IO ()
 runWithConf' s opts path todo = do
-    let logger = L.simpleLog $ loggerSettings opts
+    let logger = L.simpleHandle $ loggerSettings opts
         f (E.Handler g) = E.Handler $ \e -> do
             g e
             L.logFatal logger
