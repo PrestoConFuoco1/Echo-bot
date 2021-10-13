@@ -179,7 +179,7 @@ configHandlers h =
                 E.Handler (handleIOError h)
                 , E.Handler (handleConfigError h)
                 , E.Handler (handleConfig2Error h)
-              --, E.Handler (handleOthers h)
+                , E.Handler (handleOthers h)
               ]
  
 

@@ -11,6 +11,7 @@ import Data.IORef
 import qualified Control.Monad.Catch as C
 import qualified System.Exit as Q (ExitCode (..), exitWith)
 import qualified System.IO.Error as IOE
+import qualified GHC.IO.Handle.Lock as Lk
 
 newtype Handle m = Handle { log :: Priority -> T.Text -> m () }
 
@@ -37,17 +38,12 @@ logString pri s = "[" <> S.showT pri <> "]: " <> s
 simpleHandle = simpleCondHandle (const True)
 
 simpleCondHandle :: (Priority -> Bool) -> Handle IO
---simpleLog = Handle $ \p s -> S.hPutStrLn S.stderr $ '[' : show p ++ "]: " ++ T.unpack s
-simpleCondHandle pred = Handle $ \p s -> when (pred p) $ simpleLogger p s
+simpleCondHandle pred = Handle $ \p s -> when (pred p) $ stdLogger p s
 
-simpleLogger = fileLogger
 
-fileLogger :: Priority -> T.Text -> IO ()
-fileLogger p s = --T.hPutStrLn S.stderr $ '[' : show p ++ "]: " ++ T.unpack s
+stdLogger :: Priority -> T.Text -> IO ()
+stdLogger p s = --T.hPutStrLn S.stderr $ '[' : show p ++ "]: " ++ T.unpack s
     T.hPutStrLn S.stderr $ logString p s
-
-emptyLogger :: (Monad m) => Handle m
-emptyLogger = Handle $ \p s -> return ()
 
 
 data LoggerConfig = LoggerConfig {
@@ -65,13 +61,17 @@ pathToHandle path = do
     return h
 
 initializeErrorHandler :: IOE.IOError -> IO a
-initializeErrorHandler e = func e >> Q.exitWith (Q.ExitFailure 1)
+initializeErrorHandler e = do
+    logFatal simpleHandle $ "failed to initialize logger"
+    func e
+    Q.exitWith (Q.ExitFailure 1)
   where
    func e
-    | IOE.isAlreadyInUseError e = logError simpleHandle "target log file is locked"
+    | IOE.isAlreadyInUseError e = logError simpleHandle lockedmsg
     | IOE.isPermissionError e   = logError simpleHandle "not enough permissions"
     | otherwise = logError simpleHandle $ "unexpected IO error: " <> T.pack (C.displayException e)
 
+lockedmsg = "target log file is locked"
 
 initializeDefaultHandler :: C.SomeException -> IO a
 initializeDefaultHandler e = do
@@ -79,25 +79,28 @@ initializeDefaultHandler e = do
     logFatal simpleHandle $ T.pack $ C.displayException e
     Q.exitWith (Q.ExitFailure 1)
 
---initializeSelfSufficientLoggerResources :: LoggerConfig -> IO (Handle IO)
 initializeSelfSufficientLoggerResources :: LoggerConfig -> IO (IORef LoggerResources)
 initializeSelfSufficientLoggerResources conf = do
     h <- pathToHandle (lcPath conf) `C.catches`
         [C.Handler initializeErrorHandler,
          C.Handler initializeDefaultHandler]
+    lockAcquired <- Lk.hTryLock h Lk.ExclusiveLock
+    when (not lockAcquired) $ do
+        logFatal simpleHandle $ "failed to initialize logger"
+        logFatal simpleHandle lockedmsg
+        Q.exitWith (Q.ExitFailure 1)
+        
     let resources = LoggerResources {
             flHandle = h
             }
     resourcesRef <- newIORef resources
     return resourcesRef
 
-    --return $ Handle $ selfSufficientLogger resourcesRef (lcFilter conf)
-
 closeSelfSufficientLogger :: IORef LoggerResources -> IO ()
 closeSelfSufficientLogger resourcesRef = do
     resources <- readIORef resourcesRef
     let h = flHandle resources
-    S.hFlush h
+    Lk.hUnlock h
     S.hClose h
 
 

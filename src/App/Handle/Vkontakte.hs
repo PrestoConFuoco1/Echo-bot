@@ -147,8 +147,8 @@ initialize logger conf@(VkConf {..}) = do
     initData <- getLongPollServer logger conf
     initRndNum <- newStdGen
     return (VKSC {
-        vkKey = "hahahah"
-        --vkKey = _VID_key initData
+        --vkKey = "hahahah"
+        vkKey = _VID_key initData
         , vkServer = _VID_server initData
         , vkUrl = _VC_vkUrl
         , vkAccessToken = _VC_accessToken
