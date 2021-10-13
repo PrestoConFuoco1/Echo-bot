@@ -103,7 +103,7 @@ getNewKeyAndTs logger config resources = do
 
 vkHandlers logger conf resources = [
     C.Handler $ vkErrorHandler logger conf resources
-    , C.Handler $ defaultHandler logger resources
+    -- , C.Handler $ defaultHandler logger resources
     ]
 
 defaultHandler :: L.Handle IO -> Resources -> C.SomeException -> IO Resources
@@ -147,8 +147,8 @@ initialize logger conf@(VkConf {..}) = do
     initData <- getLongPollServer logger conf
     initRndNum <- newStdGen
     return (VKSC {
-        --vkKey = "hahahah"
-        vkKey = _VID_key initData
+        vkKey = "hahahah"
+        --vkKey = _VID_key initData
         , vkServer = _VID_server initData
         , vkUrl = _VC_vkUrl
         , vkAccessToken = _VC_accessToken

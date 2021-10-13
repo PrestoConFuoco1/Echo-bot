@@ -116,7 +116,11 @@ sendRequest h takesJSON r@(Req method url params) =
             Nothing -> return . Left $ "Couldn't parse the HTTP request" ++ req
             Just parsedReq ->
                 (fmap (Right . getResponseBody) . httpLBS) parsedReq
-                    `catches` [Handler handleHTTPError, Handler handleOthers]
+                    `catches`
+                    [
+                    Handler handleHTTPError
+                    -- , Handler handleOthers
+                    ]
 
 makeParamsString :: ParamsList -> String
 makeParamsString lst =

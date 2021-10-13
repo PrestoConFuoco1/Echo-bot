@@ -6,7 +6,7 @@ module Lib
 import Config
 import qualified Control.Exception as E
     (catches, Handler (..), SomeException, IOException)
-import qualified Control.Monad.Catch as C (catches, Handler (..), bracket)
+import qualified Control.Monad.Catch as C
 import qualified System.IO.Error as E
     (isDoesNotExistError, isPermissionError, isAlreadyInUseError)
 import qualified Data.Configurator.Types as CT (ConfigError (..))
@@ -30,6 +30,7 @@ import App.Handle as D
 import qualified Stuff as S (withMaybe)
 import Data.List (isPrefixOf)
 import Text.Read (readMaybe)
+import qualified Data.Text as T (pack)
 
 data Messager = Vkontakte | Telegram | None
 data RunOptions = RunOptions {
@@ -41,7 +42,7 @@ data RunOptions = RunOptions {
 defaultRunOpts = RunOptions {
     testConfig = False
     , loggerSettings = const True
-    , logPath = "./bot.log"
+    , logPath = "./log"
     , messager = None }
 
 -- for ghci
@@ -74,8 +75,9 @@ getOpts = foldr f defaultRunOpts
 getLoggerSettings :: String -> Maybe (L.Priority -> Bool)
 getLoggerSettings str = fmap (\x -> (>= x)) $ readMaybe str
 
+
 runWithConf :: RunOptions -> FilePath -> IO ()
-runWithConf opts path = do
+runWithConf opts path =
     case messager opts of
         Telegram -> runWithConf' Tele opts path $ func tlAction
         --Vkontakte -> runWithConf' Vk opts path (\x y -> vkAction x y >> return ())
@@ -134,44 +136,51 @@ mainLoop conf resourcesToHandles toLogger errorHandlers action resources = do
 runWithConf' :: (BotConfigurable s) => s -> RunOptions -> FilePath -> (L.Handle IO -> EnvironmentCommon -> Conf s -> IO ()) -> IO ()
 runWithConf' s opts path todo = do
     let
+        configLogger = L.simpleCondHandle $ loggerSettings opts
         loggerConfig = L.LoggerConfig {
             L.lcFilter = loggerSettings opts
             , L.lcPath = logPath opts
             }
-        --logger = L.simpleCondHandle $ loggerSettings opts
+
+    (gen, conf) <- loadConfig s (configLogger) path `E.catches` configHandlers configLogger
+    L.logInfo configLogger "Successfully got bot configuration."
+    when (testConfig opts) $ Q.exitWith (Q.ExitSuccess)
+ 
     C.bracket
         (L.initializeSelfSufficientLoggerResources loggerConfig)
-        (\r -> L.closeSelfSufficientLogger r) $ \r -> do
- --   logger <- L.initializeSelfSufficientLogger loggerConfig
+        (\r -> do
+            L.closeSelfSufficientLogger r
+            L.logInfo configLogger "closing") $ \r ->
             let
                 logger = L.Handle $
                     L.selfSufficientLogger r $
                         L.lcFilter loggerConfig
-                f (E.Handler g) = E.Handler $ \e -> do
-                    g e
-                    L.logFatal logger
-                        "Failed to get required data from configuration files, terminating..."
-                    Q.exitWith $ Q.ExitFailure 1
-         
-            (gen, conf) <- loadConfig s logger path `E.catches` map f (configHandlers logger)
-            L.logDebug logger "Successfully got bot configuration."
-            when (testConfig opts) $ Q.exitWith (Q.ExitSuccess)
-            todo logger gen conf
+            in  todo logger gen conf `C.catch` defaultHandler logger
+
+
+
+defaultHandler :: L.Handle IO -> C.SomeException -> IO a
+defaultHandler h e = do
+    L.logFatal h "some exception raised:"
+    L.logFatal h $ T.pack $ C.displayException e
+    L.logFatal h "terminating..."
+    C.throwM e
 
 
 
 
-
-configHandlers :: L.Handle IO -> [E.Handler ()]
+configHandlers :: L.Handle IO -> [E.Handler a]
 configHandlers h = 
     let f (E.Handler g) = E.Handler (\e -> g e >>
             L.logFatal h
                 "Failed to get required data from configuration files, terminating..."
             >> Q.exitWith (Q.ExitFailure 1))
-    in  map f [E.Handler (handleIOError h),
-                     E.Handler (handleConfigError h),
-                     E.Handler (handleConfig2Error h),
-                     E.Handler (handleOthers h)]
+    in  map f [
+                E.Handler (handleIOError h)
+                , E.Handler (handleConfigError h)
+                , E.Handler (handleConfig2Error h)
+              --, E.Handler (handleOthers h)
+              ]
  
 
 handleIOError :: L.Handle IO -> E.IOException -> IO ()

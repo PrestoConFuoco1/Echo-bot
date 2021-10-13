@@ -87,7 +87,7 @@ defaultHandler logger resources e = do
 
 tlHandlers logger conf resources = [
     C.Handler $ tlErrorHandler logger conf resources
-    , C.Handler $ defaultHandler logger resources
+    -- , C.Handler $ defaultHandler logger resources
     ]
 
 
