@@ -23,6 +23,8 @@ import qualified Vkontakte.Exceptions as VkEx
 import qualified Control.Monad.Catch as C (catches, Handler (..), SomeException, displayException)
 import GenericPretty as GP
 import qualified Data.ByteString.Lazy.Char8 as BSL (ByteString, unpack) --, toStrict)
+import qualified Vkontakte.GetUpdates as G
+
 
 data Config = Config {
       configCommonEnv :: EnvironmentCommon
@@ -62,6 +64,9 @@ resourcesToHandle resources logger =
 
         , D.insertUser = \u i -> modifyIORef' (usersMap resources) (M.insert u i)
         , D.getUser = \u -> readIORef (usersMap resources) >>= return . M.lookup u
+
+        , D.getUpdates = G.getUpdates logger
+
         , D.specH = resourcesToVkHandler resources logger
     }
 
