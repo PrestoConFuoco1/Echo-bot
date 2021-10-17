@@ -30,7 +30,6 @@ defaultVkParams' accTok apiV =
 
 
 
---newtype Vk = Vk ()
 
 data Vk = Vk
 dummyVk = Vk
