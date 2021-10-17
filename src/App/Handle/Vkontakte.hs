@@ -66,6 +66,7 @@ resourcesToHandle resources logger =
         , D.getUser = \u -> readIORef (usersMap resources) >>= return . M.lookup u
 
         , D.getUpdates = G.getUpdates logger
+        , D.sendThis = G.sendThis logger
 
         , D.specH = resourcesToVkHandler resources logger
     }

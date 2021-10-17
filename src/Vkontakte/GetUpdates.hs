@@ -6,8 +6,9 @@ import Types
 import qualified App.Logger as L
 import qualified Data.Aeson as Ae (decode)
 import qualified Data.ByteString.Lazy.Char8 as BSL (ByteString)
-import Vkontakte.Entity
-
+import Vkontakte.Types
+import Data.Aeson
+import Data.Aeson.Types
 
 parseUpdatesResponse :: BSL.ByteString
     -> Either String (UpdateResponse VkUpdateReplySuccess VkUpdateReplyError)
@@ -25,5 +26,22 @@ getUpdates logger request = do
     eithRespStr <- H.sendRequest logger (takesJSON) request -- Either String a
     let eithResp = eithRespStr >>= parseUpdatesResponse
     return eithResp
+
+
+parseHTTPResponse :: BSL.ByteString -> Either String VkReply
+parseHTTPResponse resp = do -- Either
+    val <- maybe (Left "Couldn't parse HTTP response") Right $ decode resp
+    repl <- parseEither parseJSON val
+    return repl
+
+
+
+sendThis :: L.Handle IO -> H.HTTPRequest -> IO (Either String VkReply)
+sendThis logger request = do
+    let takesJSON = vkTakesJSON
+    eithRespStr <- H.sendRequest logger (takesJSON) request
+    let eithResp = eithRespStr >>= parseHTTPResponse
+    return eithResp
+
 
 

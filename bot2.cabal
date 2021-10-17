@@ -61,6 +61,7 @@ library
       Vkontakte.Attachment.Types
       Vkontakte.Entity
       Vkontakte.Exceptions
+      Vkontakte.GetUpdates
       Vkontakte.Initialize
       Vkontakte.Keyboard
       Vkontakte.Types

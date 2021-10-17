@@ -14,7 +14,7 @@ import qualified System.Exit as Q (ExitCode (..), exitWith)
 import qualified Control.Monad.Catch as C
 import qualified Telegram.Exceptions as TlEx
 import qualified Data.Text as T
-import qualified Telegram.GetUpdates as G (getUpdates)
+import qualified Telegram.GetUpdates as G
 
 data Config = Config {
       configCommonEnv :: EnvironmentCommon
@@ -58,6 +58,7 @@ resourcesToHandle resources logger =
         , D.getUser = \u -> readIORef (usersMap resources) >>= return . M.lookup u
 
         , D.getUpdates = G.getUpdates logger
+        , D.sendThis = G.sendThis logger
 
         , D.specH = resourcesToTelegramHandler resources logger
     }

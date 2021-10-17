@@ -136,12 +136,16 @@ sendFixedInfo :: (BotClass s, Monad m) =>
     D.Handle s m -> s -> H.HTTPRequest -> m ()
 sendFixedInfo h s request = do
     let funcName = "sendFixedInfo: "
-    eithRespStr <- D.sendRequest h (takesJSON s) request
-    let eithResp = eithRespStr >>= parseHTTPResponse s >>= f
-        f resp' = if isSuccess s resp'
+{-
+-}
+--    eithRespStr <- D.sendRequest h (takesJSON s) request
+    eithResp1 <- D.sendThis h request
+    let f resp' = if isSuccess s resp'
                   --then Right $ "Ok: " <> S.showT resp'
                   then Right $ "Ok: " <> (T.pack $ GP.defaultPretty resp')
                   else Left $ "Failed request: " ++ show resp'
+--    let eithResp = eithRespStr >>= parseHTTPResponse s >>= f
+        eithResp = eithResp1 >>= f
     S.withEither eithResp
         (D.logError h . (funcName <>) . T.pack)
         (D.logInfo h . (funcName <>))

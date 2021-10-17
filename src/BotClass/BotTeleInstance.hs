@@ -68,7 +68,8 @@ instance BotClassUtility Tele where
 
 
 instance BotClass Tele where
-    takesJSON _ = True
+    --takesJSON _ = True
+    takesJSON _ = tlTakesJSON
 
     --getUpdatesRequest :: (Monad m) => D.Handle s m -> s -> m H.HTTPRequest
     getUpdatesRequest h s = do

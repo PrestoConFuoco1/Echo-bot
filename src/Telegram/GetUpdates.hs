@@ -6,6 +6,8 @@ import qualified App.Logger as L
 import Telegram.Entity
 import qualified Data.Aeson as Ae (decode)
 import qualified Data.ByteString.Lazy.Char8 as BSL (ByteString)
+import Data.Aeson.Types as AeT
+import Telegram.ForHandlers
 
 parseUpdatesResponse :: BSL.ByteString
     -> Either String (UpdateResponse TlUpdateReplySuccess TlUpdateReplyError)
@@ -24,4 +26,18 @@ getUpdates logger request = do
     let eithResp = eithRespStr >>= parseUpdatesResponse
     return eithResp
 
+parseHTTPResponse :: BSL.ByteString -> Either String TlReply
+parseHTTPResponse resp = do -- Either
+    val <- maybe (Left "Couldn't parse HTTP response") Right $ Ae.decode resp
+    repl <- parseEither parseJSON val
+    return repl
+
+
+
+sendThis :: L.Handle IO -> H.HTTPRequest -> IO (Either String TlReply)
+sendThis logger request = do
+    let takesJSON = tlTakesJSON
+    eithRespStr <- H.sendRequest logger (takesJSON) request
+    let eithResp = eithRespStr >>= parseHTTPResponse
+    return eithResp
 

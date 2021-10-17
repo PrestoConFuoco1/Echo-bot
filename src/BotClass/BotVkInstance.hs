@@ -63,7 +63,8 @@ instance BotClassUtility Vk where
 
 
 instance BotClass Vk where
-    takesJSON _ = False
+    --takesJSON _ = False
+    takesJSON _ = vkTakesJSON
     getUpdatesRequest = getUpdatesRequest1
     parseHTTPResponse = parseHTTPResponse1
     isSuccess = isSuccess1

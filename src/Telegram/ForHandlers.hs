@@ -26,6 +26,7 @@ import qualified Data.Map as M
 data Tele = Tele
 dummyTl = Tele
 
+tlTakesJSON = True
 
 data TlConfig = TlConf {
         _TC_updID :: Integer,

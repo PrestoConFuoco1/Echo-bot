@@ -34,7 +34,7 @@ defaultVkParams' accTok apiV =
 data Vk = Vk
 dummyVk = Vk
 
-
+vkTakesJSON = False
 
 ----------------------------------------------
 
