@@ -25,8 +25,11 @@ execute h s = do
             D.logError h . ("failed to parse server reply: " <>) . (funcName <>) . T.pack
 
     request <- getUpdatesRequest h s
+{-
     eithRespStr <- D.sendRequest h (takesJSON s) request -- Either String a
     let eithResp = eithRespStr >>= parseUpdatesResponse s
+-} 
+    eithResp <- D.getUpdates h request
     S.withEither eithResp respParseFail $ \resp' -> do
         D.logDebug h $ funcName <> "got and successfully parsed server reply:"
         D.logDebug h $ T.pack $ GP.defaultPretty resp'

@@ -21,6 +21,8 @@ data Handle s m = Handle {
 
     getConstState :: (BotClassTypes s) => StateC s,
 
+    getUpdates :: H.HTTPRequest -> m (Either String (UpdateResponse (RepSucc s) (RepErr s))),
+
     specH :: (BotClassTypes s) => Hndl s m
     }
 {-

@@ -46,6 +46,7 @@ library
       Telegram.Entity
       Telegram.Exceptions
       Telegram.ForHandlers
+      Telegram.GetUpdates
       Telegram.Keyboard
       Telegram.MediaGroup
       Telegram.MediaGroup.Types
