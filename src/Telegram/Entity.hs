@@ -71,22 +71,13 @@ data TlEvent = TEMsg TlMessage
     | TEUnexpectedEvent
     deriving (Show, Eq)
 
-{-
-data TlUnexpectedEvent = TlUnexpectedEvent {
-    _TUE_body :: Value
-    } deriving (Show, Eq) 
--}
-{-
-instance ToJSON TlUpdate where
-    toJSON TlUpdate{..} = undefined
--}
 instance FromJSON TlUpdate where
     parseJSON value = ($ value) $ withObject "update object" $ \o -> do
         uid <- o .: "update_id"
         ev <- asum [ fmap TEMsg (o .: "message")
 --                   , fmap TEEdMsg (o .: "edited_message")
                      , fmap TECallback (o .: "callback_query")
-                     -- , return $ TEUnexpectedEvent x
+                     , return TEUnexpectedEvent
                    ]
         return $ TlUpdate uid ev value
 -----------------------------------------------------------

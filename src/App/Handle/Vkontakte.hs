@@ -58,7 +58,7 @@ resourcesToHandle :: Resources -> L.Handle IO -> D.Handle Vk IO
 resourcesToHandle resources logger =
     D.Handle {
           D.log = logger
-        , D.sendRequest = H.sendRequest logger
+        --, D.sendRequest = H.sendRequest logger
         , D.commonEnv = commonEnv resources
         , D.getConstState = constState resources
 

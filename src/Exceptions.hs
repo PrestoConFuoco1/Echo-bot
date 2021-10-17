@@ -7,7 +7,7 @@ import Control.Monad.Catch as CMC
 data BotException =
     ParsedNoUpdates
     | FailedToParseUpdatesListFromResult
-    | FailedToParseReply
+--    | FailedToParseReply
     | UnableToHandleError
     deriving (Show)
 

@@ -73,7 +73,6 @@ defineCallbackType h s callback =
                 (Left "No callback data found, unable to respond.") Right mData
             repNumDat <- case T.words dat of
                 ("set" : num : _) ->
-                    -- maybe move "set" to config?
                     maybe (Left "Expected number after \"set\" command.")
                     Right (readMaybe $ T.unpack num :: Maybe Int)
                 _ -> Left "Unknown callback query"
@@ -136,19 +135,17 @@ sendFixedInfo :: (BotClass s, Monad m) =>
     D.Handle s m -> s -> H.HTTPRequest -> m ()
 sendFixedInfo h s request = do
     let funcName = "sendFixedInfo: "
-{-
--}
---    eithRespStr <- D.sendRequest h (takesJSON s) request
-    eithResp1 <- D.sendThis h request
-    let f resp' = if isSuccess s resp'
-                  --then Right $ "Ok: " <> S.showT resp'
-                  then Right $ "Ok: " <> (T.pack $ GP.defaultPretty resp')
-                  else Left $ "Failed request: " ++ show resp'
---    let eithResp = eithRespStr >>= parseHTTPResponse s >>= f
-        eithResp = eithResp1 >>= f
+    eithResp <- D.sendThis h request
     S.withEither eithResp
         (D.logError h . (funcName <>) . T.pack)
-        (D.logInfo h . (funcName <>))
+        (logResponse h s)
+
+logResponse :: (BotClass s, Monad m) => D.Handle s m -> s -> Rep s -> m ()
+logResponse h s resp =
+    let funcName = "logResponse: "
+    in if isSuccess s resp
+        then D.logInfo h $ funcName <> "Ok: " <> GP.textPretty resp
+        else D.logError h $ funcName <> "Failed request: " <> GP.textPretty resp
 
 
 handleMessage :: (BotClass s, Monad m) => D.Handle s m -> s -> Msg s -> m ()
@@ -170,10 +167,11 @@ sendNTimes h s maybeUser req = do
     let repN = validateRepNum repNraw
     D.logDebug h $ funcName <> "sending message " <> S.showT repN <> " times."
     reqs <- replicateM repN req
-    eithRespStrList <- mapM (D.sendRequest h $ takesJSON s) reqs
-    let (errs, resps) = partitionEithers $
-            map (>>= parseHTTPResponse s) eithRespStrList
+
+    eithRespList <- mapM (D.sendThis h) reqs
+    let (errs, resps) = partitionEithers eithRespList
     mapM_ (D.logError h . T.pack) errs
+    mapM_ (logResponse h s) resps
 
 
 

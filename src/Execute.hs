@@ -19,16 +19,11 @@ import Execute.Logic
 
 execute :: (BotClass s, C.MonadThrow m) => D.Handle s m -> s -> m ()
 execute h s = do
-    --let env = commonEnv h
-    let funcName = "mainLoop: "
+    let funcName = "execute: "
         respParseFail =
             D.logError h . ("failed to parse server reply: " <>) . (funcName <>) . T.pack
 
     request <- getUpdatesRequest h s
-{-
-    eithRespStr <- D.sendRequest h (takesJSON s) request -- Either String a
-    let eithResp = eithRespStr >>= parseUpdatesResponse s
--} 
     eithResp <- D.getUpdates h request
     S.withEither eithResp respParseFail $ \resp' -> do
         D.logDebug h $ funcName <> "got and successfully parsed server reply:"
@@ -42,6 +37,7 @@ updLstParseFail h x = do
     let funcName = "updateListParseFail: "
     D.logError h . ("failed to parse update list: " <>) . (funcName <>) . T.pack $ x
     C.throwM Ex.FailedToParseUpdatesListFromResult
+-- normal work is impossible if we are not able to parse update list
 
 
 logUpdatesErrors :: (BotClass s, C.MonadThrow m) => D.Handle s m -> [(Ae.Value, String)] -> [Upd s] -> m ()
@@ -52,6 +48,8 @@ logUpdatesErrors h errs upds = do
     when (null upds) $ do
         D.logError h $ funcName <> "failed to parse all updates"
         C.throwM Ex.ParsedNoUpdates
+-- normal work is impossible if we are not able to parse any updates
+-- we will try to parse them again and again resulting an infinite worthless loop
  
 
 handleUpdatesSuccess :: (BotClass s, C.MonadThrow m) => D.Handle s m -> s -> RepSucc s -> m ()

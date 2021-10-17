@@ -12,7 +12,7 @@ import BotClass.ClassTypes
 
 data Handle s m = Handle {
     log :: Logger.Handle m,
-    sendRequest :: Bool -> H.HTTPRequest -> m (Either String BSL.ByteString),
+    --sendRequest :: Bool -> H.HTTPRequest -> m (Either String BSL.ByteString),
 
     commonEnv :: EnvironmentCommon,
 
