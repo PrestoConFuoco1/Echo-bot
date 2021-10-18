@@ -41,3 +41,7 @@ sendThis logger request = do
     let eithResp = eithRespStr >>= parseHTTPResponse
     return eithResp
 
+
+
+sendHelp :: L.Handle IO -> H.HTTPRequest -> IO (Either String TlReply)
+sendHelp = sendThis

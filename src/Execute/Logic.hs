@@ -95,7 +95,7 @@ handleSetRepNum h s user mChat repnum = do
     D.insertUser h user repnum
     eithReqFunc <- sendTextMsg h s mChat (Just user) text
     D.logInfo h $ funcName <> afterLog
-    either sendFail (sendFixedInfo h s) eithReqFunc
+    either sendFail (sendFixedInfo h s $ D.sendThis h) eithReqFunc
 
 handleCommand :: (BotClass s, Monad m) =>
     D.Handle s m -> s -> Command -> Maybe (Chat s) -> Maybe (User s) -> m ()
@@ -112,7 +112,7 @@ sendHelp h s mChat mUser = do
     D.logDebug h $ funcName <> "sending HTTP request to send help message"
     S.withEither eithReqFunc
         (D.logError h . (funcName <>) . T.pack)
-        (sendFixedInfo h s)
+        (sendFixedInfo h s $ D.sendThis h)
 
 
 minRepNum, maxRepNum :: Int
@@ -129,16 +129,32 @@ sendRepNumButtons h s mChat mUser = do
     D.logDebug h $ funcName <> "sending HTTP request to send repeat number buttons"
     S.withEither eithReqFuncKeyboard
         (D.logError h . (funcName <>) . T.pack)
-        (sendFixedInfo h s)
+        (sendFixedInfo h s $ D.sendThis h)
 
+logEither :: (BotClass s, Monad m) =>
+    D.Handle s m -> s -> (a -> m ()) -> Either String a -> m ()
+logEither h s f = do
+    either (D.logError h . T.pack) f
+{-
 sendFixedInfo :: (BotClass s, Monad m) =>
     D.Handle s m -> s -> H.HTTPRequest -> m ()
 sendFixedInfo h s request = do
     let funcName = "sendFixedInfo: "
     eithResp <- D.sendThis h request
-    S.withEither eithResp
-        (D.logError h . (funcName <>) . T.pack)
-        (logResponse h s)
+    logEitherResponse h s eithResp
+-}
+
+sendFixedInfo :: (BotClass s, Monad m) =>
+    D.Handle s m -> s -> (a -> m (Either String (Rep s))) -> a -> m ()
+sendFixedInfo h s send request = do
+    let funcName = "sendFixedInfo: "
+    eithResp <- send request
+    logEitherResponse h s eithResp
+
+
+
+logEitherResponse :: (BotClass s, Monad m) => D.Handle s m -> s -> Either String (Rep s) -> m ()
+logEitherResponse h s = logEither h s (logResponse h s)
 
 logResponse :: (BotClass s, Monad m) => D.Handle s m -> s -> Rep s -> m ()
 logResponse h s resp =
