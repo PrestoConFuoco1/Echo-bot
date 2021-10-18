@@ -79,6 +79,18 @@ initializeDefaultHandler e = do
     logFatal simpleHandle $ T.pack $ C.displayException e
     Q.exitWith (Q.ExitFailure 1)
 
+
+withSelfSufficientLogger :: LoggerConfig -> (Handle IO -> IO a) -> IO a
+withSelfSufficientLogger conf action = do
+    C.bracket
+        (initializeSelfSufficientLoggerResources conf)
+        closeSelfSufficientLogger
+        (\resourcesRef -> action $
+            Handle $ selfSufficientLogger resourcesRef $
+                lcFilter conf)
+
+
+
 initializeSelfSufficientLoggerResources :: LoggerConfig -> IO (IORef LoggerResources)
 initializeSelfSufficientLoggerResources conf = do
     h <- pathToHandle (lcPath conf) `C.catches`

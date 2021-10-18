@@ -84,15 +84,7 @@ modifyKey key resources =
         sc' = sc { vkKey = key }
         resources' = resources { constState = sc' }
     in  resources'
-{-
-modifyTs :: TL.Text -> Resources -> IO Resources
-modifyTs ts resources =
-    let smref = mutState resources
-    sm <- readIORef smref
-    let sm' = sm { vkTs = ts }
-    writeIORef smref sm'
-    return resources
--}
+
 getNewKey :: L.Handle IO -> VkConfig -> Resources -> IO Resources
 getNewKey logger config resources = do
     initData <- getLongPollServer logger config
@@ -166,15 +158,6 @@ initialize logger conf@(VkConf {..}) = do
         vkTs = _VID_timestamp initData,
         vkRndGen = initRndNum
       })
-{-
-data VkConfig = VkConf {
-    _VC_vkUrl :: TL.Text,
-    _VC_accessToken :: TL.Text,
-    _VC_groupID :: Integer,
-    _VC_apiV :: T.Text
-    } deriving (Show, Eq, Generic)
--}
-
 
 initRequestFail :: L.Handle IO -> String -> IO a
 initRequestFail logger err = do

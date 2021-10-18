@@ -146,18 +146,8 @@ runWithConf' s opts path todo = do
     L.logInfo configLogger "Successfully got bot configuration."
     when (testConfig opts) $ Q.exitWith (Q.ExitSuccess)
  
-    C.bracket
-        (L.initializeSelfSufficientLoggerResources loggerConfig)
-        (\r -> do
-            L.closeSelfSufficientLogger r
-            L.logInfo configLogger "closing") $ \r ->
-            let
-                logger = L.Handle $
-                    L.selfSufficientLogger r $
-                        L.lcFilter loggerConfig
-            in  todo logger gen conf `C.catch` defaultHandler logger
-
-
+    L.withSelfSufficientLogger loggerConfig $ \logger ->
+        todo logger gen conf `C.catch` defaultHandler logger 
 
 defaultHandler :: L.Handle IO -> C.SomeException -> IO a
 defaultHandler h e = do
