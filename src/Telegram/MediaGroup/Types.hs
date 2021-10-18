@@ -18,13 +18,19 @@ data TlMediaGroupIdentifier = TlMediaGroupIdentifier {
 
 instance GP.PrettyShow TlMediaGroupIdentifier
 
+
 data TlInputMediaPhoto = TlInputMediaPhoto {
-    _TIMP_media :: T.Text
+    _TIMP_caption :: Maybe T.Text
+    , _TIMP_media :: T.Text
     -- here it is file_id that exists on the Telegram servers
     } deriving (Show, Generic)
 
 instance ToJSON TlInputMediaPhoto where
-    toJSON ph = object ["type" .= ("photo" :: T.Text), "media" .= _TIMP_media ph]
+    toJSON ph = object [
+        "type" .= ("photo" :: T.Text),
+        "media" .= _TIMP_media ph,
+        "caption" .= _TIMP_caption ph
+        ]
 
 
 data TlMediaGroupPair = TlMediaGroupPair {

@@ -160,6 +160,8 @@ processMediaGroup h m = let
     mUser = _TM_from m
     mMediaGroupID = _TM_media_group_id m
     mPhoto = _TM_photo m >>= S.safeHead :: Maybe TlPhotoSize
+    mCaption = _TM_caption m
+    mInputMediaPhoto = TlInputMediaPhoto mCaption <$> mPhoto
     mMediaGroupIdent = TlMediaGroupIdentifier chat mUser <$> mMediaGroupID
     mAction = asum [ insertMediaGroupPhoto (D.specH h) <$> mMediaGroupIdent <*> mPhoto ]
     in S.withMaybe mAction (return ()) $
@@ -180,11 +182,11 @@ sendMediaGroup h (TlMediaGroupPair ident items) = do
                 unit "media" $ AeT.toJSON items']
         req = fmsg url (method, pars)
     E.sendNTimes h Tele mUser (return req)
-
+{-
 func :: TlPhotoSize -> TlInputMediaPhoto
 func photo =
     TlInputMediaPhoto {
         _TIMP_media = _TPS_file_id photo
     }
-
+-}
 

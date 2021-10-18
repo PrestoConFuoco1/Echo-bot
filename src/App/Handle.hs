@@ -25,6 +25,7 @@ data Handle s m = Handle {
     sendThis :: H.HTTPRequest -> m (Either String (Rep s)),
     sendHelp :: H.HTTPRequest -> m (Either String (Rep s)),
     sendKeyboard :: H.HTTPRequest -> m (Either String (Rep s)),
+    sendRepNumMessage :: H.HTTPRequest -> m (Either String (Rep s)),
 
     specH :: (BotClassTypes s) => Hndl s m
     }

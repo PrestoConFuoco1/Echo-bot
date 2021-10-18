@@ -95,7 +95,7 @@ handleSetRepNum h s user mChat repnum = do
     D.insertUser h user repnum
     eithReqFunc <- sendTextMsg h s mChat (Just user) text
     D.logInfo h $ funcName <> afterLog
-    either sendFail (sendFixedInfo h s $ D.sendThis h) eithReqFunc
+    either sendFail (sendFixedInfo h s $ D.sendRepNumMessage h) eithReqFunc
 
 handleCommand :: (BotClass s, Monad m) =>
     D.Handle s m -> s -> Command -> Maybe (Chat s) -> Maybe (User s) -> m ()
