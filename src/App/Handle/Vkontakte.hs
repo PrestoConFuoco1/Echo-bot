@@ -66,6 +66,8 @@ resourcesToHandle resources logger =
 
         , D.getUpdates = G.getUpdates logger
         , D.sendThis = G.sendThis logger
+        , D.sendHelp = G.sendThis logger
+        , D.sendKeyboard = G.sendThis logger
 
         , D.specH = resourcesToVkHandler resources logger
     }

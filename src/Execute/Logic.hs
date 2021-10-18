@@ -112,7 +112,7 @@ sendHelp h s mChat mUser = do
     D.logDebug h $ funcName <> "sending HTTP request to send help message"
     S.withEither eithReqFunc
         (D.logError h . (funcName <>) . T.pack)
-        (sendFixedInfo h s $ D.sendThis h)
+        (sendFixedInfo h s $ D.sendHelp h)
 
 
 minRepNum, maxRepNum :: Int
@@ -129,20 +129,12 @@ sendRepNumButtons h s mChat mUser = do
     D.logDebug h $ funcName <> "sending HTTP request to send repeat number buttons"
     S.withEither eithReqFuncKeyboard
         (D.logError h . (funcName <>) . T.pack)
-        (sendFixedInfo h s $ D.sendThis h)
+        (sendFixedInfo h s $ D.sendKeyboard h)
 
 logEither :: (BotClass s, Monad m) =>
     D.Handle s m -> s -> (a -> m ()) -> Either String a -> m ()
 logEither h s f = do
     either (D.logError h . T.pack) f
-{-
-sendFixedInfo :: (BotClass s, Monad m) =>
-    D.Handle s m -> s -> H.HTTPRequest -> m ()
-sendFixedInfo h s request = do
-    let funcName = "sendFixedInfo: "
-    eithResp <- D.sendThis h request
-    logEitherResponse h s eithResp
--}
 
 sendFixedInfo :: (BotClass s, Monad m) =>
     D.Handle s m -> s -> (a -> m (Either String (Rep s))) -> a -> m ()

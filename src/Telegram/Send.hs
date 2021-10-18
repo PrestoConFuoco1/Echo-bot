@@ -45,3 +45,8 @@ sendThis logger request = do
 
 sendHelp :: L.Handle IO -> H.HTTPRequest -> IO (Either String TlReply)
 sendHelp = sendThis
+
+sendKeyboard :: L.Handle IO -> H.HTTPRequest -> IO (Either String TlReply)
+sendKeyboard = sendThis
+
+
