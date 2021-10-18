@@ -23,14 +23,14 @@ import BotClass.ClassTypes
 import Types
 import BotClass.BotVkInstance
 import BotClass.BotTeleInstance
-import Telegram.Types (Tele(..))
-import Vkontakte.Types (Vk(..))
 import Data.IORef
 import App.Handle as D
 import qualified Stuff as S (withMaybe)
 import Data.List (isPrefixOf)
 import Text.Read (readMaybe)
 import qualified Data.Text as T (pack)
+import BotClass.ClassTypesTeleInstance
+import BotClass.ClassTypesVkInstance
 
 data Messager = Vkontakte | Telegram | None
 data RunOptions = RunOptions {

@@ -1,20 +1,19 @@
 module App.Handle.Telegram where
 
 
+import Telegram
 import qualified App.Handle as D
 import qualified App.Logger as L
-import Telegram.Types
 import BotClass.ClassTypesTeleInstance
 import Types
 import Data.IORef
 import qualified Data.Map as M
-import qualified HTTPRequests as H
 import qualified Data.Map as M (empty)
 import qualified System.Exit as Q (ExitCode (..), exitWith)
 import qualified Control.Monad.Catch as C
 import qualified Telegram.Exceptions as TlEx
 import qualified Data.Text as T
-import qualified Telegram.GetUpdates as G
+import qualified Telegram.Send as G
 
 data Config = Config {
       configCommonEnv :: EnvironmentCommon

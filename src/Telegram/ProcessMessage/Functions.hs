@@ -14,16 +14,11 @@ import qualified Data.Text as T (Text, unpack, pack)
 
 import Telegram.Entity
 import Telegram.ProcessMessage.Types
-
-chatIDfromMsg :: TlMessage -> Integer
-chatIDfromMsg = _TC_id . _TM_chat
-
-isMediaGroup :: TlMessage -> Bool
-isMediaGroup m = _TM_media_group_id m /= Nothing
+import qualified GenericPretty as GP
 
 sendMessageTele :: TlMessage -> Either String (T.Text, H.ParamsList)
 sendMessageTele m =
-    maybe (Left $ "Failed to handle message." ++ show m) Right $
+    maybe (Left $ "Failed to handle message." ++ GP.defaultPretty m) Right $
         asum $ map ($ m) 
              [  sendTextTele,
                 sendPhotoTele,

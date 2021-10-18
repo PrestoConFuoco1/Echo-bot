@@ -6,11 +6,9 @@ module Telegram.MediaGroup.Types where
 import GHC.Generics
 import Telegram.Entity
 import qualified Data.Text as T
-import qualified Data.Text.Lazy as TL
 import qualified GenericPretty as GP
-
 import Data.Aeson.Types
-
+import Telegram.ProcessMessage.Types
 
 data TlMediaGroupIdentifier = TlMediaGroupIdentifier {
     _TMGI_chat :: TlChat,
@@ -26,6 +24,13 @@ data TlInputMediaPhoto = TlInputMediaPhoto {
     } deriving (Show, Generic)
 
 instance ToJSON TlInputMediaPhoto where
-    toJSON ph = object ["type" .= ("photo" :: TL.Text), "media" .= _TIMP_media ph]
+    toJSON ph = object ["type" .= ("photo" :: T.Text), "media" .= _TIMP_media ph]
+
+
+data TlMediaGroupPair = TlMediaGroupPair {
+    _TMGP_identifier :: TlMediaGroupIdentifier,
+    _TMGP_items :: [TlPhotoSize]
+    } deriving (Show, Generic)
+instance GP.PrettyShow TlMediaGroupPair
 
 

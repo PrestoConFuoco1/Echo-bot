@@ -5,9 +5,8 @@ module App.Handle.Vkontakte where
 
 import qualified App.Handle as D
 import qualified App.Logger as L
-import Vkontakte.Types
+import Vkontakte
 import Vkontakte.Initialize
---import Vkontakte.Entity
 import BotClass.ClassTypesVkInstance
 import Types
 import Data.IORef
@@ -23,7 +22,7 @@ import qualified Vkontakte.Exceptions as VkEx
 import qualified Control.Monad.Catch as C (catches, Handler (..), SomeException, displayException)
 import GenericPretty as GP
 import qualified Data.ByteString.Lazy.Char8 as BSL (ByteString, unpack) --, toStrict)
-import qualified Vkontakte.GetUpdates as G
+import qualified Vkontakte.Send as G
 
 
 data Config = Config {

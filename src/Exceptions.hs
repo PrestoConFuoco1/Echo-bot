@@ -14,8 +14,4 @@ data BotException =
 instance Exception BotException
 
 
-data VkException =
-    FASd
-    deriving (Show)
 
-instance Exception VkException

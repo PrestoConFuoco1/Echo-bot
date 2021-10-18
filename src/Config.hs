@@ -2,6 +2,7 @@
 
 module Config where
 
+import Telegram
 import qualified Data.Text.Lazy as TL (Text, fromStrict, pack)
 import qualified Data.Text as T (Text, pack)
 import GHC.Generics (Generic)
@@ -13,8 +14,7 @@ import qualified Control.Exception as E (catch, SomeException, Exception (..),
                                          try, throw, SomeException)
 import qualified App.Logger as L
 
-import Telegram.Types (TlConfig (..), Tele)
-import Vkontakte.Types  (VkConfig (..), Vk)
+import Vkontakte
 
 import Types (EnvironmentCommon (..), helpMsg, repQuestion, repNum, timeout,
                  helpCommand, setRepNumCommand, defStateGen)

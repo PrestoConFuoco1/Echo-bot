@@ -1,8 +1,13 @@
 {-# LANGUAGE TypeFamilies #-}
 module BotClass.ClassTypesTeleInstance where
 
-import Telegram.Types
 import BotClass.ClassTypes
+import Telegram
+
+data Tele = Tele
+dummyTl = Tele
+
+
 
 instance BotClassTypes Tele where
     type Conf Tele = TlConfig -- don't care

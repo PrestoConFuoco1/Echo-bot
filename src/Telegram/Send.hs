@@ -1,4 +1,4 @@
-module Telegram.GetUpdates where
+module Telegram.Send (getUpdates, sendThis) where
 
 import qualified HTTPRequests as H
 import Types
@@ -8,6 +8,8 @@ import qualified Data.Aeson as Ae (decode)
 import qualified Data.ByteString.Lazy.Char8 as BSL (ByteString)
 import Data.Aeson.Types as AeT
 import Telegram.ForHandlers
+import Telegram.Update
+import Telegram.General
 
 parseUpdatesResponse :: BSL.ByteString
     -> Either String (UpdateResponse TlUpdateReplySuccess TlUpdateReplyError)
@@ -17,7 +19,6 @@ parseUpdatesResponse resp = do -- Either
     return repl
 
 
--- getUpdates :: H.HTTPRequest -> m (Either String (UpdateResponse (RepSucc s) (RepErr s))),
 getUpdates :: L.Handle IO -> H.HTTPRequest -> IO (Either String (UpdateResponse TlUpdateReplySuccess TlUpdateReplyError))
 getUpdates logger request = do
     let
@@ -31,7 +32,6 @@ parseHTTPResponse resp = do -- Either
     val <- maybe (Left "Couldn't parse HTTP response") Right $ Ae.decode resp
     repl <- parseEither parseJSON val
     return repl
-
 
 
 sendThis :: L.Handle IO -> H.HTTPRequest -> IO (Either String TlReply)

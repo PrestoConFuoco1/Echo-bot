@@ -1,9 +1,15 @@
 {-# LANGUAGE TypeFamilies #-}
 module BotClass.ClassTypesVkInstance where
 
-import Vkontakte.Types
+import Vkontakte
 import BotClass.ClassTypes
- 
+
+
+data Vk = Vk
+dummyVk = Vk
+
+
+
 instance BotClassTypes Vk where
     type Conf Vk = VkConfig
 

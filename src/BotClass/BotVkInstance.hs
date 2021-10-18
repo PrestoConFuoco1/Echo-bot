@@ -8,10 +8,9 @@ module BotClass.BotVkInstance where
 
 import BotClass.Class
 import BotClass.ClassTypesVkInstance
-import Vkontakte.Types
 import Vkontakte.Exceptions
 import Types (timeout)
-
+import Vkontakte
 import HTTPRequests as H
 
 import qualified Stuff as S (emptyToNothing, withMaybe)
@@ -25,6 +24,8 @@ import Data.List (elem)
 import qualified Control.Monad.Catch as C
 import GenericPretty
 import qualified Exceptions as Ex
+
+
 
 instance BotClassUtility Vk where
 --    getResult :: s -> Rep s -> Maybe Value
@@ -66,23 +67,12 @@ instance BotClass Vk where
     --takesJSON _ = False
     takesJSON _ = vkTakesJSON
     getUpdatesRequest = getUpdatesRequest1
-    parseHTTPResponse = parseHTTPResponse1
     isSuccess = isSuccess1
-    parseUpdatesResponse = parseUpdatesResponse1
-    --parseUpdatesList = parseUpdatesList1
---    parseUpdatesValueList :: s -> Rep s -> Either String [Value]
-    --handleFailedUpdatesRequest :: (C.MonadThrow m) => D.Handle s m -> Rep s -> m ()
     handleFailedUpdatesRequest = handleFailedUpdatesRequest1
     parseUpdatesValueList s rep = do
         res <- maybe (Left "Couldn't parse update list") Right $ getResult s rep
         AeT.parseEither AeT.parseJSON res
-
-
-
---    parseUpdate :: s -> Value -> Either String (Upd s)
     parseUpdate s = AeT.parseEither AeT.parseJSON
-
-
 
     sendTextMsg = sendTextMsg1
     repNumKeyboard = repNumKeyboard1
@@ -106,20 +96,8 @@ getUpdatesRequest1 h s = do
                 unit "wait" timeout']
     return $ H.Req H.GET fullUrl pars
 
---parseHTTPResponse :: s -> BSL.ByteString -> Either String (Rep s)
-parseHTTPResponse1 _ resp = do -- Either
-    val <- maybe (Left "Couldn't parse HTTP response") Right $ decode resp
-    repl <- parseEither parseJSON val
-    return repl
-
 --    isSuccess :: s -> Rep s -> Bool
 isSuccess1 _ r = _VR_failed r == Nothing
-
---    parseUpdatesResponse :: s -> BSL.ByteString -> Either String (UpdateResponse (RepSucc s) (RepErr s))
-parseUpdatesResponse1 _ resp = do -- Either
-    val <- maybe (Left "Couldn't parse updates response into aeson Value") Right $ decode resp
-    repl <- parseUpdatesResponse2 val
-    return repl
 
 
 errorMsg1 = "events history is out of date or losed, ready to use new ts got from vk server"

@@ -16,6 +16,7 @@ import BotClass.ClassTypes
 import qualified Control.Monad.Catch as C
 import Types
 
+
 fmsg url (method, params) = H.Req H.POST (url <> method) params
 
 class (BotClassTypes s) => BotClassUtility s where
@@ -35,30 +36,17 @@ class (BotClassTypes s) => BotClassUtility s where
     getCallbackData :: s -> CallbackQuery s -> Maybe T.Text
     getCallbackChat :: s -> CallbackQuery s -> Maybe (Chat s)
 
- --   unexpectedEvent
-
-
 
 class (BotClassUtility s) => BotClass s where
     takesJSON :: s -> Bool
-    
     getUpdatesRequest :: (Monad m) => D.Handle s m -> s -> m H.HTTPRequest
-    parseHTTPResponse :: s -> BSL.ByteString -> Either String (Rep s)
-
     isSuccess :: s -> Rep s -> Bool
-
-    parseUpdatesResponse :: s -> BSL.ByteString -> Either String (UpdateResponse (RepSucc s) (RepErr s))
     handleFailedUpdatesRequest :: (C.MonadThrow m) => D.Handle s m -> RepErr s -> m ()
-
-
     parseUpdatesValueList :: s -> RepSucc s -> Either String [Value]
     parseUpdate :: s -> Value -> Either String (Upd s)
-
     sendTextMsg :: (Monad m) => D.Handle s m -> s -> Maybe (Chat s) -> Maybe (User s) -> T.Text
         -> m (Either String H.HTTPRequest)
 
     repNumKeyboard :: s -> [Int] -> TL.Text -> H.ParamsList
-
     processMessage :: (Monad m) => D.Handle s m -> s -> Msg s -> m (Maybe (m H.HTTPRequest))
-
     epilogue :: (Monad m) => D.Handle s m -> s -> [Upd s] -> RepSucc s -> m ()

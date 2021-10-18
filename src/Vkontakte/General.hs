@@ -1,9 +1,7 @@
 {-# LANGUAGE
-    DeriveGeneric,
-    RecordWildCards
+    DeriveGeneric
     #-}
-
-module Vkontakte.Types (module Vkontakte.Types, module VE, module VA, module VKb) where
+module Vkontakte.General where
 
 
 import Data.Aeson (decode)
@@ -22,6 +20,7 @@ import Vkontakte.Keyboard as VKb
 import HTTPRequests as H
 
 
+
 defaultVkParams sc = defaultVkParams' (vkAccessToken sc) (apiVersion sc)
 
 defaultVkParams' accTok apiV =
@@ -29,10 +28,6 @@ defaultVkParams' accTok apiV =
      unit "v" apiV ]
 
 
-
-
-data Vk = Vk
-dummyVk = Vk
 
 vkTakesJSON = False
 
@@ -72,25 +67,5 @@ data VkStateMut = VKSM {
     vkTs :: TL.Text, -- timestamp
     vkRndGen :: StdGen
     } deriving (Show)
-
-getRandomID' :: VkStateMut -> (VkStateMut, Integer)
-getRandomID' sm =
-    let (rndInt32, g') = randomR (0::Integer, 2^32-1) $ vkRndGen sm
-    in  (sm { vkRndGen = g' }, rndInt32)
-
-putTimestamp' :: TL.Text -> VkStateMut -> VkStateMut
-putTimestamp' newTs sm = sm { vkTs = newTs }
-
-getTimestamp' :: VkStateMut -> TL.Text
-getTimestamp' = vkTs
-
-data VkHandler m = VkHandler {
-    getRandomID :: m Integer,
-    getTimestamp :: m TL.Text,
-    putTimestamp :: TL.Text -> m ()
-    }
-
---------------------------------------------
-
 
 

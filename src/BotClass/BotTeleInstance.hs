@@ -7,11 +7,11 @@
 
 module BotClass.BotTeleInstance where
 
+import Telegram
+
 import BotClass.Class
 import BotClass.ClassTypes
 import BotClass.ClassTypesTeleInstance
-import Telegram.Types
-import Telegram.MediaGroup
 import Types
 
 import HTTPRequests as H
@@ -28,41 +28,41 @@ import qualified GenericPretty as GP
 import qualified Stuff as S
 import qualified Execute.Logic as E
 import qualified Control.Monad.Catch as C
-import qualified Telegram.Exceptions as Ex
+import qualified Exceptions as Ex
 
 instance BotClassUtility Tele where
---    getResult :: s -> RepSucc s -> Maybe Value
+--  getResult :: s -> RepSucc s -> Maybe Value
     getResult _ = Just . _TURS_result
 
---    getMsg :: s -> Upd s -> Maybe (Msg s)
+--  getMsg :: s -> Upd s -> Maybe (Msg s)
     getMsg _ TlUpdate {..} = case _TU_event of
         TEMsg m -> Just m
         _       -> Nothing
 
---   getUpdateValue :: s -> Upd s -> Value
+-- getUpdateValue :: s -> Upd s -> Value
     getUpdateValue _ u = _TU_value u
 
---    getChat :: s -> Msg s -> Maybe (Chat s)
+--  getChat :: s -> Msg s -> Maybe (Chat s)
     getChat _ = Just . _TM_chat
---    getUser :: s -> Msg s -> Maybe (User s)
+--  getUser :: s -> Msg s -> Maybe (User s)
     getUser _ = _TM_from
---    getText :: s -> Msg s -> Maybe T.Text
+--  getText :: s -> Msg s -> Maybe T.Text
     getText _ = _TM_text
---    getUserID :: s -> User s -> T.Text
+--  getUserID :: s -> User s -> T.Text
     getUserID _ = T.pack . show . _TUs_id
 
---    getCallbackQuery :: s -> Upd s -> Maybe (CallbackQuery s)
+--  getCallbackQuery :: s -> Upd s -> Maybe (CallbackQuery s)
     getCallbackQuery _ TlUpdate {..} = case _TU_event of
         TECallback cb -> Just cb
         _             -> Nothing
 
 
 
---    getCallbackUser :: s -> CallbackQuery s -> User s
+--  getCallbackUser :: s -> CallbackQuery s -> User s
     getCallbackUser d = _TCB_from
---    getCallbackData :: s -> CallbackQuery s -> Maybe T.Text
+--  getCallbackData :: s -> CallbackQuery s -> Maybe T.Text
     getCallbackData d = _TCB_data
---    getCallbackChat :: s -> CallbackQuery s -> Maybe (Chat s)
+--  getCallbackChat :: s -> CallbackQuery s -> Maybe (Chat s)
     getCallbackChat d c = _TCB_message c >>= return . _TM_chat
 
 
@@ -82,35 +82,25 @@ instance BotClass Tele where
         curUpdID <- getUpdateID (D.specH h)
         return $ req curUpdID
 
---    parseHTTPResponse :: s -> BSL.ByteString -> Either String (Rep s)
-    parseHTTPResponse _ resp = do -- Either
-        val <- maybe (Left "Couldn't parse HTTP response") Right $ Ae.decode resp
-        repl <- AeT.parseEither AeT.parseJSON val
-        return repl
-
---    isSuccess :: s -> Rep s -> Bool
+--  isSuccess :: s -> Rep s -> Bool
     isSuccess _ = _TR_ok
 
---    parseUpdatesResponse :: s -> BSL.ByteString -> Either String (UpdateResponse (RepSucc s) (RepErr s))
-    parseUpdatesResponse _ resp = do -- Either
-        val <- maybe (Left "Couldn't parse updates response into aeson Value") Right $ Ae.decode resp
-        repl <- parseUpdatesResponse1 val
-        return repl
-
---    handleFailedUpdatesRequest :: (C.MonadThrow m) => D.Handle s m -> RepErr s -> m ()
+--  handleFailedUpdatesRequest :: (C.MonadThrow m) => D.Handle s m -> RepErr s -> m ()
     handleFailedUpdatesRequest h err = do
         let funcName = "tl_handleFailedUpdatesRequest: "
         D.logError h $ funcName <> "got telegram error"
         D.logError h $ GP.defaultPrettyT err
-        C.throwM Ex.TlException
+        D.logError h $ funcName <> "unable to handle any telegram errors"
+        C.throwM Ex.UnableToHandleError
+--  normal work is now impossible since the bot can't handle any errors
 
---    parseUpdatesValueList :: s -> RepSucc s -> Either String [Value]
+--  parseUpdatesValueList :: s -> RepSucc s -> Either String [Value]
     parseUpdatesValueList s rep = do
         res <- maybe (Left "Couldn't parse update list") Right $ getResult s rep
         AeT.parseEither AeT.parseJSON res
         --Left "debug error"
 
---    parseUpdate :: s -> Value -> Either String (Upd s)
+--  parseUpdate :: s -> Value -> Either String (Upd s)
     parseUpdate s = AeT.parseEither AeT.parseJSON
 
 
@@ -118,8 +108,8 @@ instance BotClass Tele where
     repNumKeyboard d lst cmd = [unit "reply_markup" obj]
       where obj = AeT.toJSON $ repNumKeyboardTele' cmd lst
 
---    sendTextMsg :: D.Handle s m -> s -> Maybe (Chat s) -> Maybe (User s) -> T.Text
---        -> m (Either String H.HTTPRequest)
+--  sendTextMsg :: D.Handle s m -> s -> Maybe (Chat s) -> Maybe (User s) -> T.Text
+--      -> m (Either String H.HTTPRequest)
     sendTextMsg h s Nothing _ _ = return $ Left "Telegram: no chat supplied, unable to send messages to users"
     sendTextMsg h s (Just c) _ text =
         let
@@ -129,7 +119,7 @@ instance BotClass Tele where
              unit "text" text])
             
 
---    epilogue :: D.Handle s m -> s -> [Upd s] -> Rep s -> m ()
+--  epilogue :: D.Handle s m -> s -> [Upd s] -> Rep s -> m ()
     epilogue h s [] _ = return ()
     epilogue h s us _ = do
         let
@@ -142,7 +132,7 @@ instance BotClass Tele where
         mapM_ (sendMediaGroup h) mediaGroups
         purgeMediaGroups (D.specH h)
 
---    processMessage :: (Monad m) => D.Handle s m -> s -> Msg s -> m (Maybe (m H.HTTPRequest))
+--  processMessage :: (Monad m) => D.Handle s m -> s -> Msg s -> m (Maybe (m H.HTTPRequest))
     processMessage = processMessage1
 
 
@@ -173,9 +163,9 @@ processMediaGroup h m = let
     mMediaGroupIdent = TlMediaGroupIdentifier chat mUser <$> mMediaGroupID
     mAction = asum [ insertMediaGroupPhoto (D.specH h) <$> mMediaGroupIdent <*> mPhoto ]
     in S.withMaybe mAction (return ()) $
-         \a -> do
+         \action -> do
             D.logDebug h $ funcName <> "processing media group"
-            a
+            action
 
 
 sendMediaGroup :: (Monad m) => D.Handle Tele m -> TlMediaGroupPair -> m ()
@@ -189,7 +179,6 @@ sendMediaGroup h (TlMediaGroupPair ident items) = do
         pars = [unit "chat_id" $ _TC_id chat,
                 unit "media" $ AeT.toJSON items']
         req = fmsg url (method, pars)
-    --E.sendFixedInfo h Tele req
     E.sendNTimes h Tele mUser (return req)
 
 func :: TlPhotoSize -> TlInputMediaPhoto

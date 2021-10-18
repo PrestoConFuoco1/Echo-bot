@@ -43,28 +43,32 @@ library
       HTTPRequests
       Lib
       Stuff
+      Telegram
       Telegram.Entity
       Telegram.Exceptions
       Telegram.ForHandlers
-      Telegram.GetUpdates
+      Telegram.General
       Telegram.Keyboard
-      Telegram.MediaGroup
       Telegram.MediaGroup.Types
       Telegram.ProcessMessage
       Telegram.ProcessMessage.Functions
       Telegram.ProcessMessage.Types
-      Telegram.Types
+      Telegram.Send
+      Telegram.Update
       Types
+      Vkontakte
       Vkontakte.Attachment
       Vkontakte.Attachment.Functions
       Vkontakte.Attachment.Test
       Vkontakte.Attachment.Types
       Vkontakte.Entity
       Vkontakte.Exceptions
-      Vkontakte.GetUpdates
+      Vkontakte.ForHandlers
+      Vkontakte.General
       Vkontakte.Initialize
       Vkontakte.Keyboard
-      Vkontakte.Types
+      Vkontakte.Send
+      Vkontakte.Update
   other-modules:
       Paths_bot2
   hs-source-dirs:

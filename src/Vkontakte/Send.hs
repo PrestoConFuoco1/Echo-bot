@@ -1,4 +1,4 @@
-module Vkontakte.GetUpdates where
+module Vkontakte.Send (getUpdates, sendThis) where
 
 
 import qualified HTTPRequests as H
@@ -6,7 +6,9 @@ import Types
 import qualified App.Logger as L
 import qualified Data.Aeson as Ae (decode)
 import qualified Data.ByteString.Lazy.Char8 as BSL (ByteString)
-import Vkontakte.Types
+import Vkontakte.General
+import Vkontakte.Update
+
 import Data.Aeson
 import Data.Aeson.Types
 
