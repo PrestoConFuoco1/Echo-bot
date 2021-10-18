@@ -27,7 +27,8 @@ data TlStateConst = TLSC {
 
 data TlStateMut = TLSM {
     tlUpdateID :: Integer,
-    photoMediaGroups :: M.Map TlMediaGroupIdentifier [TlPhotoSize]
+    --photoMediaGroups :: M.Map TlMediaGroupIdentifier [TlPhotoSize]
+    photoMediaGroups :: M.Map TlMediaGroupIdentifier [TlInputMediaPhoto]
     } deriving (Show)
 
 

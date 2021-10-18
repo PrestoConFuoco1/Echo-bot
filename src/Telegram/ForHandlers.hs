@@ -18,11 +18,21 @@ getUpdateID' x = tlUpdateID x
 putUpdateID' :: Integer -> TlStateMut -> TlStateMut
 putUpdateID' uid m = m { tlUpdateID = uid }
 
+{-
 insertMediaGroupPhoto' :: TlMediaGroupIdentifier -> TlPhotoSize -> TlStateMut -> TlStateMut
 insertMediaGroupPhoto' key value sm =
     let newMap = M.insertWith (++) key [value] $ photoMediaGroups sm
 -- what is first and what is second argument in (++) here?
     in  sm { photoMediaGroups = newMap }
+-}
+
+insertMediaGroupPhoto' :: TlMediaGroupIdentifier -> TlInputMediaPhoto -> TlStateMut -> TlStateMut
+insertMediaGroupPhoto' key value sm =
+    let newMap = M.insertWith (++) key [value] $ photoMediaGroups sm
+-- what is first and what is second argument in (++) here?
+    in  sm { photoMediaGroups = newMap }
+
+
 
 purgeMediaGroups' :: TlStateMut -> TlStateMut
 purgeMediaGroups' sm = sm { photoMediaGroups = M.empty }
@@ -35,7 +45,8 @@ getMediaGroups' TLSM { photoMediaGroups = x } = map f $ M.toList x
 data TlHandler m = TlHandler {
     getUpdateID :: m Integer,
     putUpdateID :: Integer -> m (),
-    insertMediaGroupPhoto :: TlMediaGroupIdentifier -> TlPhotoSize -> m (),
+    --insertMediaGroupPhoto :: TlMediaGroupIdentifier -> TlPhotoSize -> m (),
+    insertMediaGroupPhoto :: TlMediaGroupIdentifier -> TlInputMediaPhoto -> m (),
     purgeMediaGroups :: m (),
     getMediaGroups :: m [TlMediaGroupPair]
     }

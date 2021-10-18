@@ -65,7 +65,7 @@ resourcesToHandle resources logger =
         , D.getUser = \u -> readIORef (usersMap resources) >>= return . M.lookup u
 
         , D.getUpdates = G.getUpdates logger
-        , D.sendThis = G.sendThis logger
+        , D.sendEcho = G.sendThis logger
         , D.sendHelp = G.sendThis logger
         , D.sendKeyboard = G.sendThis logger
         , D.sendRepNumMessage = G.sendThis logger

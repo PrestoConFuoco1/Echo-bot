@@ -25,17 +25,20 @@ data TlInputMediaPhoto = TlInputMediaPhoto {
     -- here it is file_id that exists on the Telegram servers
     } deriving (Show, Generic)
 
+instance GP.PrettyShow TlInputMediaPhoto
+
 instance ToJSON TlInputMediaPhoto where
-    toJSON ph = object [
+    toJSON ph =
+        let captionParam = maybe [] (\x -> ["caption" .= x]) $ _TIMP_caption ph
+        in  object $ [
         "type" .= ("photo" :: T.Text),
-        "media" .= _TIMP_media ph,
-        "caption" .= _TIMP_caption ph
-        ]
+        "media" .= _TIMP_media ph] ++ captionParam
 
 
 data TlMediaGroupPair = TlMediaGroupPair {
     _TMGP_identifier :: TlMediaGroupIdentifier,
-    _TMGP_items :: [TlPhotoSize]
+    --_TMGP_items :: [TlPhotoSize]
+    _TMGP_items :: [TlInputMediaPhoto]
     } deriving (Show, Generic)
 instance GP.PrettyShow TlMediaGroupPair
 

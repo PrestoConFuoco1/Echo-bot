@@ -176,7 +176,7 @@ sendNTimes h s maybeUser req = do
     D.logDebug h $ funcName <> "sending message " <> S.showT repN <> " times."
     reqs <- replicateM repN req
 
-    eithRespList <- mapM (D.sendThis h) reqs
+    eithRespList <- mapM (D.sendEcho h) reqs
     let (errs, resps) = partitionEithers eithRespList
     mapM_ (D.logError h . T.pack) errs
     mapM_ (logResponse h s) resps

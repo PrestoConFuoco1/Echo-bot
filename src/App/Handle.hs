@@ -22,7 +22,7 @@ data Handle s m = Handle {
     getConstState :: (BotClassTypes s) => StateC s,
 
     getUpdates :: H.HTTPRequest -> m (Either String (UpdateResponse (RepSucc s) (RepErr s))),
-    sendThis :: H.HTTPRequest -> m (Either String (Rep s)),
+    sendEcho :: H.HTTPRequest -> m (Either String (Rep s)),
     sendHelp :: H.HTTPRequest -> m (Either String (Rep s)),
     sendKeyboard :: H.HTTPRequest -> m (Either String (Rep s)),
     sendRepNumMessage :: H.HTTPRequest -> m (Either String (Rep s)),

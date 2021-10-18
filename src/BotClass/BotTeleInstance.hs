@@ -161,9 +161,10 @@ processMediaGroup h m = let
     mMediaGroupID = _TM_media_group_id m
     mPhoto = _TM_photo m >>= S.safeHead :: Maybe TlPhotoSize
     mCaption = _TM_caption m
-    mInputMediaPhoto = TlInputMediaPhoto mCaption <$> mPhoto
+    mInputMediaPhoto = fmap (TlInputMediaPhoto mCaption . _TPS_file_id) mPhoto
     mMediaGroupIdent = TlMediaGroupIdentifier chat mUser <$> mMediaGroupID
-    mAction = asum [ insertMediaGroupPhoto (D.specH h) <$> mMediaGroupIdent <*> mPhoto ]
+    --mAction = asum [ insertMediaGroupPhoto (D.specH h) <$> mMediaGroupIdent <*> mPhoto ]
+    mAction = asum [ insertMediaGroupPhoto (D.specH h) <$> mMediaGroupIdent <*> mInputMediaPhoto ]
     in S.withMaybe mAction (return ()) $
          \action -> do
             D.logDebug h $ funcName <> "processing media group"
@@ -174,12 +175,14 @@ sendMediaGroup :: (Monad m) => D.Handle Tele m -> TlMediaGroupPair -> m ()
 sendMediaGroup h (TlMediaGroupPair ident items) = do
     let chat = _TMGI_chat ident
         mUser = _TMGI_user ident
-        items' = map func items
+        items' = items --map func items
         sc = D.getConstState h
         method = "sendMediaGroup"
         url = tlUrl $ D.getConstState h -- нахрена тут этот параметр? убрать!
-        pars = [unit "chat_id" $ _TC_id chat,
-                unit "media" $ AeT.toJSON items']
+        mCaption = S.safeHead items >>= _TIMP_caption
+        pars = [unit "chat_id" $ _TC_id chat
+                , unit "media" $ AeT.toJSON items'
+                , mUnit "caption" mCaption]
         req = fmsg url (method, pars)
     E.sendNTimes h Tele mUser (return req)
 {-
