@@ -120,9 +120,11 @@ test-suite bot2-test
   main-is: Spec.hs
   other-modules:
       Handlers
+      Test.Mock
       Test.Telegram
-      Test.Telegram.Mock
       Test.Telegram.TestData
+      Test.Vkontakte
+      Test.Vkontakte.TestData
       Test.Vkontakte.Vkontakte
       Paths_bot2
   hs-source-dirs:

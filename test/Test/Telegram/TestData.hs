@@ -82,22 +82,11 @@ sendHelpMessageUpd :: TlUpdate
 sendHelpMessageUpd =
     let event = TEMsg $ sendHelpMessageMsg
     in  buildUpdate event "help request update"
-{-
-sendHelpMessageUpd :: TlUpdate
-sendHelpMessageUpd =
-    let event = TEMsg $ sendHelpMessageMsg
-    in  TlUpdate {
-        _TU_update_id = 0
-        , _TU_event = event
-        , _TU_value = String "help request update"
-        }
--}
-
 
 sendKeyboardMessage :: TlMessage
 sendKeyboardMessage = defaultMessage { _TM_text = Just $ setRepNumCommand defStateGen }
 
-sendKeyboardMessageUpd = buildUpdate (TEMsg sendKeyboardMessage) "set repnum buttons request"
+sendKeyboardMessageUpd = buildUpdate (TEMsg sendKeyboardMessage) "send repnum buttons request"
 
 
 {-

@@ -18,8 +18,8 @@ import Vkontakte.Entity
 
 
 data VkReply = VkReply {
-    _VR_ts :: Maybe TL.Text,
-    _VR_updates :: Maybe Value,
+--    _VR_ts :: Maybe TL.Text,
+--    _VR_updates :: Maybe Value,
     _VR_failed :: Maybe Int
     } deriving (Eq, Show, Generic)
 
@@ -62,9 +62,9 @@ parseUpdatesResponse2 = parseEither $ withObject "Vkontakte update object" $ \o 
 ----------------------------------------------
 
 data VkUpdate = VkUpdate {
-    _VU_type :: T.Text
-    , _VU_value :: Value
+     _VU_value :: Value
     , _VU_object :: VkEvent
+--    ,_VU_type :: T.Text
     } deriving (Eq, Show)
 
 data VkEvent = VEMsg VkMessage
@@ -90,7 +90,9 @@ instance FromJSON VkUpdate where
  --           "message_edit" -> fmap VEMsgEdit $ o .: "object"
  --           str -> fail $ T.unpack $ "Failed to parse the event object of type \"" <> str <> "\"."
             str -> return VEUnexpectedEvent
-        return $ VkUpdate updType value event
+        return $ VkUpdate
+            --updType
+            value event
 
 parseCallback :: Value -> Parser VkMyCallback
 parseCallback = withObject "Expected message object with payload" $ \msg -> do

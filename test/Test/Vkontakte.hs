@@ -1,32 +1,35 @@
-module Test.Telegram where
+module Test.Vkontakte where
 
-import Telegram
+import Vkontakte
 import Test.Hspec
 import Types
 import Data.IORef
 import Handlers
 import qualified HTTPRequests as H
 import App.Handle as D
-import Telegram.General
 import BotClass.ClassTypes
-import BotClass.ClassTypesTeleInstance
-import BotClass.BotTeleInstance
+import BotClass.ClassTypesVkInstance
+import BotClass.BotVkInstance
 import Execute
 import Execute.Logic
 import Data.Aeson
 import Data.Text as T
 import qualified Stuff as S
-import Test.Telegram.TestData
+import Test.Vkontakte.TestData
 import Test.Mock
 
 
-testTelegram :: Spec
-testTelegram = describe "telegram logic" $ do
+testVkontakte :: Spec
+testVkontakte = describe "vkontakte logic" $ do
     testHelpMessage
     testSetRepNumCommand
     testSetRepNum
-    testSendEcho (-1)
+    testSendEcho 7
+{-
+-}
 
+
+withRandomIDVkHandle = defaultVkHandle {getRandomID = (return 0 :: IO Integer)}
 
 testHelpMessage :: Spec
 testHelpMessage = do
@@ -37,12 +40,15 @@ testHelpMessage = do
 testHelpMessage' :: IO Int
 testHelpMessage' = do
     ref <- newIORef 0
-    let helpSender = const $ sendCounterCommon Tele ref successReply
-        handle = (defaultHandle Tele) { D.sendHelp = helpSender }
-    handleUpdate handle Tele sendHelpMessageUpd
+    let 
+        helpSender = const $ sendCounterCommon Vk ref successReply
+        handle = (defaultHandle Vk) {
+                D.sendHelp = helpSender
+                , D.specH = withRandomIDVkHandle
+              }
+    handleUpdate handle Vk sendHelpMessageUpd
     int <- readIORef ref
     return int
-
 
 testSetRepNumCommand :: Spec
 testSetRepNumCommand = do
@@ -53,29 +59,33 @@ testSetRepNumCommand = do
 testSetRepNumCommand' :: IO Int
 testSetRepNumCommand' = do
     ref <- newIORef 0
-    let keyboardSender = const $ sendCounterCommon Tele ref successReply
-        handle = (defaultHandle Tele) { D.sendKeyboard = keyboardSender }
-    handleUpdate handle Tele sendKeyboardMessageUpd
+    let keyboardSender = const $ sendCounterCommon Vk ref successReply
+        handle = (defaultHandle Vk) {
+            D.sendKeyboard = keyboardSender
+            , D.specH = withRandomIDVkHandle
+            }
+    handleUpdate handle Vk sendKeyboardMessageUpd
     int <- readIORef ref
     return int
 
 testSetRepNum :: Spec
 testSetRepNum = do
     describe "set repeat number test" $ do
-        it "set repeat number and send info message" $ do
+        it "should set repeat number and send info message" $ do
             testSetRepNum' 3 `shouldReturn` True
 
 testSetRepNum' :: Int -> IO Bool
 testSetRepNum' repnum = do
     ref <- newIORef 0
-    refMap <- newIORef Nothing :: IO (IORef (Maybe (TlUser, Int)))
-    let infoMessageSender = const $ sendCounterCommon Tele ref successReply
+    refMap <- newIORef Nothing
+    let infoMessageSender = const $ sendCounterCommon Vk ref successReply
         
-        handle = (defaultHandle Tele) {
+        handle = (defaultHandle Vk) {
             D.sendRepNumMessage = infoMessageSender
-            , D.insertUser = mockInsertUserCommon Tele refMap
+            , D.insertUser = mockInsertUserCommon Vk refMap
+            , D.specH = withRandomIDVkHandle
             }
-    handleUpdate handle Tele $ setRepNumUpdate repnum
+    handleUpdate handle Vk $ setRepNumUpdate repnum
     int <- readIORef ref
     maybeUserRepnum <- readIORef refMap
     let bool = int == 1 && maybeUserRepnum == Just (defaultUser, repnum)
@@ -92,12 +102,15 @@ testSendEcho' :: Int -> IO Int
 testSendEcho' repnum = do
     ref <- newIORef 0
     refMap <- newIORef $ Just (defaultUser, repnum)
-    let echoSender = const $ sendCounterCommon Tele ref successReply
-        handle = (defaultHandle Tele) {
+    let echoSender = const $ sendCounterCommon Vk ref successReply
+        handle = (defaultHandle Vk) {
             D.sendEcho = echoSender
-            , D.getUser = mockGetUserCommon Tele refMap
+            , D.getUser = mockGetUserCommon Vk refMap
+            , D.specH = withRandomIDVkHandle
             }
-    handleUpdate handle Tele $ simpleMessageUpdate
+    handleUpdate handle Vk $ simpleMessageUpdate
     int <- readIORef ref
  --   let bool = int == repnum
     return int
+{-
+-}

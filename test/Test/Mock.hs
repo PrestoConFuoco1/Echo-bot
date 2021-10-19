@@ -1,7 +1,9 @@
-module Test.Telegram.Mock where
+{-# LANGUAGE
+    FlexibleContexts
+    #-}
+module Test.Mock where
 
 
-import Test.Telegram.TestData
 import Telegram
 import Test.Hspec
 import Types
@@ -21,20 +23,21 @@ import qualified Stuff as S
 
 
 
-
-sendCounter :: IORef Int -> IO (Either String TlReply)
-sendCounter ref = do
+sendCounterCommon :: (BotClassTypes s) => s -> IORef Int -> Rep s -> IO (Either String (Rep s))
+sendCounterCommon s ref rep = do
     modifyIORef ref (+1)
-    return $ Right successReply
+ --   return $ Right successReply
+    return $ Right rep
 
 
-mockInsertUser :: IORef (Maybe (TlUser, Int)) -> TlUser -> Int -> IO ()
-mockInsertUser ref user repnum =
+mockInsertUserCommon :: (BotClassTypes s) => s -> IORef (Maybe (User s, Int)) -> User s -> Int -> IO ()
+mockInsertUserCommon s ref user repnum =
     writeIORef ref $ Just (user, repnum)
 
 
-mockGetUser :: IORef (Maybe (TlUser, Int)) -> TlUser -> IO (Maybe Int)
-mockGetUser ref user = do
+
+mockGetUserCommon :: (BotClassTypes s, Eq (User s)) => s -> IORef (Maybe (User s, Int)) -> User s -> IO (Maybe Int)
+mockGetUserCommon s ref user = do
     maybePair <- readIORef ref
     case maybePair of
         Nothing -> return Nothing
