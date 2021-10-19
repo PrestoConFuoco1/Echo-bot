@@ -14,71 +14,17 @@ import BotClass.BotTeleInstance
 import Execute
 import Execute.Logic
 import Data.Aeson
+import Data.Text as T
+import qualified Stuff as S
+import Test.Telegram.Mock
+import Test.Telegram.TestData
 
-defaultMessageID = 0
-defaultDate = 0
-defaultText = Nothing
-defaultUser = TlUser {
-    _TUs_id = 0,
-    _TUs_is_bot = False,
-    _TUs_first_name = "firstname",
-    _TUs_last_name = Just "lastname",
-    _TUs_username = Just "username"
-    }
-
-
-defaultChat = TlChat {
-    _TC_id = 0
-    }
-
-defaultMessage = TlMessage {
-    _TM_message_id = defaultMessageID,
-    _TM_from = Just defaultUser,
-    _TM_date = defaultDate,
-    _TM_chat = defaultChat,
-    _TM_text = defaultText,
-    _TM_media_group_id = Nothing,
-    _TM_animation = Nothing,
-    _TM_audio = Nothing,
-    _TM_document = Nothing,
-    _TM_photo = Nothing,
-    _TM_sticker = Nothing,
-    _TM_video = Nothing,
-    _TM_video_note = Nothing,
-    _TM_voice = Nothing,
-    _TM_caption = Nothing,
-    _TM_contact = Nothing,
-    _TM_dice = Nothing,
-    _TM_venue = Nothing,
-    _TM_location = Nothing
- 
-    }
-
-successReply :: TlReply
-successReply = TlReply {
-    _TR_ok = True
-    , _TR_result = Just $ String "success"
-    , _TR_description = Nothing
-    , _TR_error_code = Nothing
-    }
-
-sendCounter :: IORef Int -> H.HTTPRequest -> IO (Either String TlReply)
-sendCounter ref _ = do
-    modifyIORef ref (+1)
-    return $ Right successReply
-
-sendHelpMessageMsg :: TlMessage
-sendHelpMessageMsg = defaultMessage { _TM_text = Just $ helpCommand defStateGen }
-
-sendHelpMessageUpd :: TlUpdate
-sendHelpMessageUpd =
-    let event = TEMsg $ sendHelpMessageMsg
-    in  TlUpdate {
-        _TU_update_id = 0
-        , _TU_event = event
-        , _TU_value = String "help request update"
-        }
-
+testTelegram :: Spec
+testTelegram = do
+    testHelpMessage
+    testSetRepNumCommand
+    testSetRepNum
+    testSendEcho
 
 
 testHelpMessage :: Spec
@@ -90,12 +36,67 @@ testHelpMessage = do
 testHelpMessage' :: IO Int
 testHelpMessage' = do
     ref <- newIORef 0
-    let helpSender = sendCounter ref
+    let helpSender = const $ sendCounter ref
         handle = (defaultHandle Tele) { D.sendHelp = helpSender }
     handleUpdate handle Tele sendHelpMessageUpd
     int <- readIORef ref
     return int
 
-testTelegram :: Spec
-testTelegram = do
-    undefined
+
+testSetRepNumCommand :: Spec
+testSetRepNumCommand = do
+    describe "set message test" $ do
+        it "should send the keyboard after rep num request" $ do
+            testSetRepNumCommand' `shouldReturn` 1
+
+testSetRepNumCommand' :: IO Int
+testSetRepNumCommand' = do
+    ref <- newIORef 0
+    let keyboardSender = const $ sendCounter ref
+        handle = (defaultHandle Tele) { D.sendKeyboard = keyboardSender }
+    handleUpdate handle Tele sendKeyboardMessageUpd
+    int <- readIORef ref
+    return int
+
+testSetRepNum :: Spec
+testSetRepNum = do
+    describe "set repeat number and send info message" $ do
+        it "set repeat number and send info message" $ do
+            testSetRepNum' 3 `shouldReturn` True
+
+testSetRepNum' :: Int -> IO Bool
+testSetRepNum' repnum = do
+    ref <- newIORef 0
+    refMap <- newIORef Nothing :: IO (IORef (Maybe (TlUser, Int)))
+    let infoMessageSender = const $ sendCounter ref
+        
+        handle = (defaultHandle Tele) {
+            D.sendRepNumMessage = infoMessageSender
+            , D.insertUser = mockInsertUser refMap
+            }
+    handleUpdate handle Tele $ setRepNumUpdate repnum
+    int <- readIORef ref
+    maybeUserRepnum <- readIORef refMap
+    let bool = int == 1 && maybeUserRepnum == Just (defaultUser, repnum)
+    return bool
+-- if this test doesn't pass, use S.echo from Stuff.hs
+
+testSendEcho :: Spec
+testSendEcho = do
+    describe "should send echo message proper number of times" $ do
+        it "should send echo message proper number of times" $ do
+            testSendEcho' 6 `shouldReturn` 5
+
+testSendEcho' :: Int -> IO Int
+testSendEcho' repnum = do
+    ref <- newIORef 0
+    refMap <- newIORef $ Just (defaultUser, repnum)
+    let echoSender = const $ sendCounter ref
+        handle = (defaultHandle Tele) {
+            D.sendEcho = echoSender
+            , D.getUser = mockGetUser refMap
+            }
+    handleUpdate handle Tele $ simpleMessageUpdate
+    int <- readIORef ref
+ --   let bool = int == repnum
+    return int

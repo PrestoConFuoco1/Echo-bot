@@ -121,7 +121,9 @@ test-suite bot2-test
   other-modules:
       Handlers
       Test.Telegram
-      Test.Vkontakte
+      Test.Telegram.Mock
+      Test.Telegram.TestData
+      Test.Vkontakte.Vkontakte
       Paths_bot2
   hs-source-dirs:
       test
