@@ -119,6 +119,9 @@ test-suite bot2-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
+      Handlers
+      Test.Telegram
+      Test.Vkontakte
       Paths_bot2
   hs-source-dirs:
       test
@@ -134,6 +137,7 @@ test-suite bot2-test
     , configurator
     , containers
     , exceptions
+    , hspec
     , http-conduit
     , mtl
     , random

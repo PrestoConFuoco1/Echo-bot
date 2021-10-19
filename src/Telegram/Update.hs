@@ -66,7 +66,8 @@ data TlUpdate = TlUpdate {
     , _TU_value :: Value
     } deriving (Show, Eq)
 
-data TlEvent = TEMsg TlMessage
+data TlEvent =
+    TEMsg TlMessage
     -- | TEEdMsg TlMessage
     | TECallback TlCallback
     -- | TEUnexpectedEvent TlUnexpectedEvent

@@ -1,2 +1,8 @@
+--import Test.Vkontakte
+import Test.Telegram
+import Test.Hspec
+
 main :: IO ()
-main = putStrLn "Test suite not yet implemented"
+main = hspec $ do
+--    testVkontakte
+    testTelegram

@@ -45,6 +45,11 @@ stdLogger :: Priority -> T.Text -> IO ()
 stdLogger p s = --T.hPutStrLn S.stderr $ '[' : show p ++ "]: " ++ T.unpack s
     T.hPutStrLn S.stderr $ logString p s
 
+emptyLogger :: Handle IO
+emptyLogger = Handle $ \p s -> return ()
+
+
+
 
 data LoggerConfig = LoggerConfig {
     lcFilter :: Priority -> Bool

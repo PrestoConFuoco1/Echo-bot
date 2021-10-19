@@ -115,7 +115,7 @@ with Vk timestamps and random ID's.
 ## Logging
 
 Logging is also implemented as a handle, that is passed to all other functions.
-Its type is `Priority -> Text -> IO ()`. For initial steps or migrations stderr
+Its type is `Priority -> Text -> IO ()`. For initial steps stderr
 logger is used, and for the other part of the application the self-sufficient logger
 is used. If any exception is raised inside it, it is handled inside it too.
 If it becomes impossible to continue logging to file, the logger starts using
