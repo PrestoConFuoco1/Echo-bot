@@ -18,7 +18,7 @@ getUpdateID' x = tlUpdateID x
 putUpdateID' :: Integer -> TlStateMut -> TlStateMut
 putUpdateID' uid m = m { tlUpdateID = uid }
 
-insertMediaGroupUnit' :: TlMediaGroupIdentifier -> TlPhotoVideo -> TlStateMut -> TlStateMut
+insertMediaGroupUnit' :: TlMediaGroupIdentifier -> TlMediaGroupUnit -> TlStateMut -> TlStateMut
 insertMediaGroupUnit' key value sm =
     let newMap = M.insertWith (++) key [value] $ mediaGroups sm
 -- what is first and what is second argument in (++) here?
@@ -38,7 +38,7 @@ data TlHandler m = TlHandler {
     getUpdateID :: m Integer,
     putUpdateID :: Integer -> m (),
     --insertMediaGroupPhoto :: TlMediaGroupIdentifier -> TlPhotoSize -> m (),
-    insertMediaGroupUnit :: TlMediaGroupIdentifier -> TlPhotoVideo -> m (),
+    insertMediaGroupUnit :: TlMediaGroupIdentifier -> TlMediaGroupUnit -> m (),
     purgeMediaGroups :: m (),
     getMediaGroups :: m [TlMediaGroupPair]
     }

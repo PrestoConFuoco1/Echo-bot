@@ -10,6 +10,8 @@ import qualified Data.Text as T
 import qualified GenericPretty as GP
 import Data.Aeson.Types
 import Telegram.ProcessMessage.Types
+import qualified Stuff as S
+import Data.Foldable (asum)
 
 data TlMediaGroupIdentifier = TlMediaGroupIdentifier {
     _TMGI_chat :: TlChat,
@@ -88,27 +90,48 @@ data TlMediaGroupPair = TlMediaGroupPair {
     _TMGP_identifier :: TlMediaGroupIdentifier,
     --_TMGP_items :: [TlPhotoSize]
     --_TMGP_items :: [TlInputMediaPhoto]
-    _TMGP_items :: [TlPhotoVideo]
+    _TMGP_items :: [TlMediaGroupUnit]
     } deriving (Show, Generic)
 instance GP.PrettyShow TlMediaGroupPair
 
 
-data TlPhotoVideo =
+data TlMediaGroupUnit =
     TlpvPhoto TlInputMediaPhoto
     | TlpvVideo TlInputMediaVideo
     | TlpvDocument TlInputMediaDocument
     | TlpvAudio TlInputMediaAudio
     deriving (Show, Generic, Eq)
-instance GP.PrettyShow TlPhotoVideo
+instance GP.PrettyShow TlMediaGroupUnit
 
-instance ToJSON TlPhotoVideo where
+instance ToJSON TlMediaGroupUnit where
     toJSON (TlpvPhoto x) = toJSON x
     toJSON (TlpvVideo x) = toJSON x
     toJSON (TlpvDocument x) = toJSON x
     toJSON (TlpvAudio x) = toJSON x
 
-photoVideoCaption :: TlPhotoVideo -> Maybe T.Text
+photoVideoCaption :: TlMediaGroupUnit -> Maybe T.Text
 photoVideoCaption (TlpvPhoto (TlInputMediaPhoto {..})) = _TIMP_caption
 photoVideoCaption (TlpvVideo (TlInputMediaVideo {..})) = _TIMV_caption
 photoVideoCaption (TlpvDocument (TlInputMediaDocument {..})) = _TIMD_caption
 photoVideoCaption (TlpvAudio (TlInputMediaAudio {..})) = _TIMA_caption
+
+
+maybeMediaGroupUnit :: TlMessage -> Maybe TlMediaGroupUnit
+maybeMediaGroupUnit m = let
+    mCaption = _TM_caption m
+    mPhoto = _TM_photo m >>= S.safeHead :: Maybe TlPhotoSize
+    mVideo = _TM_video m
+    mDocument = _TM_document m
+    mAudio = _TM_audio m
+    mInputMediaPhoto = fmap (TlInputMediaPhoto mCaption . _TPS_file_id) mPhoto
+    mInputMediaVideo = fmap (TlInputMediaVideo mCaption . _TVid_file_id) mVideo
+    mInputMediaDocument = fmap (TlInputMediaDocument mCaption . _TDoc_file_id) mDocument
+    mInputMediaAudio = fmap (TlInputMediaAudio mCaption . _TAu_file_id) mAudio
+    in
+               asum [
+                    fmap TlpvPhoto mInputMediaPhoto
+                    , fmap TlpvVideo mInputMediaVideo
+                    , fmap TlpvDocument mInputMediaDocument
+                    , fmap TlpvAudio mInputMediaAudio
+                    ]
+ 

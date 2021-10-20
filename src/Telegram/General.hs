@@ -29,7 +29,7 @@ data TlStateMut = TLSM {
     tlUpdateID :: Integer,
     --photoMediaGroups :: M.Map TlMediaGroupIdentifier [TlPhotoSize]
     --photoMediaGroups :: M.Map TlMediaGroupIdentifier [TlInputMediaPhoto]
-    mediaGroups :: M.Map TlMediaGroupIdentifier [TlPhotoVideo]
+    mediaGroups :: M.Map TlMediaGroupIdentifier [TlMediaGroupUnit]
     } deriving (Show)
 
 

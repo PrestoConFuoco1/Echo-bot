@@ -24,9 +24,6 @@ import BotClass.Class
 import BotClass.ClassTypesTeleInstance
 import BotClass.ClassTypesVkInstance
 
------------------------------------------------------
-
-
 data ConfigException = RequiredFieldMissing
     deriving (Show, Eq)
 

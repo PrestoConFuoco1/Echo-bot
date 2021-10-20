@@ -159,27 +159,11 @@ processMediaGroup h m = let
     chat = _TM_chat m
     mUser = _TM_from m
     mMediaGroupID = _TM_media_group_id m
-    mPhoto = _TM_photo m >>= S.safeHead :: Maybe TlPhotoSize
-    mVideo = _TM_video m
-    mCaption = _TM_caption m
-    mDocument = _TM_document m
-    mAudio = _TM_audio m
-    mInputMediaPhoto = fmap (TlInputMediaPhoto mCaption . _TPS_file_id) mPhoto
-    mInputMediaVideo = fmap (TlInputMediaVideo mCaption . _TVid_file_id) mVideo
-    mInputMediaDocument = fmap (TlInputMediaDocument mCaption . _TDoc_file_id) mDocument
-    mInputMediaAudio = fmap (TlInputMediaAudio mCaption . _TAu_file_id) mAudio
-    mPhotoVideo = asum [
-                    fmap TlpvPhoto mInputMediaPhoto
-                    , fmap TlpvVideo mInputMediaVideo
-                    , fmap TlpvDocument mInputMediaDocument
-                    , fmap TlpvAudio mInputMediaAudio
-                    ]
     mMediaGroupIdent = TlMediaGroupIdentifier chat mUser <$> mMediaGroupID
-    --mAction = asum [ insertMediaGroupPhoto (D.specH h) <$> mMediaGroupIdent <*> mPhoto ]
-    --mAction = asum [ insertMediaGroupPhoto (D.specH h) <$> mMediaGroupIdent <*> mInputMediaPhoto ]
-    mAction = asum [ insertMediaGroupUnit (D.specH h) <$> mMediaGroupIdent <*> mPhotoVideo ]
+    mMediaGroupUnit = maybeMediaGroupUnit m
+    mAction = asum [ insertMediaGroupUnit (D.specH h) <$> mMediaGroupIdent <*> mMediaGroupUnit ]
     processFail = do
-        D.logWarning h "failed to process media group. Message:"
+        D.logWarning h $ funcName <> "failed to process media group. Message:"
         D.logWarning h $ GP.textPretty m
     in S.withMaybe mAction (processFail) $
          \action -> do
@@ -191,22 +175,14 @@ sendMediaGroup :: (Monad m) => D.Handle Tele m -> TlMediaGroupPair -> m ()
 sendMediaGroup h (TlMediaGroupPair ident items) = do
     let chat = _TMGI_chat ident
         mUser = _TMGI_user ident
-        items' = reverse items --map func items
+        items' = reverse items
         sc = D.getConstState h
         method = "sendMediaGroup"
-        url = tlUrl $ D.getConstState h -- нахрена тут этот параметр? убрать!
-        --mCaption = S.safeHead items >>= _TIMP_caption
+        url = tlUrl $ D.getConstState h
         mCaption = S.safeHead items >>= photoVideoCaption
         pars = [unit "chat_id" $ _TC_id chat
                 , unit "media" $ AeT.toJSON items'
                 , mUnit "caption" mCaption]
         req = fmsg url (method, pars)
     E.sendNTimes h Tele mUser (return req)
-{-
-func :: TlPhotoSize -> TlInputMediaPhoto
-func photo =
-    TlInputMediaPhoto {
-        _TIMP_media = _TPS_file_id photo
-    }
--}
 

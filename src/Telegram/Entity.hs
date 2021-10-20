@@ -15,7 +15,6 @@ import GenericPretty
 import Telegram.ProcessMessage.Types
 
 
--- functions
 chatIDfromMsg :: TlMessage -> Integer
 chatIDfromMsg = _TC_id . _TM_chat
 
