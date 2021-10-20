@@ -25,8 +25,6 @@ testVkontakte = describe "vkontakte logic" $ do
     testSetRepNumCommand
     testSetRepNum
     testSendEcho 7
-{-
--}
 
 
 withRandomIDVkHandle = defaultVkHandle {getRandomID = (return 0 :: IO Integer)}
@@ -110,7 +108,4 @@ testSendEcho' repnum = do
             }
     handleUpdate handle Vk $ simpleMessageUpdate
     int <- readIORef ref
- --   let bool = int == repnum
     return int
-{-
--}

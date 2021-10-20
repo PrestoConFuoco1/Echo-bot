@@ -144,6 +144,10 @@ See `https://core.telegram.org/bots#6-botfather` for Telegram, `https://vk.com/d
 ## Run with configuration file and command line options
 Here the only thing to do is to get correct configuration file. Its format is discussed below.
 
+## Tests
+
+There are some pure logic tests done. They can be found in the `test/` directory.
+
 # Configuration file
 An example of configuration file follows:
 

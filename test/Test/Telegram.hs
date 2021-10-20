@@ -99,5 +99,4 @@ testSendEcho' repnum = do
             }
     handleUpdate handle Tele $ simpleMessageUpdate
     int <- readIORef ref
- --   let bool = int == repnum
     return int
