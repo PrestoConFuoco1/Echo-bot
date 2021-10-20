@@ -160,12 +160,22 @@ processMediaGroup h m = let
     mUser = _TM_from m
     mMediaGroupID = _TM_media_group_id m
     mPhoto = _TM_photo m >>= S.safeHead :: Maybe TlPhotoSize
+    mVideo = _TM_video m
     mCaption = _TM_caption m
     mInputMediaPhoto = fmap (TlInputMediaPhoto mCaption . _TPS_file_id) mPhoto
+    mInputMediaVideo = fmap (TlInputMediaVideo mCaption . _TVid_file_id) mVideo
+    mPhotoVideo = asum [
+                    fmap TlpvPhoto mInputMediaPhoto
+                    , fmap TlpvVideo mInputMediaVideo
+                    ]
     mMediaGroupIdent = TlMediaGroupIdentifier chat mUser <$> mMediaGroupID
     --mAction = asum [ insertMediaGroupPhoto (D.specH h) <$> mMediaGroupIdent <*> mPhoto ]
-    mAction = asum [ insertMediaGroupPhoto (D.specH h) <$> mMediaGroupIdent <*> mInputMediaPhoto ]
-    in S.withMaybe mAction (return ()) $
+    --mAction = asum [ insertMediaGroupPhoto (D.specH h) <$> mMediaGroupIdent <*> mInputMediaPhoto ]
+    mAction = asum [ insertMediaGroupUnit (D.specH h) <$> mMediaGroupIdent <*> mPhotoVideo ]
+    processFail = do
+        D.logWarning h "failed to process media group. Message:"
+        D.logWarning h $ GP.textPretty m
+    in S.withMaybe mAction (processFail) $
          \action -> do
             D.logDebug h $ funcName <> "processing media group"
             action
@@ -179,7 +189,8 @@ sendMediaGroup h (TlMediaGroupPair ident items) = do
         sc = D.getConstState h
         method = "sendMediaGroup"
         url = tlUrl $ D.getConstState h -- нахрена тут этот параметр? убрать!
-        mCaption = S.safeHead items >>= _TIMP_caption
+        --mCaption = S.safeHead items >>= _TIMP_caption
+        mCaption = S.safeHead items >>= photoVideoCaption
         pars = [unit "chat_id" $ _TC_id chat
                 , unit "media" $ AeT.toJSON items'
                 , mUnit "caption" mCaption]

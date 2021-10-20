@@ -18,27 +18,19 @@ getUpdateID' x = tlUpdateID x
 putUpdateID' :: Integer -> TlStateMut -> TlStateMut
 putUpdateID' uid m = m { tlUpdateID = uid }
 
-{-
-insertMediaGroupPhoto' :: TlMediaGroupIdentifier -> TlPhotoSize -> TlStateMut -> TlStateMut
-insertMediaGroupPhoto' key value sm =
-    let newMap = M.insertWith (++) key [value] $ photoMediaGroups sm
+insertMediaGroupUnit' :: TlMediaGroupIdentifier -> TlPhotoVideo -> TlStateMut -> TlStateMut
+insertMediaGroupUnit' key value sm =
+    let newMap = M.insertWith (++) key [value] $ mediaGroups sm
 -- what is first and what is second argument in (++) here?
-    in  sm { photoMediaGroups = newMap }
--}
-
-insertMediaGroupPhoto' :: TlMediaGroupIdentifier -> TlInputMediaPhoto -> TlStateMut -> TlStateMut
-insertMediaGroupPhoto' key value sm =
-    let newMap = M.insertWith (++) key [value] $ photoMediaGroups sm
--- what is first and what is second argument in (++) here?
-    in  sm { photoMediaGroups = newMap }
+    in  sm { mediaGroups = newMap }
 
 
 
 purgeMediaGroups' :: TlStateMut -> TlStateMut
-purgeMediaGroups' sm = sm { photoMediaGroups = M.empty }
+purgeMediaGroups' sm = sm { mediaGroups = M.empty }
 
 getMediaGroups' :: TlStateMut -> [TlMediaGroupPair]
-getMediaGroups' TLSM { photoMediaGroups = x } = map f $ M.toList x
+getMediaGroups' TLSM { mediaGroups = x } = map f $ M.toList x
   where f (k, v) = TlMediaGroupPair k v
 
 
@@ -46,7 +38,7 @@ data TlHandler m = TlHandler {
     getUpdateID :: m Integer,
     putUpdateID :: Integer -> m (),
     --insertMediaGroupPhoto :: TlMediaGroupIdentifier -> TlPhotoSize -> m (),
-    insertMediaGroupPhoto :: TlMediaGroupIdentifier -> TlInputMediaPhoto -> m (),
+    insertMediaGroupUnit :: TlMediaGroupIdentifier -> TlPhotoVideo -> m (),
     purgeMediaGroups :: m (),
     getMediaGroups :: m [TlMediaGroupPair]
     }
