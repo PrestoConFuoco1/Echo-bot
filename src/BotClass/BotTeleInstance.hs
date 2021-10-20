@@ -162,11 +162,17 @@ processMediaGroup h m = let
     mPhoto = _TM_photo m >>= S.safeHead :: Maybe TlPhotoSize
     mVideo = _TM_video m
     mCaption = _TM_caption m
+    mDocument = _TM_document m
+    mAudio = _TM_audio m
     mInputMediaPhoto = fmap (TlInputMediaPhoto mCaption . _TPS_file_id) mPhoto
     mInputMediaVideo = fmap (TlInputMediaVideo mCaption . _TVid_file_id) mVideo
+    mInputMediaDocument = fmap (TlInputMediaDocument mCaption . _TDoc_file_id) mDocument
+    mInputMediaAudio = fmap (TlInputMediaAudio mCaption . _TAu_file_id) mAudio
     mPhotoVideo = asum [
                     fmap TlpvPhoto mInputMediaPhoto
                     , fmap TlpvVideo mInputMediaVideo
+                    , fmap TlpvDocument mInputMediaDocument
+                    , fmap TlpvAudio mInputMediaAudio
                     ]
     mMediaGroupIdent = TlMediaGroupIdentifier chat mUser <$> mMediaGroupID
     --mAction = asum [ insertMediaGroupPhoto (D.specH h) <$> mMediaGroupIdent <*> mPhoto ]
@@ -185,7 +191,7 @@ sendMediaGroup :: (Monad m) => D.Handle Tele m -> TlMediaGroupPair -> m ()
 sendMediaGroup h (TlMediaGroupPair ident items) = do
     let chat = _TMGI_chat ident
         mUser = _TMGI_user ident
-        items' = items --map func items
+        items' = reverse items --map func items
         sc = D.getConstState h
         method = "sendMediaGroup"
         url = tlUrl $ D.getConstState h -- нахрена тут этот параметр? убрать!

@@ -50,6 +50,38 @@ instance ToJSON TlInputMediaVideo where
         "type" .= ("video" :: T.Text),
         "media" .= _TIMV_media ph] ++ captionParam
 
+data TlInputMediaDocument = TlInputMediaDocument {
+    _TIMD_caption :: Maybe T.Text
+    , _TIMD_media :: T.Text
+    -- here it is file_id that exists on the Telegram servers
+    } deriving (Show, Generic, Eq)
+
+instance GP.PrettyShow TlInputMediaDocument
+
+instance ToJSON TlInputMediaDocument where
+    toJSON ph =
+        let captionParam = maybe [] (\x -> ["caption" .= x]) $ _TIMD_caption ph
+        in  object $ [
+        "type" .= ("document" :: T.Text),
+        "media" .= _TIMD_media ph] ++ captionParam
+
+
+data TlInputMediaAudio = TlInputMediaAudio {
+    _TIMA_caption :: Maybe T.Text
+    , _TIMA_media :: T.Text
+    -- here it is file_id that exists on the Telegram servers
+    } deriving (Show, Generic, Eq)
+
+instance GP.PrettyShow TlInputMediaAudio
+
+instance ToJSON TlInputMediaAudio where
+    toJSON ph =
+        let captionParam = maybe [] (\x -> ["caption" .= x]) $ _TIMA_caption ph
+        in  object $ [
+        "type" .= ("audio" :: T.Text),
+        "media" .= _TIMA_media ph] ++ captionParam
+
+
 
 
 data TlMediaGroupPair = TlMediaGroupPair {
@@ -64,12 +96,19 @@ instance GP.PrettyShow TlMediaGroupPair
 data TlPhotoVideo =
     TlpvPhoto TlInputMediaPhoto
     | TlpvVideo TlInputMediaVideo
+    | TlpvDocument TlInputMediaDocument
+    | TlpvAudio TlInputMediaAudio
     deriving (Show, Generic, Eq)
 instance GP.PrettyShow TlPhotoVideo
+
 instance ToJSON TlPhotoVideo where
     toJSON (TlpvPhoto x) = toJSON x
     toJSON (TlpvVideo x) = toJSON x
+    toJSON (TlpvDocument x) = toJSON x
+    toJSON (TlpvAudio x) = toJSON x
 
 photoVideoCaption :: TlPhotoVideo -> Maybe T.Text
 photoVideoCaption (TlpvPhoto (TlInputMediaPhoto {..})) = _TIMP_caption
 photoVideoCaption (TlpvVideo (TlInputMediaVideo {..})) = _TIMV_caption
+photoVideoCaption (TlpvDocument (TlInputMediaDocument {..})) = _TIMD_caption
+photoVideoCaption (TlpvAudio (TlInputMediaAudio {..})) = _TIMA_caption
