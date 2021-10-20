@@ -1,10 +1,9 @@
 module App.Logger where
 
 import Prelude hiding (log)
-import qualified Data.Text as T (Text, pack, unpack)
+import qualified Data.Text as T (Text, pack)
 import qualified Data.Text.IO as T (hPutStrLn)
 import qualified System.IO as S
-import Text.Read
 import Control.Monad (when)
 import qualified Stuff as S (showT)
 import Data.IORef
@@ -25,7 +24,7 @@ data Priority = Debug
             deriving (Eq, Ord, Show, Read)
 
 
-logDebug, logInfo, logWarning, logError :: Handle m -> T.Text -> m ()
+logDebug, logInfo, logWarning, logError, logFatal :: Handle m -> T.Text -> m ()
 logDebug = (`log` Debug)
 logInfo = (`log` Info)
 logWarning = (`log` Warning)
@@ -42,8 +41,7 @@ simpleCondHandle pred = Handle $ \p s -> when (pred p) $ stdLogger p s
 
 
 stdLogger :: Priority -> T.Text -> IO ()
-stdLogger p s = --T.hPutStrLn S.stderr $ '[' : show p ++ "]: " ++ T.unpack s
-    T.hPutStrLn S.stderr $ logString p s
+stdLogger p s = T.hPutStrLn S.stderr $ logString p s
 
 emptyLogger :: Handle IO
 emptyLogger = Handle $ \p s -> return ()
@@ -76,6 +74,7 @@ initializeErrorHandler e = do
     | IOE.isPermissionError e   = logError simpleHandle "not enough permissions"
     | otherwise = logError simpleHandle $ "unexpected IO error: " <> T.pack (C.displayException e)
 
+lockedmsg :: T.Text
 lockedmsg = "target log file is locked"
 
 initializeDefaultHandler :: C.SomeException -> IO a

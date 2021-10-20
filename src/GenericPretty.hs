@@ -13,23 +13,19 @@
 
 module GenericPretty where
 
---import GHC.TypeLits
-
 import GHC.Generics
-
 import qualified Data.Text as T (Text, pack)
-import qualified Data.Text.Lazy as TL (Text, pack, unpack)
-
+import qualified Data.Text.Lazy as TL (Text, unpack)
 import Data.Void
-import Data.Aeson.Types
+import Data.Aeson.Types (Value)
 import Data.Aeson (encode)
 import Data.Char
 import Data.Text.Lazy.Encoding (decodeUtf8)
-
 import qualified Data.Time as Time
 ---------
 
 
+enclose, encloseSq :: String -> String
 enclose s = '{' : s ++ "}"
 encloseSq s = '[' : s ++ "]"
 ------
@@ -39,19 +35,23 @@ data OptionsL = OptionsL {
         consModifier :: String -> String
     }
 
+defaultOptionsL :: OptionsL
 defaultOptionsL = OptionsL {
     labelModifier = defaultModif,
     consModifier = defaultConsModif
     }
 
+defaultModif :: String -> String
 defaultModif x@('_':ys) =
     case dropWhile (/= '_') ys of
         ('_':zs) -> zs
         _ -> x
 defaultModif x = x
 
+defaultConsModif :: String -> String
 defaultConsModif = id
 
+defaultConsModif' :: String -> String
 defaultConsModif' (x:xs)
     | isUpper x = case dropWhile (not . isUpper) xs of
         [] -> (x:xs)
@@ -74,16 +74,17 @@ newtype Layout = Layout [LayoutUnit]
 lconcat :: Layout -> Layout -> Layout
 lconcat (Layout l) (Layout r) = Layout $ l ++ r
 
+defaultIndent, defaultWidth :: Int
 defaultIndent = 4
+defaultWidth = 80
+
 numToIndent :: Int -> String
 numToIndent ind = replicate (ind * defaultIndent) ' '
 
-defaultWidth = 80
 splitToFixedWidth :: Int -> String -> [String]
 splitToFixedWidth ind s =
     let width = defaultWidth - ind * defaultIndent
-        res = splitToFixedWidth' width s
-    in  res
+    in  splitToFixedWidth' width s
 
 splitToFixedWidth' :: Int -> String -> [String]
 splitToFixedWidth' wid [] = []

@@ -8,11 +8,10 @@ import BotClass.ClassTypesTeleInstance
 import Types
 import Data.IORef
 import qualified Data.Map as M
-import qualified Data.Map as M (empty)
 import qualified System.Exit as Q (ExitCode (..), exitWith)
 import qualified Control.Monad.Catch as C
 import qualified Telegram.Exceptions as TlEx
-import qualified Data.Text as T
+import qualified Data.Text as T (Text, pack)
 import qualified Telegram.Send as G
 
 data Config = Config {
@@ -44,12 +43,10 @@ initResources logger (Config common tlConf) = do
         }
 
 
---initResources :: Config -> IO Resources
 resourcesToHandle :: Resources -> L.Handle IO -> D.Handle Tele IO
 resourcesToHandle resources logger =
     D.Handle {
           D.log = logger
---        , D.sendRequest = H.sendRequest logger
         , D.commonEnv = commonEnv resources
         , D.getConstState = constState resources
 
@@ -93,7 +90,6 @@ defaultHandler logger resources e = do
 
 tlHandlers logger conf resources = [
     C.Handler $ tlErrorHandler logger conf resources
-    -- , C.Handler $ defaultHandler logger resources
     ]
 
 

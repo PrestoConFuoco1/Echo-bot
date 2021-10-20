@@ -5,7 +5,6 @@
 module Types where
 
 import qualified Stuff as S (Timeout)
-import Data.IORef (IORef, atomicModifyIORef)
 import qualified Data.Text as T (Text)
 import GHC.Generics
 import qualified GenericPretty as GP
@@ -27,12 +26,16 @@ instance GP.PrettyShow EnvironmentCommon where
         GP.consModifier = const "Common settings"
         }
 
-defStateGen = EnvironmentCommon ("Hello! Available commands:\n" <>
-                "-- /help - to get help\n" <>
-                "-- /set - to change current number of messages repeats")
-                "How many times would you like to repeat every reply?" 1 25 
-                "/help" "/set"
-
+defStateGen = EnvironmentCommon {
+    helpMsg = "Hello! Available commands:\n\
+                \-- /help - to get help\n\
+                \-- /set - to change current number of messages repeats"
+    , repQuestion = "How many times would you like to repeat every reply?"
+    , repNum = 1
+    , timeout = 25
+    , helpCommand = "/help"
+    , setRepNumCommand = "/set"
+    }
 -------------------------------------------------------------------
 data Command = Help | SetRepNum
     deriving (Show, Eq)
@@ -53,7 +56,5 @@ instance Show (Event h u m b) where
     show (ECommand _ _ _) = "Command"
     show (EMessage _ ) = "Message"
     show (ECallback _ ) = "Callback"
-    show _ = "error"
-
--------------------------------------------------------------------
+    show _ = "Unexpected event"
 

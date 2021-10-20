@@ -1,33 +1,27 @@
-{-# LANGUAGE TypeFamilies
-             , FlexibleContexts
-             , ConstrainedClassMethods
-             , GeneralizedNewtypeDeriving
-             , RecordWildCards
+{-# LANGUAGE
+    TypeFamilies
+    , RecordWildCards
     #-}
 
 module BotClass.BotTeleInstance where
 
-import Telegram
 
+
+import Telegram
 import BotClass.Class
-import BotClass.ClassTypes
 import BotClass.ClassTypesTeleInstance
 import Types
-
 import HTTPRequests as H
-
-import qualified Data.Aeson as Ae (decode)
 import qualified Data.Aeson.Types as AeT (parseEither, parseJSON, toJSON)
-import qualified Data.Text.Lazy as TL (Text, pack, fromStrict)
-import qualified Data.Text as T (Text, pack)
+import qualified Data.Text.Lazy as TL (fromStrict)
+import qualified Data.Text as T (pack)
 import Data.Bifunctor (first)
 import Data.Foldable (asum)
-
 import qualified App.Handle as D
 import qualified GenericPretty as GP
 import qualified Stuff as S
-import qualified Execute.Logic as E
-import qualified Control.Monad.Catch as C
+import qualified Execute.Logic as E (sendNTimes)
+import qualified Control.Monad.Catch as C (throwM)
 import qualified Exceptions as Ex
 
 instance BotClassUtility Tele where
@@ -98,7 +92,6 @@ instance BotClass Tele where
     parseUpdatesValueList s rep = do
         res <- maybe (Left "Couldn't parse update list") Right $ getResult s rep
         AeT.parseEither AeT.parseJSON res
-        --Left "debug error"
 
 --  parseUpdate :: s -> Value -> Either String (Upd s)
     parseUpdate s = AeT.parseEither AeT.parseJSON
@@ -149,8 +142,7 @@ processMessage1 h s m =
         sendMessage h s m =
             let eithMethodParams = sendMessageTele m
                 url = tlUrl $ D.getConstState h
-                notMediaGroup = fmap (return . fmsg url . first TL.fromStrict) eithMethodParams
-            in  notMediaGroup
+            in  return . fmsg url . first TL.fromStrict <$> eithMethodParams
 
 
 processMediaGroup :: (Monad m) => D.Handle Tele m -> TlMessage -> m ()
@@ -165,8 +157,7 @@ processMediaGroup h m = let
     processFail = do
         D.logWarning h $ funcName <> "failed to process media group. Message:"
         D.logWarning h $ GP.textPretty m
-    in S.withMaybe mAction (processFail) $
-         \action -> do
+    in S.withMaybe mAction (processFail) $ \action -> do
             D.logDebug h $ funcName <> "processing media group"
             action
 
@@ -176,7 +167,6 @@ sendMediaGroup h (TlMediaGroupPair ident items) = do
     let chat = _TMGI_chat ident
         mUser = _TMGI_user ident
         items' = reverse items
-        sc = D.getConstState h
         method = "sendMediaGroup"
         url = tlUrl $ D.getConstState h
         mCaption = S.safeHead items >>= photoVideoCaption

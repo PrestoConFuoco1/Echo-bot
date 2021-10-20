@@ -5,8 +5,6 @@ import BotClass.ClassTypes
 import Telegram
 
 data Tele = Tele
-dummyTl = Tele
-
 
 
 instance BotClassTypes Tele where

@@ -6,8 +6,6 @@ import BotClass.ClassTypes
 
 
 data Vk = Vk
-dummyVk = Vk
-
 
 
 instance BotClassTypes Vk where

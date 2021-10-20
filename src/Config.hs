@@ -2,23 +2,17 @@
 
 module Config where
 
-import Telegram
-import qualified Data.Text.Lazy as TL (Text, fromStrict, pack)
+import Telegram (TlConfig(..))
 import qualified Data.Text as T (Text, pack)
-import GHC.Generics (Generic)
 import qualified GenericPretty as GP
-import qualified Stuff as S
+import qualified Stuff as S (withEither)
 import qualified Data.Configurator as C
 import qualified Data.Configurator.Types as CT
 import qualified Control.Exception as E (catch, SomeException, Exception (..),
                                          try, throw, SomeException)
 import qualified App.Logger as L
-
-import Vkontakte
-
-import Types (EnvironmentCommon (..), helpMsg, repQuestion, repNum, timeout,
-                 helpCommand, setRepNumCommand, defStateGen)
-
+import Vkontakte (VkConfig(..))
+import Types
 import BotClass.ClassTypes
 import BotClass.Class
 import BotClass.ClassTypesTeleInstance
@@ -40,10 +34,10 @@ loadConfig s logger path = do
     L.logDebug logger "This step cannot fail as this way defaults will be used"
     stGen <- loadGeneral logger genConf
     L.logDebug logger "Loaded general configuration:"
-    L.logDebug logger $ T.pack $ GP.defaultPretty stGen
+    L.logDebug logger $ GP.textPretty stGen
     stSpec <- tryGetConfig s logger (messagerName s) $ loadSpecial s logger conf
     L.logDebug logger "Loaded messager-specific configuration:"
-    L.logDebug logger $ T.pack $ GP.defaultPretty stSpec
+    L.logDebug logger $ GP.textPretty stSpec
     return (stGen, stSpec)
 
 
@@ -93,7 +87,6 @@ tryGetConfig s logger messager atry = do
    
 loadTeleConfig :: L.Handle IO -> CT.Config -> IO TlConfig
 loadTeleConfig logger conf = do
-    --initialUpdateID <- C.lookupDefault (_TC_updID defaultTlConfig) conf "initial_update_id"
     initialUpdateID <- C.require conf "initial_update_id"
     botURL <- C.require conf "bot_url"
     return $ TlConf initialUpdateID botURL
@@ -110,3 +103,4 @@ loadVkConfig logger conf = do
 logKeyException :: L.Handle IO -> CT.KeyError -> IO ()
 logKeyException logger = L.logError L.simpleHandle . f
   where f (CT.KeyError name) = "No field with name " <> {-TL.fromStrict-} name <> " found."
+

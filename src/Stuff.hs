@@ -1,24 +1,9 @@
 {-# LANGUAGE OverloadedStrings, FlexibleInstances, UndecidableInstances #-}
-module Stuff (
-    trace,
-    echo,
-    Timeout,
-    safeHead,
-    emptyToNothing,
-    findWithDefault,
-    showT,
-    showTL,
-    withEither,
-    withMaybe
-) where
+module Stuff where
 
 
 import Debug.Trace (trace)
-import Data.Char
-import Text.Printf
-import Data.List (unfoldr)
 import qualified Data.Map as M (Map, findWithDefault)
-
 import qualified Data.Text as T
 import qualified Data.Text.Lazy as TL
 
@@ -31,7 +16,7 @@ type Timeout = Integer
 
 --------------------------------------------
 
-
+safeHead :: [a] -> Maybe a
 safeHead (x:xs) = Just x
 safeHead _ = Nothing
 
@@ -51,8 +36,6 @@ showT = T.pack . show
 
 showTL :: Show a => a -> TL.Text
 showTL = TL.pack . show
-
-
 
 withEither :: Either a b -> (a -> c) -> (b -> c) -> c
 withEither e left right = either left right e

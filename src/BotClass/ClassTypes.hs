@@ -1,21 +1,12 @@
-{-# LANGUAGE TypeFamilies,
-    FlexibleContexts,
-    ConstrainedClassMethods,
-    GeneralizedNewtypeDeriving,
-    OverloadedStrings #-}
+{-# LANGUAGE
+    TypeFamilies,
+    FlexibleContexts
+    #-}
 
 module BotClass.ClassTypes where
 
 
-import qualified HTTPRequests as H
-import qualified Stuff as S (Timeout)
-import Data.Aeson (Value)
-import qualified Data.Text as T (Text)
-import qualified Data.ByteString.Lazy.Char8 as BSL (ByteString)
 import qualified GenericPretty as GP
-
-
-
 
 
 class (

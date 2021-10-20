@@ -8,9 +8,7 @@ import qualified Data.Text as T
 import qualified GenericPretty as GP
 import qualified Stuff as S
 import Data.Foldable (asum)
-import qualified HTTPRequests as H
-import Text.Read (readMaybe)
-import Control.Monad (replicateM, when)
+import Control.Monad (when)
 import Data.Either (partitionEithers)
 import qualified Control.Monad.Catch as C
 import qualified Exceptions as Ex
@@ -57,7 +55,7 @@ handleUpdatesSuccess h s resp = do
     let funcName = "handleUpdatesSuccess: "
         eithUpdValueList = parseUpdatesValueList s resp
     S.withEither eithUpdValueList (updLstParseFail h) $ \updValues -> do
-        let parsedUpdates = map (func $ parseUpdate s) updValues
+        let parsedUpdates = map (attachErrorReason $ parseUpdate s) updValues
             (errs, upds) = partitionEithers parsedUpdates
             errLength = length errs
         when (errLength > 0) $ logUpdatesErrors h errs upds
@@ -74,8 +72,8 @@ singleUpdateParseFail h (u, e) = do
 
 {-
 -}
-func :: (a -> Either b c) -> a -> Either (a, b) c
-func f x = case f x of
+attachErrorReason :: (a -> Either b c) -> a -> Either (a, b) c
+attachErrorReason f x = case f x of
     Right y -> Right y
     Left  e -> Left (x, e)
 

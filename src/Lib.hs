@@ -14,16 +14,14 @@ import qualified System.Exit as Q (ExitCode (..), exitWith)
 import System.Environment (getArgs)
 import System.IO (hPutStrLn, stderr)
 import qualified App.Logger as L
-import Control.Monad (when, forever)
+import Control.Monad (when)
 import Execute
-
 import qualified App.Handle.Telegram as T
 import qualified App.Handle.Vkontakte as V
 import BotClass.ClassTypes
 import Types
-import BotClass.BotVkInstance
-import BotClass.BotTeleInstance
-import Data.IORef
+import BotClass.BotVkInstance ()
+import BotClass.BotTeleInstance ()
 import App.Handle as D
 import qualified Stuff as S (withMaybe)
 import Data.List (isPrefixOf)
@@ -31,6 +29,8 @@ import Text.Read (readMaybe)
 import qualified Data.Text as T (pack)
 import BotClass.ClassTypesTeleInstance
 import BotClass.ClassTypesVkInstance
+import Telegram
+import Vkontakte
 
 data Messager = Vkontakte | Telegram | None
 data RunOptions = RunOptions {
@@ -79,38 +79,38 @@ getLoggerSettings str = fmap (\x -> (>= x)) $ readMaybe str
 runWithConf :: RunOptions -> FilePath -> IO ()
 runWithConf opts path =
     case messager opts of
-        Telegram -> runWithConf' Tele opts path $ func tlAction
-        --Vkontakte -> runWithConf' Vk opts path (\x y -> vkAction x y >> return ())
-        Vkontakte -> runWithConf' Vk opts path $ func vkAction
+        Telegram -> runWithConf' Tele opts path telegramAction
+        Vkontakte -> runWithConf' Vk opts path vkAction
         None -> L.logFatal L.simpleHandle "No messager parameter supplied, terminating..." >>
                 L.logInfo  L.simpleHandle "Use -tl for Telegram and -vk for Vkontakte"
   where
         func a = \x y z -> a x y z >> return ()
-        --logger = L.simpleCondHandle $ loggerSettings opts
 
-        tlAction logger gen tlConf = do
-            let tlConfig = T.Config gen tlConf
-            resources <- T.initResources logger tlConfig
-            let handle = T.resourcesToHandle resources logger
-            --forever (execute handle Tele)
-            forever' resources $ mainLoop
-                tlConf
-                (flip T.resourcesToHandle logger)
-                D.log
-                T.tlHandlers
-                (flip execute Tele)
+telegramAction :: L.Handle IO -> EnvironmentCommon -> TlConfig -> IO ()
+telegramAction logger gen tlConf = do
+    let tlConfig = T.Config gen tlConf
+    resources <- T.initResources logger tlConfig
+    let handle = T.resourcesToHandle resources logger
+    forever' resources $ mainLoop
+        tlConf
+        (flip T.resourcesToHandle logger)
+        D.log
+        T.tlHandlers
+        (flip execute Tele)
+    return ()
 
-        vkAction logger gen vkConf = do
-            let vkConfig = V.Config gen vkConf
-            resources <- V.initResources logger vkConfig
-            let handle = V.resourcesToHandle resources logger
---           forever (execute handle Vk)
-            forever' resources $ mainLoop
-                vkConf
-                (flip V.resourcesToHandle logger)
-                D.log
-                V.vkHandlers
-                (flip execute Vk)
+vkAction :: L.Handle IO -> EnvironmentCommon -> VkConfig -> IO ()
+vkAction logger gen vkConf = do
+    let vkConfig = V.Config gen vkConf
+    resources <- V.initResources logger vkConfig
+    let handle = V.resourcesToHandle resources logger
+    forever' resources $ mainLoop
+        vkConf
+        (flip V.resourcesToHandle logger)
+        D.log
+        V.vkHandlers
+        (flip execute Vk)
+    return ()
 
 forever' :: a -> (a -> IO a) -> IO a
 forever' res action = do

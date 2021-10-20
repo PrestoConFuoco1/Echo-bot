@@ -13,44 +13,32 @@ module HTTPRequests (
     addParams,
     addParamsUnit,
     ParVal (..),
-    HttpHandle (..),
-    --simpleHttp
     ToParVal (..),
     unit,
     mUnit
 ) where
 
-import Prelude hiding (log)
 import qualified Data.ByteString.Lazy.Char8 as BSL (ByteString) --, toStrict)
 import Network.HTTP.Simple (HttpException(..), parseRequest, setRequestBodyJSON, getResponseBody, httpLBS)
 import Network.HTTP.Base (urlEncode)
 import Data.Maybe (catMaybes)
 import Data.List (intercalate)
 import Control.Exception (catches, SomeException, Handler(..))
-import Data.Bifunctor (bimap)
 import qualified Data.Aeson as Ae (ToJSON (..), Value, encode, object, (.=))
 import qualified Data.Text.Lazy as TL (Text, pack, unpack, toStrict, concat, toStrict)
 import qualified Data.Text as T (Text, unpack, concat)
 import Data.Text.Lazy.Encoding (decodeUtf8)
-import qualified GenericPretty as GP
-import GHC.Generics
 import qualified Stuff as S
 import qualified App.Logger as L
 
-newtype HttpHandle = HttpHandle { sendH :: Bool -> HTTPRequest -> IO (Either String BSL.ByteString) }
-
---simpleHttp = HttpHandle sendRequest
-
 data HTTPMethod = GET | POST deriving (Show, Eq)
-
-
 
 handleHTTPError :: HttpException -> IO (Either String a)
 handleHTTPError (HttpExceptionRequest _ content) = return . Left . show $ content
-handleHTTPError (InvalidUrlException _ _) = return . Left $ "invalid URL"
+handleHTTPError (InvalidUrlException _ _) = return $ Left "invalid URL"
 
 handleOthers :: SomeException -> IO (Either String a)
-handleOthers e = return . Left $ "unknown error occured"
+handleOthers e = return $ Left "unknown error occured"
 
 ------------------------------------------------------------------
 
@@ -70,7 +58,6 @@ instance Ae.ToJSON ParVal where
 
 parValToString :: ParVal -> String
 parValToString (PIntg n) = show n
---parValToString (PStr s)  = s
 parValToString (PVal v) = TL.unpack . decodeUtf8 . Ae.encode $ v
 parValToString (PFloat x) = show x
 parValToString (PLText x) = TL.unpack x
@@ -119,7 +106,6 @@ sendRequest h takesJSON r@(Req method url params) =
                     `catches`
                     [
                     Handler handleHTTPError
-                    -- , Handler handleOthers
                     ]
 
 makeParamsString :: ParamsList -> String
@@ -141,8 +127,6 @@ addParams params req = req { pars = params ++ pars req}
 addParamsUnit :: ParamsUnit -> HTTPRequest -> HTTPRequest
 addParamsUnit paramsUnit req = req { pars = paramsUnit : pars req }
 
-{-
--}
 -------------------------------------------------------------------
 
 class ToParVal a where

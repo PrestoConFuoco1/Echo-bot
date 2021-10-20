@@ -1,8 +1,6 @@
-{-# LANGUAGE TypeFamilies,
-    FlexibleContexts,
-    ConstrainedClassMethods,
-    GeneralizedNewtypeDeriving,
-    OverloadedStrings #-}
+{-# LANGUAGE
+    TypeFamilies
+    #-}
 
 module BotClass.Class where
 
@@ -11,12 +9,10 @@ import Data.Aeson (Value)
 import qualified Data.Text as T (Text)
 import qualified Data.Text.Lazy as TL (Text)
 import qualified App.Handle as D
-import qualified Data.ByteString.Lazy.Char8 as BSL (ByteString)
 import BotClass.ClassTypes
 import qualified Control.Monad.Catch as C
-import Types
 
-
+fmsg :: TL.Text -> (TL.Text, H.ParamsList) -> H.HTTPRequest
 fmsg url (method, params) = H.Req H.POST (url <> method) params
 
 class (BotClassTypes s) => BotClassUtility s where
