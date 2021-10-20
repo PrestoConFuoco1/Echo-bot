@@ -3,28 +3,22 @@
     , RecordWildCards
     #-}
 
-
 module BotClass.BotVkInstance where
 
 import BotClass.Class
 import BotClass.ClassTypesVkInstance
-import Vkontakte.Exceptions
 import Types (timeout)
 import Vkontakte
 import HTTPRequests as H
-
 import qualified Stuff as S (emptyToNothing, withMaybe)
-import Data.Aeson (decode)
-import Data.Aeson.Types as AeT (Parser, parseJSON, toJSON, parseEither)
-import qualified Data.Text.Lazy as TL (Text, pack, intercalate, toStrict)
-import qualified Data.Text as T (Text, pack, intercalate)
+import Data.Aeson.Types as AeT (parseEither, parseJSON, toJSON)
+import qualified Data.Text.Lazy as TL (toStrict)
+import qualified Data.Text as T (Text, pack)
 import qualified App.Handle as D
 import Control.Monad.Writer (Writer, runWriter)
-import Data.List (elem)
-import qualified Control.Monad.Catch as C
+import qualified Control.Monad.Catch as C (throwM, MonadThrow)
 import GenericPretty
 import qualified Exceptions as Ex
-
 
 
 instance BotClassUtility Vk where
@@ -99,7 +93,7 @@ getUpdatesRequest1 h s = do
 --    isSuccess :: s -> Rep s -> Bool
 isSuccess1 _ r = _VR_failed r == Nothing
 
-
+errorMsg1, errorMsg2, errorMsg3 :: T.Text
 errorMsg1 = "events history is out of date or losed, ready to use new ts got from vk server"
 errorMsg2 = "key is out of date, needed to obtain a new one with getLongPollServer"
 errorMsg3 = "information (key, ts) is losed, needed to obtain it with getLongPollServer"
@@ -138,9 +132,8 @@ sendTextMsg1 h s mChat (Just u) text = do
     let pars = [unit "user_id" (_VU_id u),
                 unit "message" text,
                 unit "random_id" randomID]
-                -- ++ defaultVkParams (vkAccessToken sc) (apiVersion sc)
                 ++ defaultVkParams sc
-    return $ Right $ fmsg (vkUrl sc) (method, pars)
+    return $ Right $ buildHTTP (vkUrl sc) (method, pars)
 
 --    repNumKeyboard :: s -> [Int] -> TL.Text -> H.ParamsList
 repNumKeyboard1 d lst cmd = [unit "keyboard" obj]
@@ -186,7 +179,7 @@ processMessageVk h user maybeText attachmentsEtc = do
                 mUnit "message" maybeText,
                 unit "random_id" randomID]
                 ++ defaultVkParams sc
-    return $ fmsg (vkUrl sc) (method, attachmentsEtc ++ pars)
+    return $ buildHTTP (vkUrl sc) (method, attachmentsEtc ++ pars)
 
        
 

@@ -11,11 +11,8 @@ import qualified Stuff as S
 import Data.Foldable (asum)
 import qualified HTTPRequests as H
 import Text.Read (readMaybe)
-import Control.Monad (replicateM, when)
+import Control.Monad (replicateM)
 import Data.Either (partitionEithers)
-import qualified Control.Monad.Catch as C
-import qualified Exceptions as Ex
-import qualified Data.Aeson as Ae
 
 
 handleUpdate :: (BotClass s, Monad m) =>

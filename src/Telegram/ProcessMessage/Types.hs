@@ -1,27 +1,14 @@
 {-# LANGUAGE
-    OverloadedStrings
-    , DeriveGeneric
-    , RecordWildCards
+    DeriveGeneric
     #-}
 module Telegram.ProcessMessage.Types where
 
 
-
---import HTTPRequests as H (ParamsList, ParVal (..), unit, mUnit, ToParVal(..))
 import HTTPRequests as H
-
-import Data.Aeson (encode)
 import Data.Aeson.Types
 import GHC.Generics (Generic)
-import Data.Foldable (asum)
-import qualified Stuff as S (safeHead)
-import qualified Data.Text.Lazy.Encoding as EL (decodeUtf8)
-import Data.Text.Encoding (decodeUtf8)
-import qualified Data.Text.Lazy as TL (Text, unpack, pack)
-import qualified Data.Text as T (Text, unpack, pack)
-
+import qualified Data.Text as T (Text)
 import GenericPretty
-import Data.Void
 
 
 data TlSticker = TlSticker {
@@ -131,14 +118,28 @@ data TlContact = TlContact {
 instance FromJSON TlContact where
     parseJSON = genericParseJSON defaultOptions {
         fieldLabelModifier = drop 6 }
-{-
-data TlPoll = TlPoll {
 
+data TlPollOption = TlPollOptions {
+    _TPollO_text :: T.Text,
+    _TPollO_voter_count :: Int
+    } deriving (Show, Eq, Generic)
+
+instance FromJSON TlPollOption where
+    parseJSON = genericParseJSON defaultOptions {
+        fieldLabelModifier = drop 8 }
+
+data TlPoll = TlPoll {
+    _TPoll_id :: T.Text,
+    _TPoll_question :: T.Text,
+    _TPoll_options :: [TlPollOption],
+    _TPoll_total_voter_count :: Int
+    
     } deriving (Show, Eq, Generic)
 
 instance FromJSON TlPoll where
     parseJSON = genericParseJSON defaultOptions {
-        fieldLabelModifier = drop 6 }
+        fieldLabelModifier = drop 7 }
+{-
 -}
 data TlDice = TlDice {
     _TD_emoji :: T.Text,
@@ -161,6 +162,8 @@ instance PrettyShow TlVideoNote
 instance PrettyShow TlVoice
 instance PrettyShow TlContact
 instance PrettyShow TlDice
+instance PrettyShow TlPollOption
+instance PrettyShow TlPoll
 instance PrettyShow TlVenue
 instance PrettyShow TlLocation
 

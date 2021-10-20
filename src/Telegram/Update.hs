@@ -1,7 +1,6 @@
 
 {-# LANGUAGE
-    OverloadedStrings
-    , DeriveGeneric
+    DeriveGeneric
     , RecordWildCards
     #-}
 
@@ -11,9 +10,8 @@ module Telegram.Update where
 import Data.Aeson.Types
 import GHC.Generics (Generic)
 import Data.Foldable (asum)
-import qualified Data.Text as T (Text, unpack, pack)
+import qualified Data.Text as T (Text)
 import GenericPretty
-import Telegram.ProcessMessage.Types
 import Types
 import Telegram.Entity
 
@@ -70,7 +68,6 @@ data TlEvent =
     TEMsg TlMessage
     -- | TEEdMsg TlMessage
     | TECallback TlCallback
-    -- | TEUnexpectedEvent TlUnexpectedEvent
     | TEUnexpectedEvent
     deriving (Show, Eq)
 

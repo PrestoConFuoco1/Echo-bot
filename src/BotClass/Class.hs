@@ -12,8 +12,8 @@ import qualified App.Handle as D
 import BotClass.ClassTypes
 import qualified Control.Monad.Catch as C
 
-fmsg :: TL.Text -> (TL.Text, H.ParamsList) -> H.HTTPRequest
-fmsg url (method, params) = H.Req H.POST (url <> method) params
+buildHTTP :: TL.Text -> (TL.Text, H.ParamsList) -> H.HTTPRequest
+buildHTTP url (method, params) = H.Req H.POST (url <> method) params
 
 class (BotClassTypes s) => BotClassUtility s where
     getResult :: s -> RepSucc s -> Maybe Value

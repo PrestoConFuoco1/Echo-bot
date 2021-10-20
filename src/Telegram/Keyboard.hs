@@ -1,7 +1,5 @@
 {-# LANGUAGE
-    OverloadedStrings
-    , DeriveGeneric
-    , RecordWildCards
+    DeriveGeneric
     #-}
 module Telegram.Keyboard where
 
@@ -9,7 +7,7 @@ import Data.Aeson (encode)
 import Data.Aeson.Types
 import GHC.Generics (Generic)
 import qualified Data.Text.Lazy.Encoding as EL (decodeUtf8)
-import qualified Data.Text.Lazy as TL (Text, unpack, pack)
+import qualified Data.Text.Lazy as TL (Text, pack)
 
 
 data TlInlineButton = TlInlineButton {
@@ -55,6 +53,4 @@ repNumButtonTele cmd n = TlInlineButton shown (cmd <> " " <> shown)
 
 repNumKeyboardTele' :: TL.Text -> [Int] -> TlInlineKeyboard
 repNumKeyboardTele' cmd lst = TlInlineKeyboard $ [map (repNumButtonTele cmd) lst]
-{-
--}
 

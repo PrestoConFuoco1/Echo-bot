@@ -1,7 +1,6 @@
 
 {-# LANGUAGE
-    OverloadedStrings
-    , DeriveGeneric
+    DeriveGeneric
     , RecordWildCards
     #-}
 
@@ -43,16 +42,11 @@ data TlMessage = TlMessage {
     _TM_contact :: Maybe TlContact,
     _TM_dice :: Maybe TlDice,
     --game
-    --poll
+    _TM_poll :: Maybe TlPoll,
     _TM_venue :: Maybe TlVenue,
     _TM_location :: Maybe TlLocation
     } deriving (Show, Eq, Generic)
 
-{-
-instance ToJSON TlMessage where
-    toJSON = genericToJSON defaultOptions {
-        fieldLabelModifier = drop 4 }
--}
 instance FromJSON TlMessage where
     parseJSON = genericParseJSON defaultOptions {
         fieldLabelModifier = drop 4 }
@@ -60,7 +54,6 @@ instance FromJSON TlMessage where
 
 data TlChat = TlChat {
     _TC_id :: Integer
-    --_TC_type :: String
     } deriving (Show, Eq, Generic)
 
 instance Ord TlChat where
@@ -103,11 +96,7 @@ data TlCallback = TlCallback {
     _TCB_data :: Maybe T.Text,
     _TCB_message :: Maybe TlMessage
     } deriving (Show, Eq, Generic)
-{-
-instance ToJSON TlCallback where
-    toJSON = genericToJSON defaultOptions {
-        fieldLabelModifier = drop 5 }
--}
+
 instance FromJSON TlCallback where
     parseJSON = genericParseJSON defaultOptions {
         fieldLabelModifier = drop 5 }

@@ -142,6 +142,8 @@ instance ToParVal TL.Text where
     toParVal = PLText
 instance ToParVal T.Text where
     toParVal = PText
+instance (Ae.ToJSON a) => ToParVal [a] where
+    toParVal = PVal . Ae.toJSON
 
 unit :: (ToParVal a) => TL.Text -> a -> ParamsUnit
 unit field value = (field, Just $ toParVal value)

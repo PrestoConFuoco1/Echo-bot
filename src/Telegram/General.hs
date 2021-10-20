@@ -2,17 +2,16 @@
 module Telegram.General where
 
 import GHC.Generics (Generic)
-import qualified Data.Text.Lazy as TL (Text, unpack, pack)
-import qualified Data.Text as T (Text, unpack, pack)
-
+import qualified Data.Text.Lazy as TL (Text)
 import GenericPretty as GP
-import Telegram.ProcessMessage.Types
 import Telegram.MediaGroup.Types
 import qualified Data.Map as M
 
 
+tlTakesJSON :: Bool
+tlTakesJSON = True -- this is better
+--tlTakesJSON = False
 
-tlTakesJSON = True
 
 data TlConfig = TlConf {
         _TC_updID :: Integer,
@@ -27,8 +26,6 @@ data TlStateConst = TLSC {
 
 data TlStateMut = TLSM {
     tlUpdateID :: Integer,
-    --photoMediaGroups :: M.Map TlMediaGroupIdentifier [TlPhotoSize]
-    --photoMediaGroups :: M.Map TlMediaGroupIdentifier [TlInputMediaPhoto]
     mediaGroups :: M.Map TlMediaGroupIdentifier [TlMediaGroupUnit]
     } deriving (Show)
 

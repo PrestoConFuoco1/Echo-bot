@@ -25,7 +25,6 @@ instance GP.PrettyShow TlMediaGroupIdentifier
 data TlInputMediaPhoto = TlInputMediaPhoto {
     _TIMP_caption :: Maybe T.Text
     , _TIMP_media :: T.Text
-    -- here it is file_id that exists on the Telegram servers
     } deriving (Show, Generic, Eq)
 
 instance GP.PrettyShow TlInputMediaPhoto
@@ -40,7 +39,6 @@ instance ToJSON TlInputMediaPhoto where
 data TlInputMediaVideo = TlInputMediaVideo {
     _TIMV_caption :: Maybe T.Text
     , _TIMV_media :: T.Text
-    -- here it is file_id that exists on the Telegram servers
     } deriving (Show, Generic, Eq)
 
 instance GP.PrettyShow TlInputMediaVideo
@@ -55,7 +53,6 @@ instance ToJSON TlInputMediaVideo where
 data TlInputMediaDocument = TlInputMediaDocument {
     _TIMD_caption :: Maybe T.Text
     , _TIMD_media :: T.Text
-    -- here it is file_id that exists on the Telegram servers
     } deriving (Show, Generic, Eq)
 
 instance GP.PrettyShow TlInputMediaDocument
@@ -71,7 +68,6 @@ instance ToJSON TlInputMediaDocument where
 data TlInputMediaAudio = TlInputMediaAudio {
     _TIMA_caption :: Maybe T.Text
     , _TIMA_media :: T.Text
-    -- here it is file_id that exists on the Telegram servers
     } deriving (Show, Generic, Eq)
 
 instance GP.PrettyShow TlInputMediaAudio

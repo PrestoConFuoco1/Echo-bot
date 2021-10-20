@@ -3,13 +3,11 @@ module Telegram.Send (getUpdates, sendThis) where
 import qualified HTTPRequests as H
 import Types
 import qualified App.Logger as L
-import Telegram.Entity
 import qualified Data.Aeson as Ae (decode)
 import qualified Data.ByteString.Lazy.Char8 as BSL (ByteString)
 import Data.Aeson.Types as AeT
-import Telegram.ForHandlers
 import Telegram.Update
-import Telegram.General
+import Telegram.General (tlTakesJSON)
 
 parseUpdatesResponse :: BSL.ByteString
     -> Either String (UpdateResponse TlUpdateReplySuccess TlUpdateReplyError)
@@ -41,12 +39,5 @@ sendThis logger request = do
     let eithResp = eithRespStr >>= parseHTTPResponse
     return eithResp
 
-
-
-sendHelp :: L.Handle IO -> H.HTTPRequest -> IO (Either String TlReply)
-sendHelp = sendThis
-
-sendKeyboard :: L.Handle IO -> H.HTTPRequest -> IO (Either String TlReply)
-sendKeyboard = sendThis
 
 

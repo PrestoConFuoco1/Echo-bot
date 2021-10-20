@@ -107,7 +107,7 @@ instance BotClass Tele where
     sendTextMsg h s (Just c) _ text =
         let
             url = tlUrl $ D.getConstState h
-        in  return $ Right $ fmsg url ("sendMessage",
+        in  return $ Right $ buildHTTP url ("sendMessage",
             [unit "chat_id" $ _TC_id c,
              unit "text" text])
             
@@ -142,7 +142,7 @@ processMessage1 h s m =
         sendMessage h s m =
             let eithMethodParams = sendMessageTele m
                 url = tlUrl $ D.getConstState h
-            in  return . fmsg url . first TL.fromStrict <$> eithMethodParams
+            in  return . buildHTTP url . first TL.fromStrict <$> eithMethodParams
 
 
 processMediaGroup :: (Monad m) => D.Handle Tele m -> TlMessage -> m ()
@@ -173,6 +173,6 @@ sendMediaGroup h (TlMediaGroupPair ident items) = do
         pars = [unit "chat_id" $ _TC_id chat
                 , unit "media" $ AeT.toJSON items'
                 , mUnit "caption" mCaption]
-        req = fmsg url (method, pars)
+        req = buildHTTP url (method, pars)
     E.sendNTimes h Tele mUser (return req)
 
