@@ -1,39 +1,39 @@
 module Telegram.ForHandlers where
 
-
-import Telegram.MediaGroup.Types
 import qualified Data.Map as M
 import Telegram.General
+import Telegram.MediaGroup.Types
 
 -----------------------------------------------------------
 getUpdateID' :: TlStateMut -> Integer
 getUpdateID' = tlUpdateID
 
 putUpdateID' :: Integer -> TlStateMut -> TlStateMut
-putUpdateID' uid m = m { tlUpdateID = uid }
+putUpdateID' uid m = m {tlUpdateID = uid}
 
-insertMediaGroupUnit' :: TlMediaGroupIdentifier -> TlMediaGroupUnit -> TlStateMut -> TlStateMut
+insertMediaGroupUnit' ::
+      TlMediaGroupIdentifier
+   -> TlMediaGroupUnit
+   -> TlStateMut
+   -> TlStateMut
 insertMediaGroupUnit' key value sm =
-    let newMap = M.insertWith (++) key [value] $ mediaGroups sm
-    in  sm { mediaGroups = newMap }
-
-
+   let newMap =
+          M.insertWith (++) key [value] $ mediaGroups sm
+    in sm {mediaGroups = newMap}
 
 purgeMediaGroups' :: TlStateMut -> TlStateMut
-purgeMediaGroups' sm = sm { mediaGroups = M.empty }
+purgeMediaGroups' sm = sm {mediaGroups = M.empty}
 
 getMediaGroups' :: TlStateMut -> [TlMediaGroupPair]
-getMediaGroups' TLSM { mediaGroups = x } = map f $ M.toList x
-  where f (k, v) = TlMediaGroupPair k v
+getMediaGroups' TLSM {mediaGroups = x} = map f $ M.toList x
+  where
+    f (k, v) = TlMediaGroupPair k v
 
-
-data TlHandler m = TlHandler {
-    getUpdateID :: m Integer,
-    putUpdateID :: Integer -> m (),
-    insertMediaGroupUnit :: TlMediaGroupIdentifier -> TlMediaGroupUnit -> m (),
-    purgeMediaGroups :: m (),
-    getMediaGroups :: m [TlMediaGroupPair]
-    }
-
-
-
+data TlHandler m =
+   TlHandler
+      { getUpdateID :: m Integer
+      , putUpdateID :: Integer -> m ()
+      , insertMediaGroupUnit :: TlMediaGroupIdentifier -> TlMediaGroupUnit -> m ()
+      , purgeMediaGroups :: m ()
+      , getMediaGroups :: m [TlMediaGroupPair]
+      }
