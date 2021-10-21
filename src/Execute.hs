@@ -98,8 +98,6 @@ singleUpdateParseFail h (u, e) = do
       T.pack e <> ">, update is:"
    D.logError h $ GP.defaultPrettyT u
 
-{-
--}
 attachErrorReason ::
       (a -> Either b c) -> a -> Either (a, b) c
 attachErrorReason f x =

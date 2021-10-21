@@ -104,8 +104,6 @@ instance ToJSON TlInputMediaAudio where
 data TlMediaGroupPair =
    TlMediaGroupPair
       { _TMGP_identifier :: TlMediaGroupIdentifier
-    --_TMGP_items :: [TlPhotoSize]
-    --_TMGP_items :: [TlInputMediaPhoto]
       , _TMGP_items :: [TlMediaGroupUnit]
       }
    deriving (Show, Generic)

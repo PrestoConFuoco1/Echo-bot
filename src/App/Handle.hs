@@ -41,7 +41,6 @@ findWithDefault h _ def mUser =
       Nothing -> return def
       Just user -> do
          mRepNum <- getUser h user
-        --return $ maybe def id mRepNum
          return $ fromMaybe def mRepNum
 
 logDebug, logInfo, logWarning, logError, logFatal ::

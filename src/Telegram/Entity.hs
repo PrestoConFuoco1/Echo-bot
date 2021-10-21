@@ -13,7 +13,6 @@ chatIDfromMsg :: TlMessage -> Integer
 chatIDfromMsg = _TC_id . _TM_chat
 
 isMediaGroup :: TlMessage -> Bool
---isMediaGroup m = _TM_media_group_id m /= Nothing
 isMediaGroup m = isJust $ _TM_media_group_id m
 
 data TlMessage =

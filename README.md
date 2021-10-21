@@ -51,7 +51,7 @@ to use database, too).
 ### Other messages
 For messages that don't have any specific meaning the bot is trying to obtain an HTTP request,
 which can be used to send the same message to the user. This is not possible only for a member of 
-a media group in Telegram; all such messages are saved to the internal server state and sent again
+a media group in Telegram; all such messages are saved to the internal bot state and sent again
 as a media groups after all other updates have been already processed.
 Before sending a reply bot gets a number of repeats for the target user and replicates the HTTP request
 the corresponding number of times.
@@ -102,7 +102,7 @@ It serves two purposes. Firstly, it is used to carry some environment, i.e.
 it contains help message, default number of repeats and so on. This is similar
 to the Reader monad.
 Its second purpose is to provide some effectful functions that use internal
-state of the server. For example, for both messagers it provides functions
+state of the bot. For example, for both messagers it provides functions
 that are working with (User, Repeat number) map (findUser, insertUser and so on).
 
 The definition of handle can be found in `App/Handle.hs` module, `Handle s m`.
@@ -131,7 +131,7 @@ stderr handle.
 
 ## Compile
 
-First of all, you need to clone the repository with the server sources and build it using stack.
+First of all, you need to clone the repository with the bot sources and build it using stack.
 Usually it is enough to just run `stack build`, all the libraries will be compiled automatically.
 Eventually building can crash because of some external libraries that are not installed on your machine.
 If you are using Linux, you can just install them yourself. For example, if you are using Ubuntu and
@@ -184,7 +184,7 @@ If you need only telegram bot, you can omit Vk configuration, and vice versa.
 The first command line options always should be a path to the configuration file.
 The order of all subsequent parameters is arbitrary.
 
-+ `--test-config` is used to test server configuration. Data from config file will be get and then process will terminate
++ `--test-config` is used to test bot configuration. Data from config file will be get and then process will terminate
 with success exitcode.
 + `-tl` is used to indicate that Telegram bot will be used, `-vk` - for Vk bot. One of these arguments is required, otherwise
 application will terminate with error.

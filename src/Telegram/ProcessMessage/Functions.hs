@@ -155,10 +155,6 @@ sendContactTele m = do
         , mUnit "vcard" $ _TCon_vcard contact
         ])
 
-{-
-defaultVCard = "BEGIN:VCARD\nVERSION:4.0\nFN:Julia\nPHOTO;MEDIATYPE=image/jpg:" ++ juliaURL ++ "\nEND:VCARD"
-juliaURL = "https://sun9-56.userapi.com/154hNIMjd_Tmdts-Ivpzo13gBTqSg_soIEy76g/k5VJLqOaFvg.jpg"
--}
 sendPollTele :: TlMessage -> Maybe (T.Text, H.ParamsList)
 sendPollTele m = do
    poll <- _TM_poll m
@@ -172,7 +168,6 @@ sendPollTele m = do
 
 sendDiceTele :: TlMessage -> Maybe (T.Text, H.ParamsList)
 sendDiceTele m
-    --if _TM_text m == Just "/dice" || _TM_dice m /= Nothing
  = do
    if _TM_text m == Just "/dice" || isJust (_TM_dice m)
       then return

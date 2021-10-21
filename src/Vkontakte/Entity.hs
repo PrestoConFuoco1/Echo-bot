@@ -8,9 +8,6 @@ import GHC.Generics (Generic)
 import GenericPretty
 import Vkontakte.Attachment
 
--- Возможный вариант: любое "message_new" при наличии payload интерпретировать
--- как callback. 
--- Другой - изврат. (кажется)
 --------------------------------------------------
 data VkMessage =
    VkMessage
@@ -18,7 +15,6 @@ data VkMessage =
       , _VM_from_id :: VkUser
       , _VM_text :: Maybe T.Text
       , _VM_attachments :: [VkAttachment]
-    --_VM_payload :: Maybe VkMyCallback
       }
    deriving (Eq, Show, Generic)
 

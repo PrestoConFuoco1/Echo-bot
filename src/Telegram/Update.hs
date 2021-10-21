@@ -65,7 +65,6 @@ parseUpdatesResponse1 =
                   , _TURE_description = description
                   }
 
------------------------------------------------------------
 data TlUpdate =
    TlUpdate
       { _TU_update_id :: Integer
@@ -76,7 +75,6 @@ data TlUpdate =
 
 data TlEvent
    = TEMsg TlMessage
-    -- | TEEdMsg TlMessage
    | TECallback TlCallback
    | TEUnexpectedEvent
    deriving (Show, Eq)
@@ -94,7 +92,6 @@ instance FromJSON TlUpdate where
                ]
          return $ TlUpdate uid ev value
 
---                   , fmap TEEdMsg (o .: "edited_message")
 instance PrettyShow TlReply
 
 instance PrettyShow TlUpdateReplyError

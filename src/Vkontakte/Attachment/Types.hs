@@ -64,14 +64,13 @@ instance FromJSON VkAttachment where
             "gift" -> fmap VAGift $ o .: "gift"
             str ->
                fmap (VAUnexpectedAtt . VkUnexpectedAtt str) $
-               o .: (str) {-T.toStrict-}
+               o .: (str)
 
 ------------------------------------------
 data VkPhoto =
    VkPhoto
       { _VPh_owner_id :: Integer
-      , _VPh_id :: Integer -- T.Text or Integer?
-    -- i think this is all what is needed
+      , _VPh_id :: Integer
       , _VPh_access_key :: Maybe T.Text
       }
    deriving (Show, Eq, Generic)
@@ -85,8 +84,7 @@ instance FromJSON VkPhoto where
 data VkVideo =
    VkVideo
       { _VVd_owner_id :: Integer
-      , _VVd_id :: Integer -- T.Text or Integer?
-    -- i think this is all what is needed
+      , _VVd_id :: Integer
       , _VVd_access_key :: Maybe T.Text
       }
    deriving (Show, Eq, Generic)
@@ -169,7 +167,6 @@ instance FromJSON VkMarketAlbum where
 data VkWall =
    VkWall
       { _VWl_owner_id :: Integer
-    --_VWl_to_id :: Integer,
       , _VWl_id :: Integer
       , _VWl_access_key :: Maybe T.Text
       }
@@ -261,7 +258,6 @@ instance VkAttMessageSendable VkDocument where
 instance VkAttMessageSendable VkWall where
    getType _ = "wall"
    getOwnerID = _VWl_owner_id
-    --getOwnerID = _VWl_to_id
    getID = _VWl_id
    getAccessKey = _VWl_access_key
 
@@ -271,7 +267,6 @@ instance VkAttMessageSendable VkMarket where
    getID = _VMrk_id
    getAccessKey = _VMrk_access_key
 
---instance VkAttMessageSendable VkPoll where
 instance PrettyShow VkPhoto
 
 instance PrettyShow VkVideo

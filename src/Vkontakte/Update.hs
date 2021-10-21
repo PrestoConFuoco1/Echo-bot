@@ -21,8 +21,6 @@ data VkReply =
       }
    deriving (Eq, Show, Generic)
 
---    _VR_ts :: Maybe T.Text,
---    _VR_updates :: Maybe Value,
 instance FromJSON VkReply where
    parseJSON x =
       ($ x) $
@@ -30,11 +28,6 @@ instance FromJSON VkReply where
          failed <- o .:? "failed"
          return $ VkReply failed x
 
-{-
-instance FromJSON VkReply where
-    parseJSON = genericParseJSON defaultOptions {
-        fieldLabelModifier = drop 4 }
--}
 data VkUpdateReplySuccess =
    VkUpdateReplySuccess
       { _VURS_updates :: Value
@@ -83,10 +76,8 @@ data VkUpdate =
       }
    deriving (Eq, Show)
 
---    ,_VU_type :: T.Text
 data VkEvent
    = VEMsg VkMessage
-            -- | VEMsgEdit VkMessage
    | VECallback VkMyCallback
    | VEUnexpectedEvent
    deriving (Eq, Show)
@@ -105,24 +96,18 @@ instance FromJSON VkUpdate where
                      [ VECallback <$> parseCallback msg
                      , VEMsg <$> parseJSON msg
                      ]
- --           "message_edit" -> fmap VEMsgEdit $ o .: "object"
- --           str -> fail $ T.unpack $ "Failed to parse the event object of type \"" <> str <> "\"."
                _ -> return VEUnexpectedEvent
          return $
             VkUpdate
-            --updType
                value
                event
 
--- API version >= 5.103 will be used
--- if the field "payload" is present, it is an object and has "callback" field,
--- then it is callback update.
 parseCallback :: Value -> Parser VkMyCallback
 parseCallback =
    withObject "Expected message object with payload" $ \msg -> do
       pt <- msg .: "payload" :: Parser T.Text
-      let pbs = E.encodeUtf8 pt {- S.echo $-}
-          pVal = decode $ BS.fromStrict pbs :: Maybe Value {-S.echo $-}
+      let pbs = E.encodeUtf8 pt
+          pVal = decode $ BS.fromStrict pbs :: Maybe Value
       payload <-
          maybe
             (fail "unable to parse payload object")

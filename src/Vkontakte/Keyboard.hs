@@ -96,12 +96,4 @@ repNumKeyboardVkTxt' cmd lst =
             VBAText . repNumButtonVkTxt cmd)
            lst
       ]
-------------------------------------------
-{-
-testVkKeyboard, testVkButton, testVkAction :: T.Text
-testVkKeyboard = "{\"inline\":true,\"buttons\":[[" <> testVkButton <> "]]}"
-testVkButton = "{\"action\":" <> testVkAction <> ",\"color\":\"primary\"}"
-testVkAction = "{\"type\":\"callback\",\"label\":\"Press me\",\"payload\":\"{}\"}"
 
-testVkKeyboard' ="{\"inline\":true,\"buttons\":[[{\"action\":{\"type\":\"callback\",\"label\":\"Press me\",\"payload\":\"{}\"},\"color\":\"primary\"}]]}" 
--}

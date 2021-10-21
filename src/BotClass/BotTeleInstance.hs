@@ -43,22 +43,9 @@ instance BotClassUtility Tele where
    getCallbackChat _ c =
       _TCB_message c >>= return . _TM_chat
 
---  getResult :: s -> RepSucc s -> Maybe Value
---  getMsg :: s -> Upd s -> Maybe (Msg s)
--- getUpdateValue :: s -> Upd s -> Value
---  getChat :: s -> Msg s -> Maybe (Chat s)
---  getUser :: s -> Msg s -> Maybe (User s)
---  getText :: s -> Msg s -> Maybe T.Text
---  getUserID :: s -> User s -> T.Text
---  getCallbackQuery :: s -> Upd s -> Maybe (CallbackQuery s)
---  getCallbackUser :: s -> CallbackQuery s -> User s
---  getCallbackData :: s -> CallbackQuery s -> Maybe T.Text
---  getCallbackChat :: s -> CallbackQuery s -> Maybe (Chat s)
 instance BotClass Tele
-    --takesJSON _ = True
                          where
    takesJSON _ = tlTakesJSON
-    --getUpdatesRequest :: (Monad m) => D.Handle s m -> s -> m H.HTTPRequest
    getUpdatesRequest h _ = do
       let tout = timeout $ D.commonEnv h
           url = tlUrl $ D.getConstState h
@@ -83,7 +70,6 @@ instance BotClass Tele
          getResult s rep
       AeT.parseEither AeT.parseJSON res
    parseUpdate _ = AeT.parseEither AeT.parseJSON
-    --repNumKeyboard :: s -> [Int] -> T.Text -> H.ParamsList
    repNumKeyboard _ lst cmd = [unit "reply_markup" obj]
      where
        obj = AeT.toJSON $ repNumKeyboardTele' cmd lst
@@ -113,15 +99,6 @@ instance BotClass Tele
       purgeMediaGroups (D.specH h)
    processMessage = processMessage1
 
---  isSuccess :: s -> Rep s -> Bool
---  handleFailedUpdatesRequest :: (C.MonadThrow m) => D.Handle s m -> RepErr s -> m ()
---  normal work is now impossible since the bot can't handle any errors
---  parseUpdatesValueList :: s -> RepSucc s -> Either String [Value]
---  parseUpdate :: s -> Value -> Either String (Upd s)
---  sendTextMsg :: D.Handle s m -> s -> Maybe (Chat s) -> Maybe (User s) -> T.Text
---      -> m (Either String H.HTTPRequest)
---  epilogue :: D.Handle s m -> s -> [Upd s] -> Rep s -> m ()
---  processMessage :: (Monad m) => D.Handle s m -> s -> Msg s -> m (Maybe (m H.HTTPRequest))
 processMessage1 ::
       (Monad m)
    => D.Handle Tele m

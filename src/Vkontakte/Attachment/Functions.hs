@@ -21,7 +21,6 @@ attsToParsVk' atts = do
           map encodeVkAtt (pDocs part) <>
           map encodeVkAtt (pWalls part) <>
           map encodeVkAtt (pMarkets part)
-            -- <> map encodeVkAtt (PPolls part)
        maybePars = either (const Nothing) Just eithPars
        eithPars =
           asum
@@ -41,7 +40,6 @@ attsToParsVk' atts = do
                 "Found " <>
                 (T.pack . show . length $ xs) <>
                 " unexpected attachments."
-    --maybe (return ()) (tell . (:[]) . (,) L.Warning) maybeUnexpectedAttsMsg
    S.withMaybe maybeUnexpectedAttsMsg (return ()) $ \u -> do
       tell . (: []) $ (L.Warning, u)
       let f x = (L.Warning, GP.defaultPrettyT x)

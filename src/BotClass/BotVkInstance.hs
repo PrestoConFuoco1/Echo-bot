@@ -32,7 +32,7 @@ instance BotClassUtility Vk where
    getUpdateValue _ = _VU_value
    getChat _ _ = Nothing
    getUser _ m = Just $ _VM_from_id m
-   getText _ = _VM_text {- S.echo .-}
+   getText _ = _VM_text
    getUserID _ = T.pack . show . _VU_id
    getCallbackQuery _ VkUpdate {..} =
       case _VU_object of
@@ -43,21 +43,7 @@ instance BotClassUtility Vk where
       Just . _VP_payload . _VMC_payload
    getCallbackChat _ = const Nothing
 
---    getResult :: s -> Rep s -> Maybe Value
---    getMsg :: s -> Upd s -> Maybe (Msg s)
---   getUpdateValue :: s -> Upd s -> Value
---    getChat :: s -> Msg s -> Maybe (Chat s)
---    getUser :: s -> Msg s -> Maybe (User s)
---    getText :: s -> Msg s -> Maybe T.Text
---    getUserID :: s -> User s -> T.Text
---
---    getCallbackQuery :: s -> Upd s -> Maybe (CallbackQuery s)
---
---    getCallbackUser :: s -> CallbackQuery s -> User s
---    getCallbackData :: s -> CallbackQuery s -> Maybe T.Text
---    getCallbackChat :: s -> CallbackQuery s -> Maybe (Chat s)
 instance BotClass Vk
-    --takesJSON _ = False
                           where
    takesJSON _ = vkTakesJSON
    getUpdatesRequest = getUpdatesRequest1
@@ -77,7 +63,6 @@ instance BotClass Vk
 getUpdatesRequest1 ::
       (Monad m) => D.Handle Vk m -> Vk -> m H.HTTPRequest
 getUpdatesRequest1 h _
-    --curTS <- fmap vkTs $ D.getMutState h s
  = do
    curTS <- getTimestamp (D.specH h)
    let constState = D.getConstState h
@@ -86,7 +71,6 @@ getUpdatesRequest1 h _
        pars =
           [ unit "act" ("a_check" :: T.Text)
           , unit "key" $ vkKey constState
-                --unit "key" ("hahahahaha"::T.Text),
           , unit "ts" curTS
           , unit "wait" timeout'
           ]
@@ -115,8 +99,8 @@ handleFailedUpdatesRequest1 h e@(VkUpdateReplyError {..}) =
        key = vkKey $ D.getConstState h
     in case _VURE_failed of
           x
-             | x == 1 ->
-                D.logError h errorMsg1 >>
+             | x == 1 -> do
+                D.logError h errorMsg1
                 S.withMaybe
                    _VURE_ts
                    (D.logError h $ funcName <> "no ts found")
@@ -203,10 +187,11 @@ processMessage1 h _ m
          maybeText
          (S.withMaybe
              maybePars
-             (D.logError
+             (do
+              D.logError
                  h
                  (funcName <>
-                  "no text found and unable to send any attachments.") >>
+                  "no text found and unable to send any attachments.")
               return Nothing)
              (return .
               Just . processMessageVk h user maybeText))

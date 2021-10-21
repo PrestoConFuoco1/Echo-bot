@@ -20,7 +20,7 @@ import qualified Control.Monad.Catch as C
 import qualified Data.ByteString.Lazy.Char8 as BSL
    ( ByteString
    , unpack
-   ) --, toStrict)
+   )
 import qualified Data.Text as T
 import GenericPretty as GP
 import qualified System.Exit as Q (ExitCode(..), exitWith)
@@ -60,7 +60,6 @@ resourcesToHandle ::
 resourcesToHandle resources logger =
    D.Handle
       { D.log = logger
-        --, D.sendRequest = H.sendRequest logger
       , D.commonEnv = commonEnv resources
       , D.getConstState = constState resources
       , D.insertUser =
@@ -123,7 +122,6 @@ vkHandlers ::
    -> [C.Handler IO Resources]
 vkHandlers logger conf resources =
    [ C.Handler $ vkErrorHandler logger conf resources
-    -- , C.Handler $ defaultHandler logger resources
    ]
 
 defaultHandler ::
@@ -181,18 +179,15 @@ getLongPollServer logger VkConf {..} = do
       funcName <> GP.defaultPrettyT initData
    return initData
 
---initialize :: q -> Conf q -> IO (Maybe (StC q, StM q))
 initialize ::
       L.Handle IO
    -> VkConfig
    -> IO (VkStateConst, VkStateMut)
---initialize logger (VkConf methodsUrl accTok gid apiV) = do
 initialize logger conf@(VkConf {..}) = do
    initData <- getLongPollServer logger conf
    initRndNum <- newStdGen
    return
       ( VKSC
-        --vkKey = "hahahah"
            { vkKey = _VID_key initData
            , vkServer = _VID_server initData
            , vkUrl = _VC_vkUrl

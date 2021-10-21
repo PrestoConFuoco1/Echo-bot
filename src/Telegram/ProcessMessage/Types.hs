@@ -52,7 +52,6 @@ instance FromJSON TlDocument where
 data TlPhotoSize =
    TlPhotoSize
       { _TPS_file_id :: T.Text
-    --_TPS_
       }
    deriving (Show, Eq, Generic)
 
@@ -171,8 +170,6 @@ instance FromJSON TlPoll where
       genericParseJSON
          defaultOptions {fieldLabelModifier = drop 7}
 
-{-
--}
 data TlDice =
    TlDice
       { _TD_emoji :: T.Text
@@ -185,7 +182,6 @@ instance FromJSON TlDice where
       genericParseJSON
          defaultOptions {fieldLabelModifier = drop 4}
 
---    parseJSON _ = return TlDice
 instance PrettyShow TlAnimation
 
 instance PrettyShow TlAudio

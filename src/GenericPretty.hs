@@ -13,13 +13,11 @@ import qualified Data.Time as Time
 import Data.Void
 import GHC.Generics
 
----------
 enclose, encloseSq :: String -> String
 enclose s = '{' : s ++ "}"
 
 encloseSq s = '[' : s ++ "]"
 
-------
 data OptionsL =
    OptionsL
       { labelModifier :: String -> String
@@ -52,7 +50,6 @@ defaultConsModif' (x:xs)
    | otherwise = x : xs
 defaultConsModif' x = x
 
-----------------------
 data LayoutUnit =
    LayoutUnit String LayoutValue
    deriving (Show, Eq)
@@ -134,7 +131,6 @@ genericPrettyShow ::
    -> LayoutValue
 genericPrettyShow opts = gprettyShow opts . from
 
---------------------------------------------------------------------
 newtype StrWrap =
    StrWrap
       { unStrWrap :: String
@@ -156,7 +152,6 @@ instance PrettyShow T.Text where
    prettyShow = LStr . show
 
 instance PrettyShow Value
-    --prettyShow val = LStr $ "JSON value"
                                            where
    prettyShow val =
       LJSON $ T.unpack $ E.decodeUtf8 $ BS.toStrict $ encode val
@@ -185,7 +180,6 @@ instance (PrettyShow a) => PrettyShow [a] where
           LayoutUnit (encloseSq $ show n) (prettyShow x) :
           acc
 
-------------------------------------------
 class GPrettyShow f where
    gprettyShow :: OptionsL -> f a -> LayoutValue
 
@@ -195,7 +189,6 @@ class GPrettyShowAux f where
 class GPrettyShowIgnoreConstr f where
    gprettyShowIgnoreConstr :: OptionsL -> f a -> LayoutValue
 
---------------------------------------------------------------------
 instance (GPrettyShow f) => GPrettyShow (D1 d f) where
    gprettyShow opts (M1 x) = gprettyShow opts x
 
@@ -232,7 +225,6 @@ instance (Constructor c, GPrettyShowAux f) =>
 instance (PrettyShow c) => GPrettyShow (Rec0 c) where
    gprettyShow _ (K1 x) = prettyShow x
 
---------------------------------------------------------------------
 instance (GPrettyShowAux f, GPrettyShowAux g) =>
          GPrettyShowAux ((:*:) f g) where
    gprettyShowAux opts (x :*: y) =
@@ -246,4 +238,3 @@ instance (Selector s, GPrettyShow f) =>
               (labelModifier opts $ selName s)
               (gprettyShow opts x)
          ]
---------------------------------------------------------------------

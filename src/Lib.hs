@@ -1,3 +1,4 @@
+{-# LANGUAGE BlockArguments #-}
 module Lib
    ( someFunc
    ) where
@@ -72,10 +73,10 @@ someFunc :: IO ()
 someFunc = do
    args <- getArgs
    case args of
-      [] ->
+      [] -> do
          hPutStrLn
             stderr
-            "Expected path to configuration file." >>
+            "Expected path to configuration file."
          Q.exitWith (Q.ExitFailure 1)
       (x:xs) -> runWithConf (getOpts xs) x
 
@@ -105,10 +106,10 @@ runWithConf opts path =
    case messager opts of
       Telegram -> runWithConf' Tele opts path telegramAction
       Vkontakte -> runWithConf' Vk opts path vkAction
-      None ->
+      None -> do
          L.logFatal
             L.simpleHandle
-            "No messager parameter supplied, terminating..." >>
+            "No messager parameter supplied, terminating..."
          L.logInfo
             L.simpleHandle
             "Use -tl for Telegram and -vk for Vkontakte"
@@ -160,7 +161,7 @@ mainLoop conf resourcesToHandles toLogger errorHandlers action resources = do
    let handle = resourcesToHandles resources
        logger = toLogger handle
    (action handle >> return resources) `C.catches`
-      errorHandlers logger conf resources -- someHandlers
+      errorHandlers logger conf resources
 
 runWithConf' ::
       (BotConfigurable s)
@@ -198,12 +199,12 @@ configHandlers :: L.Handle IO -> [E.Handler a]
 configHandlers h =
    let f (E.Handler g) =
           E.Handler
-             (\e ->
-                 g e >>
+             \e -> do
+                 g e
                  L.logFatal
                     h
-                    "Failed to get required data from configuration files, terminating..." >>
-                 Q.exitWith (Q.ExitFailure 1))
+                    "Failed to get required data from configuration files, terminating..."
+                 Q.exitWith (Q.ExitFailure 1)
     in map
           f
           [ E.Handler (handleIOError h)

@@ -34,6 +34,7 @@ import Data.Text.Encoding as E (decodeUtf8)
 import Network.HTTP.Base (urlEncode)
 import Network.HTTP.Simple
    ( HttpException(..)
+   , Request
    , getResponseBody
    , httpLBS
    , parseRequest
@@ -114,24 +115,10 @@ sendRequest ::
    -> Bool
    -> HTTPRequest
    -> IO (Either String BSL.ByteString)
-sendRequest h takesJSON r@(Req method url params) =
-   let (req, parsedReq) =
-          case method of
-             GET -> (reqWithoutJSON, parsedReqWithoutJSON)
-             POST ->
-                if takesJSON
-                   then (reqJSON, parsedReqJSON)
-                   else ( reqWithoutJSON
-                        , parsedReqWithoutJSON)
-       reqWithoutJSON =
-          show method ++
-          ' ' : T.unpack url ++ makeParamsString params
-       parsedReqWithoutJSON = parseRequest reqWithoutJSON
-       reqJSON = show method ++ ' ' : T.unpack url
-       parsedReqJSON = fmap f $ parseRequest reqJSON
-       f = setRequestBodyJSON (makeParamsValue params)
-    in L.logDebug h (showTReq r) >>
-       case parsedReq of
+sendRequest h takesJSON r = do
+   let (req, parsedReq) = buildRequest takesJSON r
+   L.logDebug h (showTReq r)
+   case parsedReq of
           Nothing ->
              return . Left $
              "Couldn't parse the HTTP request" ++ req
@@ -139,6 +126,25 @@ sendRequest h takesJSON r@(Req method url params) =
              (fmap (Right . getResponseBody) . httpLBS)
                 parsedReq' `catches`
              [Handler handleHTTPError]
+
+buildRequest :: Bool -> HTTPRequest -> (String, Maybe Request)
+buildRequest takesJSON (Req method url params) =
+    case method of
+             GET -> (reqWithoutJSON, parsedReqWithoutJSON)
+             POST ->
+                if takesJSON
+                   then (reqJSON, parsedReqJSON)
+                   else ( reqWithoutJSON
+                        , parsedReqWithoutJSON)
+  where
+       reqWithoutJSON =
+          show method ++
+          ' ' : T.unpack url ++ makeParamsString params
+       parsedReqWithoutJSON = parseRequest reqWithoutJSON
+       reqJSON = show method ++ ' ' : T.unpack url
+       parsedReqJSON = fmap f $ parseRequest reqJSON
+       f = setRequestBodyJSON (makeParamsValue params)
+
 
 makeParamsString :: ParamsList -> String
 makeParamsString lst =
