@@ -22,7 +22,6 @@ import qualified Data.ByteString.Lazy.Char8 as BSL
    , unpack
    ) --, toStrict)
 import qualified Data.Text as T
-import qualified Data.Text.Lazy as TL
 import GenericPretty as GP
 import qualified System.Exit as Q (ExitCode(..), exitWith)
 import System.Random (newStdGen)
@@ -92,7 +91,7 @@ vkErrorHandler logger conf resources VkEx.KeyOutOfDate_GetNew =
 vkErrorHandler logger conf resources VkEx.KeyAndTsLosed_GetNew =
    getNewKeyAndTs logger conf resources
 
-modifyKey :: TL.Text -> Resources -> Resources
+modifyKey :: T.Text -> Resources -> Resources
 modifyKey key resources =
    let sc = constState resources
        sc' = sc {vkKey = key}

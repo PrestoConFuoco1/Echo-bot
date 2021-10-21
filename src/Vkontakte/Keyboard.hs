@@ -3,8 +3,7 @@
 module Vkontakte.Keyboard where
 
 import Data.Aeson.Types
-import qualified Data.Text as T (Text)
-import qualified Data.Text.Lazy as TL (Text, pack)
+import qualified Data.Text as T (Text, pack)
 import GHC.Generics (Generic)
 import Vkontakte.Entity
 
@@ -23,7 +22,7 @@ instance ToJSON VkKeyboard where
 ----------------------------------------------------
 data VkButton =
    VkButton
-      { _VB_color :: TL.Text
+      { _VB_color :: T.Text
       , _VB_action :: VkButtonActions
       }
    deriving (Eq, Show, Generic)
@@ -55,8 +54,8 @@ instance ToJSON VkButtonActions where
 
 data VkCallbackButton =
    VkCallbackButton
-      { _VCB_label :: TL.Text
-      , _VCB_payload :: TL.Text
+      { _VCB_label :: T.Text
+      , _VCB_payload :: T.Text
       }
    deriving (Show, Eq, Generic)
 
@@ -72,7 +71,7 @@ instance FromJSON VkCallbackButton where
 
 data VkTextButton =
    VkTextButton
-      { _VTB_label :: TL.Text
+      { _VTB_label :: T.Text
       , _VTB_payload :: VkPayload
       }
    deriving (Show, Eq, Generic)
@@ -82,13 +81,13 @@ instance ToJSON VkTextButton where
       genericToJSON
          defaultOptions {fieldLabelModifier = drop 5}
 
-repNumButtonVkTxt :: TL.Text -> Int -> VkTextButton
+repNumButtonVkTxt :: T.Text -> Int -> VkTextButton
 repNumButtonVkTxt cmd n =
    VkTextButton shown $ VkPayload (cmd <> " " <> shown)
   where
-    shown = TL.pack $ show n
+    shown = T.pack $ show n
 
-repNumKeyboardVkTxt' :: TL.Text -> [Int] -> VkKeyboard
+repNumKeyboardVkTxt' :: T.Text -> [Int] -> VkKeyboard
 repNumKeyboardVkTxt' cmd lst =
    VkKeyboard
       True

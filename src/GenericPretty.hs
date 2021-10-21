@@ -6,9 +6,9 @@ module GenericPretty where
 import Data.Aeson (encode)
 import Data.Aeson.Types (Value)
 import Data.Char
-import qualified Data.Text as T (Text, pack)
-import qualified Data.Text.Lazy as TL (Text, unpack)
-import Data.Text.Lazy.Encoding (decodeUtf8)
+import qualified Data.Text as T (Text, pack, unpack)
+import Data.Text.Encoding as E (decodeUtf8)
+import qualified Data.ByteString.Lazy as BS (toStrict)
 import qualified Data.Time as Time
 import Data.Void
 import GHC.Generics
@@ -155,14 +155,11 @@ instance PrettyShow Double where
 instance PrettyShow T.Text where
    prettyShow = LStr . show
 
-instance PrettyShow TL.Text where
-   prettyShow = LStr . show
-
 instance PrettyShow Value
     --prettyShow val = LStr $ "JSON value"
                                            where
    prettyShow val =
-      LJSON $ TL.unpack $ decodeUtf8 $ encode val
+      LJSON $ T.unpack $ E.decodeUtf8 $ BS.toStrict $ encode val
 
 instance PrettyShow Bool where
    prettyShow = LStr . show

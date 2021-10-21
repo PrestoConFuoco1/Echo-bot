@@ -4,7 +4,6 @@ module Vkontakte.Entity where
 
 import Data.Aeson.Types
 import qualified Data.Text as T (Text)
-import qualified Data.Text.Lazy as TL (Text)
 import GHC.Generics (Generic)
 import GenericPretty
 import Vkontakte.Attachment
@@ -62,7 +61,7 @@ instance Ord VkUser where
 data VkMyCallback =
    VkMyCallback
       { _VMC_from_id :: VkUser
-      , _VMC_text :: Maybe TL.Text
+      , _VMC_text :: Maybe T.Text
       , _VMC_payload :: VkPayload
       }
    deriving (Show, Eq, Generic)
@@ -79,7 +78,7 @@ instance FromJSON VkMyCallback where
 
 data VkPayload =
    VkPayload
-      { _VP_payload :: TL.Text
+      { _VP_payload :: T.Text
       }
    deriving (Show, Eq, Generic)
 

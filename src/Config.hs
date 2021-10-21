@@ -138,4 +138,4 @@ logKeyException :: L.Handle IO -> CT.KeyError -> IO ()
 logKeyException logger = L.logError logger . f
   where
     f (CT.KeyError name) =
-       "No field with name " <> name <> " found." {-TL.fromStrict-}
+       "No field with name " <> name <> " found." {-T.fromStrict-}

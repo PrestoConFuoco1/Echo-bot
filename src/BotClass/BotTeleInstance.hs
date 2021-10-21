@@ -14,7 +14,7 @@ import qualified Data.Aeson.Types as AeT
 import Data.Bifunctor (first)
 import Data.Foldable (asum)
 import qualified Data.Text as T (pack)
-import qualified Data.Text.Lazy as TL (fromStrict)
+import qualified Data.Text.Lazy as T (fromStrict)
 import qualified Exceptions as Ex
 import qualified Execute.Logic as E (sendNTimes)
 import qualified GenericPretty as GP
@@ -142,7 +142,7 @@ processMessage1 h _ m =
     sendMessage =
        let eithMethodParams = sendMessageTele m
            url = tlUrl $ D.getConstState h
-        in return . buildHTTP url . first TL.fromStrict <$>
+        in return . buildHTTP url <$>
            eithMethodParams
 
 processMediaGroup ::

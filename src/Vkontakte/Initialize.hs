@@ -5,15 +5,15 @@ module Vkontakte.Initialize where
 import Data.Aeson (decode)
 import Data.Aeson.Types
 import qualified Data.ByteString.Lazy as BSL (ByteString)
-import qualified Data.Text.Lazy as TL (Text)
+import qualified Data.Text as T (Text)
 import GHC.Generics (Generic)
 import GenericPretty
 
 data VkInitData =
    VkInitData
-      { _VID_key :: TL.Text
-      , _VID_server :: TL.Text
-      , _VID_timestamp :: TL.Text
+      { _VID_key :: T.Text
+      , _VID_server :: T.Text
+      , _VID_timestamp :: T.Text
       }
    deriving (Show, Generic)
 
@@ -26,9 +26,9 @@ parseInitResp = eithParsed
        withObject "object: key, server, ts" $ \o' -- Parser a
         -> do
           o <- o' .: "response"
-          key <- o .: "key" :: Parser TL.Text
-          server <- o .: "server" :: Parser TL.Text
-          ts <- o .: "ts" :: Parser TL.Text
+          key <- o .: "key" :: Parser T.Text
+          server <- o .: "server" :: Parser T.Text
+          ts <- o .: "ts" :: Parser T.Text
           return
              VkInitData
                 { _VID_key = key

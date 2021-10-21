@@ -6,13 +6,13 @@ import Data.Aeson (decode)
 import Data.Aeson.Types
 import Data.Foldable (asum)
 import qualified Data.Text as T (Text)
-import qualified Data.Text.Lazy as TL (Text)
-import qualified Data.Text.Lazy.Encoding as EL (encodeUtf8)
+import qualified Data.Text.Encoding as E (encodeUtf8)
 import GHC.Generics
 import GenericPretty
-import qualified Stuff as S (showTL)
+import qualified Stuff as S (showT)
 import Types
 import Vkontakte.Entity
+import qualified Data.ByteString.Lazy as BS (fromStrict)
 
 data VkReply =
    VkReply
@@ -21,7 +21,7 @@ data VkReply =
       }
    deriving (Eq, Show, Generic)
 
---    _VR_ts :: Maybe TL.Text,
+--    _VR_ts :: Maybe T.Text,
 --    _VR_updates :: Maybe Value,
 instance FromJSON VkReply where
    parseJSON x =
@@ -38,14 +38,14 @@ instance FromJSON VkReply where
 data VkUpdateReplySuccess =
    VkUpdateReplySuccess
       { _VURS_updates :: Value
-      , _VURS_ts :: Maybe TL.Text
+      , _VURS_ts :: Maybe T.Text
       }
    deriving (Show, Eq, Generic)
 
 data VkUpdateReplyError =
    VkUpdateReplyError
       { _VURE_failed :: Int
-      , _VURE_ts :: Maybe TL.Text
+      , _VURE_ts :: Maybe T.Text
       }
    deriving (Show, Eq, Generic)
 
@@ -59,7 +59,7 @@ parseUpdatesResponse2 =
          asum
             [ o .:? "ts"
             , fmap
-                 (fmap S.showTL)
+                 (fmap S.showT)
                  (o .:? "ts" :: Parser (Maybe Integer))
             ]
       let success = do
@@ -120,9 +120,9 @@ instance FromJSON VkUpdate where
 parseCallback :: Value -> Parser VkMyCallback
 parseCallback =
    withObject "Expected message object with payload" $ \msg -> do
-      pt <- msg .: "payload" :: Parser TL.Text
-      let pbs = EL.encodeUtf8 pt {- S.echo $-}
-          pVal = decode pbs :: Maybe Value {-S.echo $-}
+      pt <- msg .: "payload" :: Parser T.Text
+      let pbs = E.encodeUtf8 pt {- S.echo $-}
+          pVal = decode $ BS.fromStrict pbs :: Maybe Value {-S.echo $-}
       payload <-
          maybe
             (fail "unable to parse payload object")

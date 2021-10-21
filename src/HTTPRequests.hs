@@ -15,6 +15,7 @@ module HTTPRequests
    ) where
 
 import qualified App.Logger as L
+import qualified Data.ByteString.Lazy as BS (toStrict)
 import Control.Exception (Handler(..), catches)
 import qualified Data.Aeson as Ae
    ( ToJSON(..)
@@ -24,18 +25,12 @@ import qualified Data.Aeson as Ae
    , object
    )
 import qualified Data.ByteString.Lazy.Char8 as BSL
-   ( ByteString
-   ) --, toStrict)
+   ( ByteString)
 import Data.List (intercalate)
 import Data.Maybe (mapMaybe)
 import qualified Data.Text as T (Text, concat, unpack)
-import qualified Data.Text.Lazy as TL
-   ( Text
-   , concat
-   , toStrict
-   , unpack
-   )
-import Data.Text.Lazy.Encoding (decodeUtf8)
+import Data.Text.Encoding as E (decodeUtf8)
+
 import Network.HTTP.Base (urlEncode)
 import Network.HTTP.Simple
    ( HttpException(..)
@@ -62,7 +57,7 @@ data ParVal
    = PIntg Integer
    | PFloat Double
    | PVal Ae.Value
-   | PLText TL.Text
+   | PLText T.Text
    | PText T.Text
    deriving (Eq)
 
@@ -76,22 +71,22 @@ instance Ae.ToJSON ParVal where
 parValToString :: ParVal -> String
 parValToString (PIntg n) = show n
 parValToString (PVal v) =
-   TL.unpack . decodeUtf8 . Ae.encode $ v
+   T.unpack . E.decodeUtf8 . BS.toStrict . Ae.encode $ v
 parValToString (PFloat x) = show x
-parValToString (PLText x) = TL.unpack x
+parValToString (PLText x) = T.unpack x
 parValToString (PText x) = T.unpack x
 
 instance Show ParVal where
    show = parValToString
 
-type ParamsUnit = (TL.Text, Maybe ParVal)
+type ParamsUnit = (T.Text, Maybe ParVal)
 
 type ParamsList = [ParamsUnit]
 
 data HTTPRequest =
    Req
       { mthd :: HTTPMethod
-      , reqUrl :: TL.Text
+      , reqUrl :: T.Text
       , pars :: ParamsList
       }
    deriving (Show, Eq)
@@ -104,15 +99,15 @@ showTReq (Req method url params) =
       , "\n    URL: "
       , S.showT url
       , "\n"
-      , TL.toStrict $ showTParams params
+      , showTParams params
       ]
 
-showTParams :: ParamsList -> TL.Text
-showTParams = TL.concat . map f
+showTParams :: ParamsList -> T.Text
+showTParams = T.concat . map f
   where
     f (_, Nothing) = ""
     f (field, Just value) =
-       TL.concat ["    ", field, ": ", S.showTL value, "\n"]
+       T.concat ["    ", field, ": ", S.showT value, "\n"]
 
 sendRequest ::
       L.Handle IO
@@ -130,9 +125,9 @@ sendRequest h takesJSON r@(Req method url params) =
                         , parsedReqWithoutJSON)
        reqWithoutJSON =
           show method ++
-          ' ' : TL.unpack url ++ makeParamsString params
+          ' ' : T.unpack url ++ makeParamsString params
        parsedReqWithoutJSON = parseRequest reqWithoutJSON
-       reqJSON = show method ++ ' ' : TL.unpack url
+       reqJSON = show method ++ ' ' : T.unpack url
        parsedReqJSON = fmap f $ parseRequest reqJSON
        f = setRequestBodyJSON (makeParamsValue params)
     in L.logDebug h (showTReq r) >>
@@ -149,7 +144,7 @@ makeParamsString :: ParamsList -> String
 makeParamsString lst =
    let paramsList = (intercalate "&" . mapMaybe f) lst
        f (s, x) =
-          ((\q -> TL.unpack s ++ "=" ++ q) .
+          ((\q -> T.unpack s ++ "=" ++ q) .
            urlEncode . parValToString) <$>
           x
     in if null paramsList
@@ -159,7 +154,7 @@ makeParamsString lst =
 makeParamsValue :: ParamsList -> Ae.Value
 makeParamsValue lst =
    let lst' = mapMaybe f lst
-       f (s, x) = fmap (\q -> TL.toStrict s Ae..= q) x
+       f (s, x) = fmap (\q -> s Ae..= q) x
     in Ae.object lst'
 
 addParams :: ParamsList -> HTTPRequest -> HTTPRequest
@@ -182,17 +177,15 @@ instance ToParVal Double where
 instance ToParVal Ae.Value where
    toParVal = PVal
 
-instance ToParVal TL.Text where
+instance ToParVal T.Text where
    toParVal = PLText
 
-instance ToParVal T.Text where
-   toParVal = PText
 
 instance (Ae.ToJSON a) => ToParVal [a] where
    toParVal = PVal . Ae.toJSON
 
-unit :: (ToParVal a) => TL.Text -> a -> ParamsUnit
+unit :: (ToParVal a) => T.Text -> a -> ParamsUnit
 unit field value = (field, Just $ toParVal value)
 
-mUnit :: (ToParVal a) => TL.Text -> Maybe a -> ParamsUnit
+mUnit :: (ToParVal a) => T.Text -> Maybe a -> ParamsUnit
 mUnit field mValue = (field, fmap toParVal mValue)

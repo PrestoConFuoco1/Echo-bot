@@ -25,7 +25,7 @@ purgeMediaGroups' :: TlStateMut -> TlStateMut
 purgeMediaGroups' sm = sm {mediaGroups = M.empty}
 
 getMediaGroups' :: TlStateMut -> [TlMediaGroupPair]
-getMediaGroups' TLSM {mediaGroups = x} = map f $ M.toList x
+getMediaGroups' TSM {mediaGroups = x} = map f $ M.toList x
   where
     f (k, v) = TlMediaGroupPair k v
 

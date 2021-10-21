@@ -3,7 +3,6 @@ module Telegram.ProcessMessage.Functions where
 import Data.Foldable (asum)
 import Data.Maybe (isJust)
 import qualified Data.Text as T (Text)
-import qualified Data.Text.Lazy as TL (Text)
 import qualified GenericPretty as GP
 import HTTPRequests as H
 import qualified Stuff as S (safeHead)
@@ -40,7 +39,7 @@ sendWithCaption ::
       (TlMessage -> Maybe a)
    -> (a -> T.Text)
    -> T.Text
-   -> TL.Text
+   -> T.Text
    -> TlMessage
    -> Maybe (T.Text, ParamsList)
 sendWithCaption fromMsg getFileID method objName m = do
@@ -126,8 +125,8 @@ sendLocationTele m = do
    return
       ( "sendLocation"
       , [ unit "chat_id" $ chatIDfromMsg m
-        , unit "latitude" $ _TLoc_latitude location
-        , unit "longitude" $ _TLoc_longitude location
+        , unit "latitude" $ _Toc_latitude location
+        , unit "longitude" $ _Toc_longitude location
         ])
 
 sendVenueTele :: TlMessage -> Maybe (T.Text, H.ParamsList)
@@ -137,9 +136,9 @@ sendVenueTele m = do
       ( "sendVenue"
       , [ unit "chat_id" $ chatIDfromMsg m
         , unit "latitude" $
-          _TLoc_latitude . _TVen_location $ venue
+          _Toc_latitude . _TVen_location $ venue
         , unit "longitude" $
-          _TLoc_longitude . _TVen_location $ venue
+          _Toc_longitude . _TVen_location $ venue
         , unit "title" $ _TVen_title venue
         , unit "address" $ _TVen_address venue
         ])

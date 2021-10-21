@@ -80,8 +80,8 @@ sendKeyboardMessageUpd = buildUpdate (VEMsg sendKeyboardMessage) "send repnum bu
 setRepNumCallback :: Int -> VkMyCallback
 setRepNumCallback int = VkMyCallback {
     _VMC_from_id = defaultUser
-    , _VMC_text = Just $ S.showTL int
-    , _VMC_payload = VkPayload ("set " <> S.showTL int)
+    , _VMC_text = Just $ S.showT int
+    , _VMC_payload = VkPayload ("set " <> S.showT int)
     
     }
 

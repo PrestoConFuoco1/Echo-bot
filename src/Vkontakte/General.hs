@@ -3,7 +3,6 @@
 module Vkontakte.General where
 
 import qualified Data.Text as T (Text)
-import qualified Data.Text.Lazy as TL (Text)
 import GHC.Generics (Generic)
 import GenericPretty
 import HTTPRequests as H
@@ -13,7 +12,7 @@ defaultVkParams :: VkStateConst -> H.ParamsList
 defaultVkParams sc =
    defaultVkParams' (vkAccessToken sc) (apiVersion sc)
 
-defaultVkParams' :: TL.Text -> T.Text -> H.ParamsList
+defaultVkParams' :: T.Text -> T.Text -> H.ParamsList
 defaultVkParams' accTok apiV =
    [unit "access_token" accTok, unit "v" apiV]
 
@@ -23,8 +22,8 @@ vkTakesJSON = False
 ----------------------------------------------
 data VkConfig =
    VkConf
-      { _VC_vkUrl :: TL.Text
-      , _VC_accessToken :: TL.Text
+      { _VC_vkUrl :: T.Text
+      , _VC_accessToken :: T.Text
       , _VC_groupID :: Integer
       , _VC_apiV :: T.Text
       }
@@ -34,7 +33,7 @@ instance PrettyShow VkConfig
 
 data VkConfigDefault =
    VkConfDef
-      { _VCD_vkUrl :: TL.Text
+      { _VCD_vkUrl :: T.Text
       , _VCD_apiV :: T.Text
       }
    deriving (Show, Eq, Generic)
@@ -48,10 +47,10 @@ defaultVkConfig =
 ---------------------------------------------
 data VkStateConst =
    VKSC
-      { vkKey :: TL.Text
-      , vkServer :: TL.Text
-      , vkUrl :: TL.Text -- only for methods
-      , vkAccessToken :: TL.Text
+      { vkKey :: T.Text
+      , vkServer :: T.Text
+      , vkUrl :: T.Text -- only for methods
+      , vkAccessToken :: T.Text
       , vkGroupID :: Integer
       , apiVersion :: T.Text
       }
@@ -59,7 +58,7 @@ data VkStateConst =
 
 data VkStateMut =
    VKSM
-      { vkTs :: TL.Text -- timestamp
+      { vkTs :: T.Text -- timestamp
       , vkRndGen :: StdGen
       }
    deriving (Show)

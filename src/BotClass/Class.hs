@@ -7,11 +7,10 @@ import BotClass.ClassTypes
 import qualified Control.Monad.Catch as C
 import Data.Aeson (Value)
 import qualified Data.Text as T (Text)
-import qualified Data.Text.Lazy as TL (Text)
 import qualified HTTPRequests as H
 
 buildHTTP ::
-      TL.Text -> (TL.Text, H.ParamsList) -> H.HTTPRequest
+      T.Text -> (T.Text, H.ParamsList) -> H.HTTPRequest
 buildHTTP url (method, params) =
    H.Req H.POST (url <> method) params
 
@@ -53,7 +52,7 @@ class (BotClassUtility s) =>
       -> Maybe (User s)
       -> T.Text
       -> m (Either String H.HTTPRequest)
-   repNumKeyboard :: s -> [Int] -> TL.Text -> H.ParamsList
+   repNumKeyboard :: s -> [Int] -> T.Text -> H.ParamsList
    processMessage ::
          (Monad m)
       => D.Handle s m

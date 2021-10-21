@@ -4,14 +4,15 @@ module Telegram.Keyboard where
 
 import Data.Aeson (encode)
 import Data.Aeson.Types
-import qualified Data.Text.Lazy as TL (Text, pack)
-import qualified Data.Text.Lazy.Encoding as EL (decodeUtf8)
+import qualified Data.Text as T (Text, pack)
+import qualified Data.Text.Encoding as E (decodeUtf8)
 import GHC.Generics (Generic)
+import qualified Data.ByteString.Lazy as BS (toStrict)
 
 data TlInlineButton =
    TlInlineButton
-      { _TIB_text :: TL.Text
-      , _TIB_callback_data :: TL.Text
+      { _TIB_text :: T.Text
+      , _TIB_callback_data :: T.Text
       }
    deriving (Show, Eq, Generic)
 
@@ -43,19 +44,19 @@ instance FromJSON TlInlineKeyboard where
          defaultOptions {fieldLabelModifier = drop 5}
 
 ----------------------------------------------------------
-repNumKeyboardTele :: TL.Text -> [Int] -> TL.Text
+repNumKeyboardTele :: T.Text -> [Int] -> T.Text
 repNumKeyboardTele cmd lst =
-   EL.decodeUtf8 $
+   E.decodeUtf8 $ BS.toStrict $
    encode $
    toJSON $
    TlInlineKeyboard [map (repNumButtonTele cmd) lst]
 
-repNumButtonTele :: TL.Text -> Int -> TlInlineButton
+repNumButtonTele :: T.Text -> Int -> TlInlineButton
 repNumButtonTele cmd n =
    TlInlineButton shown (cmd <> " " <> shown)
   where
-    shown = TL.pack $ show n
+    shown = T.pack $ show n
 
-repNumKeyboardTele' :: TL.Text -> [Int] -> TlInlineKeyboard
+repNumKeyboardTele' :: T.Text -> [Int] -> TlInlineKeyboard
 repNumKeyboardTele' cmd lst =
    TlInlineKeyboard $ [map (repNumButtonTele cmd) lst]

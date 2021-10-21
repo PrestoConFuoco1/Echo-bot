@@ -30,11 +30,11 @@ data Resources =
 initResources :: L.Handle IO -> Config -> IO Resources
 initResources _ (Config common tlConf) = do
    let initStateTele =
-          TLSM
+          TSM
              { tlUpdateID = _TC_updID tlConf
              , mediaGroups = M.empty
              }
-       const_ = TLSC {tlUrl = _TC_url tlConf}
+       const_ = TSC {tlUrl = _TC_url tlConf}
    mut <- newIORef initStateTele
    umap <- newIORef M.empty
    return

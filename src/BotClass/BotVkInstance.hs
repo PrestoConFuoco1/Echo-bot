@@ -16,7 +16,6 @@ import Data.Aeson.Types as AeT
    , toJSON
    )
 import qualified Data.Text as T (Text, pack)
-import qualified Data.Text.Lazy as TL (Text, toStrict)
 import qualified Exceptions as Ex
 import GenericPretty
 import HTTPRequests as H
@@ -41,7 +40,7 @@ instance BotClassUtility Vk where
          _ -> Nothing
    getCallbackUser _ = _VMC_from_id
    getCallbackData _ =
-      Just . TL.toStrict . _VP_payload . _VMC_payload
+      Just . _VP_payload . _VMC_payload
    getCallbackChat _ = const Nothing
 
 --    getResult :: s -> Rep s -> Maybe Value
@@ -129,7 +128,7 @@ handleFailedUpdatesRequest1 h e@(VkUpdateReplyError {..}) =
                 D.logError h $ funcName <> errorMsg2
                 D.logError h $
                    funcName <>
-                   "key was \"" <> TL.toStrict key <> "\""
+                   "key was \"" <> key <> "\""
                 C.throwM KeyOutOfDate_GetNew
              | x == 3 -> do
                 D.logError h $ funcName <> errorMsg3
@@ -167,7 +166,7 @@ sendTextMsg1 h _ _ (Just u) text = do
           defaultVkParams sc
    return $ Right $ buildHTTP (vkUrl sc) (method, pars)
 
-repNumKeyboard1 :: Vk -> [Int] -> TL.Text -> H.ParamsList
+repNumKeyboard1 :: Vk -> [Int] -> T.Text -> H.ParamsList
 repNumKeyboard1 _ lst cmd = [unit "keyboard" obj]
   where
     obj = toJSON $ repNumKeyboardVkTxt' cmd lst

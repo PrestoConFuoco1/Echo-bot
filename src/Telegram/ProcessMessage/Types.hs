@@ -107,8 +107,8 @@ instance FromJSON TlVideoNote where
 
 data TlLocation =
    TlLocation
-      { _TLoc_longitude :: Double
-      , _TLoc_latitude :: Double
+      { _Toc_longitude :: Double
+      , _Toc_latitude :: Double
       }
    deriving (Show, Eq, Generic)
 

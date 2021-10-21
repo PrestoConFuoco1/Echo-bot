@@ -3,7 +3,7 @@
 module Telegram.General where
 
 import qualified Data.Map as M
-import qualified Data.Text.Lazy as TL (Text)
+import qualified Data.Text as T (Text)
 import GHC.Generics (Generic)
 import GenericPretty as GP
 import Telegram.MediaGroup.Types
@@ -15,20 +15,20 @@ tlTakesJSON = True -- this is better
 data TlConfig =
    TlConf
       { _TC_updID :: Integer
-      , _TC_url :: TL.Text
+      , _TC_url :: T.Text
       }
    deriving (Show, Generic)
 
 instance PrettyShow TlConfig
 
 data TlStateConst =
-   TLSC
-      { tlUrl :: TL.Text
+   TSC
+      { tlUrl :: T.Text
       }
    deriving (Show)
 
 data TlStateMut =
-   TLSM
+   TSM
       { tlUpdateID :: Integer
       , mediaGroups :: M.Map TlMediaGroupIdentifier [TlMediaGroupUnit]
       }

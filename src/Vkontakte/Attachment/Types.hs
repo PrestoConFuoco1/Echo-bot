@@ -64,7 +64,7 @@ instance FromJSON VkAttachment where
             "gift" -> fmap VAGift $ o .: "gift"
             str ->
                fmap (VAUnexpectedAtt . VkUnexpectedAtt str) $
-               o .: (str) {-TL.toStrict-}
+               o .: (str) {-T.toStrict-}
 
 ------------------------------------------
 data VkPhoto =
