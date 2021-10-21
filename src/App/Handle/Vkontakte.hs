@@ -111,9 +111,7 @@ getNewKeyAndTs logger config resources = do
    let sm' = sm {vkTs = _VID_timestamp initData}
    smRef' <- newIORef sm'
    let resources' = resources {mutState = smRef'}
-       resources'' =
-          modifyKey (_VID_key initData) resources'
-   return resources''
+   return $ modifyKey (_VID_key initData) resources'
 
 vkHandlers ::
       L.Handle IO

@@ -119,8 +119,7 @@ initializeSelfSufficientLoggerResources conf = do
       logFatal simpleHandle lockedmsg
       Q.exitWith (Q.ExitFailure 1)
    let resources = LoggerResources {flHandle = h}
-   resourcesRef <- newIORef resources
-   return resourcesRef
+   newIORef resources
 
 closeSelfSufficientLogger :: IORef LoggerResources -> IO ()
 closeSelfSufficientLogger resourcesRef = do

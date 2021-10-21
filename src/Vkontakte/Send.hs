@@ -26,8 +26,7 @@ parseUpdatesResponse resp -- Either
              "Couldn't parse updates response into aeson Value")
          Right $
       Ae.decode resp
-   repl <- parseUpdatesResponse2 val
-   return repl
+   parseUpdatesResponse2 val
 
 getUpdates ::
       L.Handle IO
@@ -45,8 +44,7 @@ parseHTTPResponse resp -- Either
    val <-
       maybe (Left "Couldn't parse HTTP response") Right $
       decode resp
-   repl <- parseEither parseJSON val
-   return repl
+   parseEither parseJSON val
 
 sendThis ::
       L.Handle IO
