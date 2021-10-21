@@ -8,12 +8,15 @@ import qualified Data.Text.Lazy as TL (Text)
 import Telegram.Entity
 import Telegram.ProcessMessage.Types
 import qualified GenericPretty as GP
+import Data.Maybe (isJust)
 
 sendMessageTele :: TlMessage -> Either String (T.Text, H.ParamsList)
 sendMessageTele m =
     maybe (Left $ "Failed to handle message." ++ GP.defaultPretty m) Right $
         asum $ map ($ m) 
-             [  sendTextTele,
+             [  
+                sendDiceTele,
+                sendTextTele,
                 sendPhotoTele,
                 sendStickerTele,
                 sendAudioTele,
@@ -25,7 +28,6 @@ sendMessageTele m =
                 sendLocationTele,   
                 sendVenueTele,
                 sendContactTele,
-                sendDiceTele,
                 sendPollTele
              ]
 
@@ -114,9 +116,10 @@ sendPollTele m = do
 
 sendDiceTele :: TlMessage -> Maybe (T.Text, H.ParamsList)
 sendDiceTele m = do
-    dice <- _TM_dice m
--- а что делать тут?
-    return ("sendDice", [unit "chat_id" $ chatIDfromMsg m])
+    --if _TM_text m == Just "/dice" || _TM_dice m /= Nothing
+    if _TM_text m == Just "/dice" || isJust (_TM_dice m)
+    then return ("sendDice", [unit "chat_id" $ chatIDfromMsg m])
+    else Nothing
 
 sendStickerTele :: TlMessage -> Maybe (T.Text, H.ParamsList)
 sendStickerTele m = do

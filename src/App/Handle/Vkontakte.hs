@@ -107,7 +107,7 @@ vkHandlers logger conf resources = [
 
 defaultHandler :: L.Handle IO -> Resources -> C.SomeException -> IO Resources
 defaultHandler logger _ e = do
-    L.logFatal logger $ "unable to handle exception"
+    L.logFatal logger "unable to handle exception"
     L.logFatal logger $ T.pack $ C.displayException e
     Q.exitWith (Q.ExitFailure 1)
 
@@ -125,7 +125,7 @@ getLongPollServer :: L.Handle IO -> VkConfig -> IO VkInitData
 getLongPollServer logger VkConf {..} = do
     let
         funcName = "vk_initialize: "
-        pars = [H.unit "group_id" _VC_groupID] ++ defaultVkParams' _VC_accessToken _VC_apiV
+        pars = H.unit "group_id" _VC_groupID : defaultVkParams' _VC_accessToken _VC_apiV
         initReq = H.Req H.GET (_VC_vkUrl <> "groups.getLongPollServer") pars
         takesJson = True
     L.logDebug logger $ funcName <> "sending initialize request"
@@ -134,7 +134,7 @@ getLongPollServer logger VkConf {..} = do
     let eithParsed = parseInitResp initReply
     initData <- either (initRequestParseFail logger initReply) return eithParsed
     L.logDebug logger $ funcName <> "received initial vk api data"
-    L.logDebug logger $ funcName <> (GP.defaultPrettyT initData)
+    L.logDebug logger $ funcName <> GP.defaultPrettyT initData
     return initData
 
 
@@ -160,14 +160,14 @@ initialize logger conf@(VkConf {..}) = do
 
 initRequestFail :: L.Handle IO -> String -> IO a
 initRequestFail logger err = do
-    L.logFatal logger $ "Failed to get initial data"
+    L.logFatal logger "Failed to get initial data"
     L.logFatal logger $ T.pack err
     Q.exitWith $ Q.ExitFailure 1
 
 initRequestParseFail :: L.Handle IO -> BSL.ByteString -> String -> IO a
 initRequestParseFail logger s err = do
-    L.logFatal logger $ "Failed to parse initial data"
-    L.logFatal logger $ "response: " <> (T.pack $ BSL.unpack s)
+    L.logFatal logger "Failed to parse initial data"
+    L.logFatal logger $ "response: " <> T.pack (BSL.unpack s)
     L.logFatal logger $ T.pack err
     Q.exitWith $ Q.ExitFailure 1
  

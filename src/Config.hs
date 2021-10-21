@@ -40,9 +40,9 @@ loadConfig s logger path = do
 
 
 loadGeneral :: L.Handle IO -> CT.Config -> IO EnvironmentCommon
-loadGeneral _ conf = (E.handle
+loadGeneral _ conf = E.handle
         (const $ return defStateGen ::
-            E.SomeException -> IO EnvironmentCommon)) $ do
+            E.SomeException -> IO EnvironmentCommon) $ do
     let dg = defStateGen
         f x = C.lookupDefault (x dg) conf
     confHelpMsg <- f helpMsg "help_message"

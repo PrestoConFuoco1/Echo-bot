@@ -68,7 +68,7 @@ resourcesToTelegramHandler resources _ =
           getUpdateID = fmap getUpdateID' $ readIORef (mutState resources)
         , putUpdateID = modifyIORef' (mutState resources) . putUpdateID'
         , insertMediaGroupUnit = \k v -> modifyIORef' (mutState resources) $ insertMediaGroupUnit' k v
-        , purgeMediaGroups = modifyIORef' (mutState resources) $ purgeMediaGroups'
+        , purgeMediaGroups = modifyIORef' (mutState resources) purgeMediaGroups'
         , getMediaGroups = fmap getMediaGroups' $ readIORef (mutState resources)
     }
 
@@ -82,7 +82,7 @@ tlErrorHandler logger _ _ TlEx.TlException = do
 
 defaultHandler :: L.Handle IO -> Resources -> C.SomeException -> IO Resources
 defaultHandler logger _ e = do
-    L.logFatal logger $ "unable to handle exception"
+    L.logFatal logger "unable to handle exception"
     L.logFatal logger $ T.pack $ C.displayException e
     Q.exitWith (Q.ExitFailure 1)
 

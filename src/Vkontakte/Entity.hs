@@ -47,7 +47,7 @@ instance ToJSON VkUser where
         fieldLabelModifier = drop 4 }
 
 instance FromJSON VkUser where
-    parseJSON x = fmap VkUser $ parseJSON x
+    parseJSON x = VkUser <$> parseJSON x
 
 instance Eq VkUser where
     (==) u1 u2 = (==) (_VU_id u1) (_VU_id u2)

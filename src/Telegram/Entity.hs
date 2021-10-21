@@ -12,13 +12,15 @@ import GHC.Generics (Generic)
 import qualified Data.Text as T (Text)
 import GenericPretty
 import Telegram.ProcessMessage.Types
+import Data.Maybe (isJust)
 
 
 chatIDfromMsg :: TlMessage -> Integer
 chatIDfromMsg = _TC_id . _TM_chat
 
 isMediaGroup :: TlMessage -> Bool
-isMediaGroup m = _TM_media_group_id m /= Nothing
+--isMediaGroup m = _TM_media_group_id m /= Nothing
+isMediaGroup m = isJust $ _TM_media_group_id m
 
 
 

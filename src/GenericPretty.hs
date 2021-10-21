@@ -47,9 +47,9 @@ defaultConsModif = id
 defaultConsModif' :: String -> String
 defaultConsModif' (x:xs)
     | isUpper x = case dropWhile (not . isUpper) xs of
-        [] -> (x:xs)
+        [] -> x : xs
         y  -> y
-    | otherwise = (x:xs)
+    | otherwise = x : xs
 defaultConsModif' x = x
 
 ----------------------
@@ -99,7 +99,7 @@ textPretty :: (PrettyShow a) => a -> T.Text
 textPretty = T.pack . defaultPretty
 
 prettyUnit :: Int -> LayoutUnit -> String
-prettyUnit _ (LayoutUnit _ (LEmpty)) = ""
+prettyUnit _ (LayoutUnit _ LEmpty) = ""
 prettyUnit ind (LayoutUnit s val) =
     withIndent ind $ s ++ ": " ++ prettyValue ind val
 
@@ -110,7 +110,7 @@ prettyValue ind (LJSON s) = ('\n' :) $ unlines $ map (withIndent $ ind + 1) $ sp
 prettyValue _   LEmpty    = "empty\n"
 
 prettyLayout :: Int -> Layout -> String
-prettyLayout ind (Layout ls) = concat $ map (prettyUnit ind) ls
+prettyLayout ind (Layout ls) = concatMap (prettyUnit ind) ls
 
 class PrettyShow a where
     prettyShow :: a -> LayoutValue
@@ -160,7 +160,7 @@ instance PrettyShow Void where
 
 instance (PrettyShow a) => PrettyShow (Maybe a) where
     prettyShow (Just x) = prettyShow x
-    prettyShow (Nothing) = LEmpty
+    prettyShow Nothing = LEmpty
 
 instance (PrettyShow a) => PrettyShow [a] where
     prettyShow [] = LEmpty
@@ -185,7 +185,7 @@ instance (GPrettyShow f) => GPrettyShow (D1 d f) where
     gprettyShow opts (M1 x) = gprettyShow opts x
 
 instance (GPrettyShowIgnoreConstr f, GPrettyShowIgnoreConstr g) => GPrettyShow ((:+:) f g) where
-    gprettyShow opts x = gprettyShowIgnoreConstr opts x
+    gprettyShow = gprettyShowIgnoreConstr
 
 instance (GPrettyShowIgnoreConstr f, GPrettyShowIgnoreConstr g) => GPrettyShowIgnoreConstr ((:+:) f g) where
     gprettyShowIgnoreConstr opts (L1 x) = gprettyShowIgnoreConstr opts x

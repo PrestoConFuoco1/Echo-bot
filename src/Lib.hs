@@ -74,7 +74,7 @@ getOpts = foldr f defaultRunOpts
         f _ acc = acc
 
 getLoggerSettings :: String -> Maybe (L.Priority -> Bool)
-getLoggerSettings str = fmap (\x -> (>= x)) $ readMaybe str
+getLoggerSettings str = (\x -> (>= x)) <$> readMaybe str
 
 
 runWithConf :: RunOptions -> FilePath -> IO ()
@@ -139,9 +139,9 @@ runWithConf' s opts path todo = do
             , L.lcPath = logPath opts
             }
 
-    (gen, conf) <- loadConfig s (configLogger) path `E.catches` configHandlers configLogger
+    (gen, conf) <- loadConfig s configLogger path `E.catches` configHandlers configLogger
     L.logInfo configLogger "Successfully got bot configuration."
-    when (testConfig opts) $ Q.exitWith (Q.ExitSuccess)
+    when (testConfig opts) $ Q.exitWith Q.ExitSuccess
  
     L.withSelfSufficientLogger loggerConfig $ \logger ->
         todo logger gen conf `C.catch` defaultHandler logger 
@@ -179,7 +179,7 @@ handleIOError logger exc
 
 handleConfigError :: L.Handle IO -> CT.ConfigError -> IO ()
 handleConfigError logger (CT.ParseError _ _) =
-    L.logError logger $ "Failed to parse configuration file."
+    L.logError logger "Failed to parse configuration file."
 
 handleConfig2Error :: L.Handle IO -> ConfigException -> IO ()
 handleConfig2Error logger RequiredFieldMissing =

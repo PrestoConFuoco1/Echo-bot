@@ -54,7 +54,7 @@ data UpdateResponse r e =
     deriving (Show, Generic, PrettyShow)
 
 instance Show (Event h u m b) where
-    show (ECommand _ _ _) = "Command"
+    show ECommand {} = "Command"
     show (EMessage _ ) = "Message"
     show (ECallback _ ) = "Callback"
     show _ = "Unexpected event"

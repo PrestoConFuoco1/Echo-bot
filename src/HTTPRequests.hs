@@ -21,7 +21,7 @@ module HTTPRequests (
 import qualified Data.ByteString.Lazy.Char8 as BSL (ByteString) --, toStrict)
 import Network.HTTP.Simple (HttpException(..), parseRequest, setRequestBodyJSON, getResponseBody, httpLBS)
 import Network.HTTP.Base (urlEncode)
-import Data.Maybe (catMaybes)
+import Data.Maybe (mapMaybe)
 import Data.List (intercalate)
 import Control.Exception (catches, Handler(..))
 import qualified Data.Aeson as Ae (ToJSON (..), Value, encode, object, (.=))
@@ -93,7 +93,7 @@ sendRequest h takesJSON r@(Req method url params) =
         reqWithoutJSON = show method ++ ' ' : TL.unpack url ++ makeParamsString params
         parsedReqWithoutJSON = parseRequest reqWithoutJSON
         reqJSON = show method ++ ' ' : TL.unpack url
-        parsedReqJSON = fmap f $ parseRequest $ reqJSON
+        parsedReqJSON = fmap f $ parseRequest reqJSON
 
         f = setRequestBodyJSON (makeParamsValue params)
     in  L.logDebug h (showTReq r) >> case parsedReq of
@@ -107,13 +107,13 @@ sendRequest h takesJSON r@(Req method url params) =
 
 makeParamsString :: ParamsList -> String
 makeParamsString lst =
-    let paramsList = (intercalate "&" . catMaybes . map f) lst
-        f (s, x) = fmap (\q -> TL.unpack s ++ "=" ++ q) $ fmap (urlEncode . parValToString) x
+    let paramsList = (intercalate "&" . mapMaybe f) lst
+        f (s, x) = ((\q -> TL.unpack s ++ "=" ++ q) . urlEncode . parValToString) <$> x
     in  if null paramsList then "" else '?':paramsList
 
 makeParamsValue :: ParamsList -> Ae.Value
 makeParamsValue lst =
-    let lst' = catMaybes $ map f lst
+    let lst' = mapMaybe f lst
         f (s, x) = fmap (\q -> TL.toStrict s Ae..= q) x
     in  Ae.object lst'
 
@@ -145,7 +145,7 @@ instance (Ae.ToJSON a) => ToParVal [a] where
 unit :: (ToParVal a) => TL.Text -> a -> ParamsUnit
 unit field value = (field, Just $ toParVal value)
 
-mUnit :: (ToParVal a) => TL.Text -> (Maybe a) -> ParamsUnit
+mUnit :: (ToParVal a) => TL.Text -> Maybe a -> ParamsUnit
 mUnit field mValue = (field, fmap toParVal mValue)
 
 

@@ -23,7 +23,7 @@ handleUpdate h s u = do
     EMessage m -> handleMessage h s m
     ECallback callback -> handleCallback h s callback
     EError err -> do
-        D.logError h $ "handleUpdate: unexpected update type"
+        D.logError h "handleUpdate: unexpected update type"
         D.logError h $ GP.defaultPrettyT err
 
 type EventT s = Event (Chat s) (User s) (Msg s) (CallbackQuery s)
@@ -36,7 +36,7 @@ defineUpdateType h s u =
         mUser = mMsg >>= getUser s
         mChat = mMsg >>= getChat s
         mCmd = mText >>= S.safeHead . T.words
-            >>= (getCmd $ D.commonEnv h)
+            >>= getCmd (D.commonEnv h)
         mCallback = getCallbackQuery s u
         unexpectedValue = getUpdateValue s u
     in  maybe (EError unexpectedValue) id $
@@ -68,12 +68,11 @@ defineCallbackType s callback =
         eithSetN = do
             dat <- maybe
                 (Left "No callback data found, unable to respond.") Right mData
-            repNumDat <- case T.words dat of
+            case T.words dat of
                 ("set" : num : _) ->
                     maybe (Left "Expected number after \"set\" command.")
                     Right (readMaybe $ T.unpack num :: Maybe Int)
                 _ -> Left "Unknown callback query"
-            return repNumDat
     in  either CError id $
           asum [ CSetRepNum user mChat <$> eithSetN ]
 

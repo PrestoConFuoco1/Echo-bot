@@ -32,7 +32,7 @@ instance BotClassUtility Vk where
 
 
 --   getUpdateValue :: s -> Upd s -> Value
-    getUpdateValue _ u = _VU_value u
+    getUpdateValue _ = _VU_value
 
 --    getChat :: s -> Msg s -> Maybe (Chat s)
     getChat _ _ = Nothing
@@ -116,7 +116,7 @@ handleFailedUpdatesRequest1 h e@(VkUpdateReplyError {..}) =
         D.logError h $ funcName <> errorMsg3
         C.throwM KeyAndTsLosed_GetNew
     | otherwise -> do
-        D.logFatal h $ "failed to get updates and unable to handle error"
+        D.logFatal h "failed to get updates and unable to handle error"
         D.logFatal h $ defaultPrettyT e
         C.throwM Ex.UnableToHandleError
 

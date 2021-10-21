@@ -7,6 +7,7 @@ import Prelude hiding (log)
 import qualified App.Logger as Logger
 import qualified HTTPRequests as H
 import BotClass.ClassTypes
+import Data.Maybe (fromMaybe)
 
 data Handle s m = Handle {
     log :: Logger.Handle m,
@@ -34,7 +35,8 @@ findWithDefault h _ def mUser =
     Nothing -> return def
     Just user -> do
         mRepNum <- getUser h user
-        return $ maybe def id mRepNum
+        --return $ maybe def id mRepNum
+        return $ fromMaybe def mRepNum
 
 logDebug, logInfo, logWarning, logError, logFatal :: Handle s m -> T.Text -> m ()
 

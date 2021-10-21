@@ -32,6 +32,6 @@ parseInitResp = eithParsed
         initReplyToJSON =
                 maybe (Left "Couldn't parse getLongPollServer reply") Right
                 . decode
-        eithParsed x = return x >>= initReplyToJSON >>= parseEither parseInitRep
+        eithParsed x = initReplyToJSON x >>= parseEither parseInitRep
 
 

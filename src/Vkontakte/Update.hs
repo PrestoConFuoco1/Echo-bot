@@ -40,7 +40,7 @@ parseUpdatesResponse2 :: Value -> Either String (UpdateResponse VkUpdateReplySuc
 parseUpdatesResponse2 = parseEither $ withObject "Vkontakte update object" $ \o -> do
     ts <- asum [
         o .:? "ts"
-        , fmap (fmap S.showTL) $ (o .:? "ts" :: Parser (Maybe Integer))
+        , fmap (fmap S.showTL) (o .:? "ts" :: Parser (Maybe Integer))
         ]
     let success = do
             updates <- o .: "updates"
@@ -82,8 +82,8 @@ instance FromJSON VkUpdate where
                 q <- o .: "object"
                 msg <- q .: "message" :: Parser Value
                 asum [
-                    fmap VECallback $ parseCallback msg,
-                    fmap VEMsg $ parseJSON msg
+                    VECallback <$> parseCallback msg,
+                    VEMsg <$> parseJSON msg
                     ]
                 
  --           "message_edit" -> fmap VEMsgEdit $ o .: "object"

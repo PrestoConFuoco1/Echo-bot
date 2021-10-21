@@ -34,7 +34,7 @@ instance BotClassUtility Tele where
         _       -> Nothing
 
 -- getUpdateValue :: s -> Upd s -> Value
-    getUpdateValue _ u = _TU_value u
+    getUpdateValue _ = _TU_value
 
 --  getChat :: s -> Msg s -> Maybe (Chat s)
     getChat _ = Just . _TM_chat
@@ -117,7 +117,7 @@ instance BotClass Tele where
     epilogue h _ us _ = do
         let
             funcName = "tl_epilogue: "
-            newUpdateID = (maximum $ map _TU_update_id us) + 1
+            newUpdateID = maximum (map _TU_update_id us) + 1
         putUpdateID (D.specH h) newUpdateID
         mediaGroups <- getMediaGroups (D.specH h)
         D.logDebug h $ funcName <> "ready to process some media groups, if any"
@@ -133,12 +133,11 @@ processMessage1 :: (Monad m) => D.Handle Tele m -> Tele -> TlMessage -> m (Maybe
 processMessage1 h _ m =
   if isMediaGroup m
   then processMediaGroup h m >> return Nothing
-  else either
+  else S.withEither sendMessage
     (\e -> do
         D.logError h $ funcName <> T.pack e
         return Nothing)
     (return . Just)
-        $ sendMessage
   where funcName = "tl_processMessage: "
         sendMessage =
             let eithMethodParams = sendMessageTele m
@@ -158,7 +157,7 @@ processMediaGroup h m = let
     processFail = do
         D.logWarning h $ funcName <> "failed to process media group. Message:"
         D.logWarning h $ GP.textPretty m
-    in S.withMaybe mAction (processFail) $ \action -> do
+    in S.withMaybe mAction processFail $ \action -> do
             D.logDebug h $ funcName <> "processing media group"
             action
 

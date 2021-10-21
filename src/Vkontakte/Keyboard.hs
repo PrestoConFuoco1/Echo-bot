@@ -74,7 +74,7 @@ repNumButtonVkTxt cmd n = VkTextButton shown $ VkPayload (cmd <> " " <> shown)
   where shown = TL.pack $ show n 
 
 repNumKeyboardVkTxt' :: TL.Text -> [Int] -> VkKeyboard
-repNumKeyboardVkTxt' cmd lst = VkKeyboard True $ 
+repNumKeyboardVkTxt' cmd lst = VkKeyboard True
     [map (VkButton "primary" . VBAText . repNumButtonVkTxt cmd) lst]
 
 ------------------------------------------

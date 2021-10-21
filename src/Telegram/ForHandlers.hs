@@ -7,7 +7,7 @@ import Telegram.General
 
 -----------------------------------------------------------
 getUpdateID' :: TlStateMut -> Integer
-getUpdateID' x = tlUpdateID x
+getUpdateID' = tlUpdateID
 
 putUpdateID' :: Integer -> TlStateMut -> TlStateMut
 putUpdateID' uid m = m { tlUpdateID = uid }

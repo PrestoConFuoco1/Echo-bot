@@ -43,7 +43,7 @@ instance FromJSON TlInlineKeyboard where
 
 repNumKeyboardTele :: TL.Text -> [Int] -> TL.Text
 repNumKeyboardTele cmd lst = EL.decodeUtf8 $
-    encode $ toJSON $ TlInlineKeyboard $ [map (repNumButtonTele cmd) lst]
+    encode $ toJSON $ TlInlineKeyboard [map (repNumButtonTele cmd) lst]
 
 
 repNumButtonTele :: TL.Text -> Int -> TlInlineButton
