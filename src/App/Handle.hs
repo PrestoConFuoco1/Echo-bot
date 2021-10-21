@@ -29,7 +29,7 @@ data Handle s m = Handle {
 
 
 findWithDefault :: (BotClassTypes s, Monad m) => Handle s m -> s -> Int -> Maybe (User s) -> m Int
-findWithDefault h s def mUser =
+findWithDefault h _ def mUser =
   case mUser of
     Nothing -> return def
     Just user -> do

@@ -5,7 +5,7 @@ import HTTPRequests as H
 import Data.Foldable (asum)
 import qualified Data.Text as T (Text, pack, intercalate)
 import qualified App.Logger as L
-import Control.Monad.Writer (Writer, tell, runWriter)
+import Control.Monad.Writer (Writer, tell)
 import qualified Stuff as S
 import qualified GenericPretty as GP
 
@@ -64,17 +64,19 @@ partitionVkAttachments = foldr f nullPartition
         f (VAUnexpectedAtt x) acc   = acc { pUnexpected   = x : pUnexpected acc }
 
 
-
+unableToSend :: String -> [a] -> Either String b
 unableToSend obj [] = Left $ "No " ++ obj ++ "found."
 unableToSend obj _  = Left $ "Unable to send " ++ obj ++ "."
 
+sendGift, sendLink, sendMarketAlbum, sendWallReply :: [a] -> Either String b
 sendGift = unableToSend "gift"
 sendLink = unableToSend "link"
 sendMarketAlbum = unableToSend "market album"
 sendWallReply = unableToSend "wall reply"
 
+sendSticker :: [VkSticker] -> Either String H.ParamsUnit
 sendSticker [] = Left "No sticker found."
-sendSticker (x:xs) =
+sendSticker (x:_) =
     Right $ unit "sticker_id" (_VSt_sticker_id x)
 
 

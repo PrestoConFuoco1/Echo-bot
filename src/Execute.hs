@@ -7,7 +7,6 @@ import Types
 import qualified Data.Text as T
 import qualified GenericPretty as GP
 import qualified Stuff as S
-import Data.Foldable (asum)
 import Control.Monad (when)
 import Data.Either (partitionEithers)
 import qualified Control.Monad.Catch as C
@@ -52,7 +51,7 @@ logUpdatesErrors h errs upds = do
 
 handleUpdatesSuccess :: (BotClass s, C.MonadThrow m) => D.Handle s m -> s -> RepSucc s -> m ()
 handleUpdatesSuccess h s resp = do
-    let funcName = "handleUpdatesSuccess: "
+    let
         eithUpdValueList = parseUpdatesValueList s resp
     S.withEither eithUpdValueList (updLstParseFail h) $ \updValues -> do
         let parsedUpdates = map (attachErrorReason $ parseUpdate s) updValues

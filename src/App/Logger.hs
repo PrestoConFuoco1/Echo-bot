@@ -34,17 +34,18 @@ logFatal = (`log` Fatal)
 logString :: Priority -> T.Text -> T.Text
 logString pri s = "[" <> S.showT pri <> "]: " <> s
 
+simpleHandle :: Handle IO
 simpleHandle = simpleCondHandle (const True)
 
 simpleCondHandle :: (Priority -> Bool) -> Handle IO
-simpleCondHandle pred = Handle $ \p s -> when (pred p) $ stdLogger p s
+simpleCondHandle predicate = Handle $ \p s -> when (predicate p) $ stdLogger p s
 
 
 stdLogger :: Priority -> T.Text -> IO ()
 stdLogger p s = T.hPutStrLn S.stderr $ logString p s
 
 emptyLogger :: Handle IO
-emptyLogger = Handle $ \p s -> return ()
+emptyLogger = Handle $ \_ _ -> return ()
 
 
 
@@ -69,10 +70,10 @@ initializeErrorHandler e = do
     func e
     Q.exitWith (Q.ExitFailure 1)
   where
-   func e
-    | IOE.isAlreadyInUseError e = logError simpleHandle lockedmsg
-    | IOE.isPermissionError e   = logError simpleHandle "not enough permissions"
-    | otherwise = logError simpleHandle $ "unexpected IO error: " <> T.pack (C.displayException e)
+   func err
+    | IOE.isAlreadyInUseError err = logError simpleHandle lockedmsg
+    | IOE.isPermissionError err   = logError simpleHandle "not enough permissions"
+    | otherwise = logError simpleHandle $ "unexpected IO error: " <> T.pack (C.displayException err)
 
 lockedmsg :: T.Text
 lockedmsg = "target log file is locked"
@@ -121,12 +122,12 @@ closeSelfSufficientLogger resourcesRef = do
 
 
 selfSufficientLogger :: IORef LoggerResources -> (Priority -> Bool) -> Priority -> T.Text -> IO ()
-selfSufficientLogger resourcesRef pred pri s = do
+selfSufficientLogger resourcesRef predicate pri s = do
     resources <- readIORef resourcesRef
     let action = T.hPutStrLn (flHandle resources) (logString pri s)
                  >> T.hPutStrLn S.stderr (logString pri s)
         errHandler = \e -> loggerHandler resources e >>= writeIORef resourcesRef
-    action `C.catch` errHandler
+    when (predicate pri) action `C.catch` errHandler
 
 loggerHandler :: LoggerResources -> C.SomeException -> IO LoggerResources
 loggerHandler resources e = do

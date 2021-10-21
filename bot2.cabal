@@ -59,7 +59,6 @@ library
       Vkontakte
       Vkontakte.Attachment
       Vkontakte.Attachment.Functions
-      Vkontakte.Attachment.Test
       Vkontakte.Attachment.Types
       Vkontakte.Entity
       Vkontakte.Exceptions

@@ -1,15 +1,8 @@
-{-# LANGUAGE    TypeFamilies,
+{-# LANGUAGE   
                 FlexibleContexts,
                 FlexibleInstances,
-                DataKinds,
-                TypeApplications,
-                ScopedTypeVariables,
-                AllowAmbiguousTypes,
-                UndecidableInstances,
-                MultiParamTypeClasses,
-                FunctionalDependencies,
-                DefaultSignatures,
-                TypeSynonymInstances #-}
+                DefaultSignatures
+    #-}
 
 module GenericPretty where
 
@@ -87,8 +80,8 @@ splitToFixedWidth ind s =
     in  splitToFixedWidth' width s
 
 splitToFixedWidth' :: Int -> String -> [String]
-splitToFixedWidth' wid [] = []
-splitToFixedWidth' wid s =
+splitToFixedWidth' _   [] = []
+splitToFixedWidth' wid s  =
     let splitted = splitAt wid s
     in  case splitted of
             (pref, suf) -> pref : splitToFixedWidth' wid suf
@@ -106,15 +99,15 @@ textPretty :: (PrettyShow a) => a -> T.Text
 textPretty = T.pack . defaultPretty
 
 prettyUnit :: Int -> LayoutUnit -> String
-prettyUnit _ (LayoutUnit s (LEmpty)) = ""
+prettyUnit _ (LayoutUnit _ (LEmpty)) = ""
 prettyUnit ind (LayoutUnit s val) =
     withIndent ind $ s ++ ": " ++ prettyValue ind val
 
 prettyValue :: Int -> LayoutValue -> String
-prettyValue ind (LStr s) = s ++ "\n"
+prettyValue _   (LStr s) = s ++ "\n"
 prettyValue ind (LLay typ ls) = typ ++ "\n" ++ prettyLayout (ind + 1) ls
 prettyValue ind (LJSON s) = ('\n' :) $ unlines $ map (withIndent $ ind + 1) $ splitToFixedWidth ind s
-prettyValue ind LEmpty    = "empty\n"
+prettyValue _   LEmpty    = "empty\n"
 
 prettyLayout :: Int -> Layout -> String
 prettyLayout ind (Layout ls) = concat $ map (prettyUnit ind) ls
@@ -171,7 +164,7 @@ instance (PrettyShow a) => PrettyShow (Maybe a) where
 
 instance (PrettyShow a) => PrettyShow [a] where
     prettyShow [] = LEmpty
-    prettyShow xs = LLay "{Array}" $ Layout $ foldr f [] $ zip [0..] xs
+    prettyShow xs = LLay "{Array}" $ Layout $ foldr f [] $ zip [0::Int ..] xs
       where f (n, x) acc = LayoutUnit (encloseSq $ show n) (prettyShow x) : acc
 
 
@@ -199,7 +192,7 @@ instance (GPrettyShowIgnoreConstr f, GPrettyShowIgnoreConstr g) => GPrettyShowIg
     gprettyShowIgnoreConstr opts (R1 x) = gprettyShowIgnoreConstr opts x
 
 instance (GPrettyShowIgnoreConstr f, Constructor c) => GPrettyShowIgnoreConstr (C1 c f) where
-    gprettyShowIgnoreConstr opts m@(M1 x) = gprettyShowIgnoreConstr opts x
+    gprettyShowIgnoreConstr opts (M1 x) = gprettyShowIgnoreConstr opts x
 
 instance (GPrettyShow f) => GPrettyShowIgnoreConstr (S1 c f) where
     gprettyShowIgnoreConstr opts (M1 x) = gprettyShow opts x
@@ -209,7 +202,7 @@ instance (Constructor c, GPrettyShowAux f) => GPrettyShow (C1 c f) where
     gprettyShow opts m@(M1 x) = LLay (enclose $ consModifier opts $ conName m) $ gprettyShowAux opts x
 
 instance (PrettyShow c) => GPrettyShow (Rec0 c) where
-    gprettyShow opts (K1 x) = prettyShow x
+    gprettyShow _ (K1 x) = prettyShow x
 
 --------------------------------------------------------------------
 

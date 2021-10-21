@@ -23,9 +23,9 @@ import Network.HTTP.Simple (HttpException(..), parseRequest, setRequestBodyJSON,
 import Network.HTTP.Base (urlEncode)
 import Data.Maybe (catMaybes)
 import Data.List (intercalate)
-import Control.Exception (catches, SomeException, Handler(..))
+import Control.Exception (catches, Handler(..))
 import qualified Data.Aeson as Ae (ToJSON (..), Value, encode, object, (.=))
-import qualified Data.Text.Lazy as TL (Text, pack, unpack, toStrict, concat, toStrict)
+import qualified Data.Text.Lazy as TL (Text, concat, unpack, toStrict)
 import qualified Data.Text as T (Text, unpack, concat)
 import Data.Text.Lazy.Encoding (decodeUtf8)
 import qualified Stuff as S
@@ -36,9 +36,6 @@ data HTTPMethod = GET | POST deriving (Show, Eq)
 handleHTTPError :: HttpException -> IO (Either String a)
 handleHTTPError (HttpExceptionRequest _ content) = return . Left . show $ content
 handleHTTPError (InvalidUrlException _ _) = return $ Left "invalid URL"
-
-handleOthers :: SomeException -> IO (Either String a)
-handleOthers e = return $ Left "unknown error occured"
 
 ------------------------------------------------------------------
 
@@ -81,7 +78,7 @@ showTReq (Req method url params) =
     "\n    URL: ", S.showT url, "\n", TL.toStrict $ showTParams params]
 showTParams :: ParamsList -> TL.Text
 showTParams = TL.concat . map f
-  where f (field, Nothing) = ""
+  where f (_    , Nothing) = ""
         f (field, Just value) = TL.concat ["    ", field, ": ", S.showTL value, "\n"]
 
 
@@ -98,11 +95,11 @@ sendRequest h takesJSON r@(Req method url params) =
         reqJSON = show method ++ ' ' : TL.unpack url
         parsedReqJSON = fmap f $ parseRequest $ reqJSON
 
-        f r = setRequestBodyJSON (makeParamsValue params) r
+        f = setRequestBodyJSON (makeParamsValue params)
     in  L.logDebug h (showTReq r) >> case parsedReq of
             Nothing -> return . Left $ "Couldn't parse the HTTP request" ++ req
-            Just parsedReq ->
-                (fmap (Right . getResponseBody) . httpLBS) parsedReq
+            Just parsedReq' ->
+                (fmap (Right . getResponseBody) . httpLBS) parsedReq'
                     `catches`
                     [
                     Handler handleHTTPError

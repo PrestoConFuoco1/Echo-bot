@@ -6,7 +6,7 @@ import Vkontakte.General
 
 getRandomID' :: VkStateMut -> (VkStateMut, Integer)
 getRandomID' sm =
-    let (rndInt32, g') = randomR (0::Integer, 2^32-1) $ vkRndGen sm
+    let (rndInt32, g') = randomR (0::Integer, 2^(32-1::Int)) $ vkRndGen sm
     in  (sm { vkRndGen = g' }, rndInt32)
 
 putTimestamp' :: TL.Text -> VkStateMut -> VkStateMut

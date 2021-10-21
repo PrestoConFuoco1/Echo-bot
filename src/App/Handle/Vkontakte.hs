@@ -13,13 +13,12 @@ import Data.IORef
 import qualified Data.Map as M
 import qualified HTTPRequests as H
 
-import System.Random (StdGen, newStdGen, randomR)
-import qualified Stuff as S
+import System.Random (newStdGen)
 import qualified System.Exit as Q (ExitCode (..), exitWith)
 import qualified Data.Text as T
 import qualified Data.Text.Lazy as TL
 import qualified Vkontakte.Exceptions as VkEx
-import qualified Control.Monad.Catch as C (catches, Handler (..), SomeException, displayException)
+import qualified Control.Monad.Catch as C (Handler (..), SomeException, displayException)
 import GenericPretty as GP
 import qualified Data.ByteString.Lazy.Char8 as BSL (ByteString, unpack) --, toStrict)
 import qualified Vkontakte.Send as G
@@ -100,20 +99,20 @@ getNewKeyAndTs logger config resources = do
         resources'' = modifyKey (_VID_key initData) resources'
     return resources''
 
-
+vkHandlers :: L.Handle IO -> VkConfig -> Resources -> [C.Handler IO Resources]
 vkHandlers logger conf resources = [
     C.Handler $ vkErrorHandler logger conf resources
     -- , C.Handler $ defaultHandler logger resources
     ]
 
 defaultHandler :: L.Handle IO -> Resources -> C.SomeException -> IO Resources
-defaultHandler logger resources e = do
+defaultHandler logger _ e = do
     L.logFatal logger $ "unable to handle exception"
     L.logFatal logger $ T.pack $ C.displayException e
     Q.exitWith (Q.ExitFailure 1)
 
 resourcesToVkHandler :: Resources -> L.Handle IO -> VkHandler IO
-resourcesToVkHandler resources logger = 
+resourcesToVkHandler resources _ = 
     VkHandler {
           getRandomID = atomicModifyIORef' (mutState resources) getRandomID'
         , getTimestamp = fmap getTimestamp' $ readIORef (mutState resources)

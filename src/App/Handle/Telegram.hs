@@ -11,7 +11,7 @@ import qualified Data.Map as M
 import qualified System.Exit as Q (ExitCode (..), exitWith)
 import qualified Control.Monad.Catch as C
 import qualified Telegram.Exceptions as TlEx
-import qualified Data.Text as T (Text, pack)
+import qualified Data.Text as T (pack)
 import qualified Telegram.Send as G
 
 data Config = Config {
@@ -30,7 +30,7 @@ data Resources = Resources {
 
 
 initResources :: L.Handle IO -> Config -> IO Resources
-initResources logger (Config common tlConf) = do
+initResources _ (Config common tlConf) = do
     let initStateTele = TLSM { tlUpdateID = _TC_updID tlConf, mediaGroups = M.empty }
         const_ = TLSC { tlUrl = _TC_url tlConf }
     mut <- newIORef initStateTele
@@ -63,7 +63,7 @@ resourcesToHandle resources logger =
     }
 
 resourcesToTelegramHandler :: Resources -> L.Handle IO -> TlHandler IO
-resourcesToTelegramHandler resources logger =
+resourcesToTelegramHandler resources _ =
     TlHandler {
           getUpdateID = fmap getUpdateID' $ readIORef (mutState resources)
         , putUpdateID = modifyIORef' (mutState resources) . putUpdateID'
@@ -75,19 +75,19 @@ resourcesToTelegramHandler resources logger =
 
 
 tlErrorHandler :: L.Handle IO -> TlConfig -> Resources -> TlEx.TlException -> IO Resources
-tlErrorHandler logger conf resources TlEx.TlException = do
+tlErrorHandler logger _ _ TlEx.TlException = do
     L.logFatal logger "Unable to handle any telegram errors, error is logged"
     Q.exitWith (Q.ExitFailure 1)
 
 
 defaultHandler :: L.Handle IO -> Resources -> C.SomeException -> IO Resources
-defaultHandler logger resources e = do
+defaultHandler logger _ e = do
     L.logFatal logger $ "unable to handle exception"
     L.logFatal logger $ T.pack $ C.displayException e
     Q.exitWith (Q.ExitFailure 1)
 
 
-
+tlHandlers :: L.Handle IO -> TlConfig -> Resources -> [C.Handler IO Resources]
 tlHandlers logger conf resources = [
     C.Handler $ tlErrorHandler logger conf resources
     ]

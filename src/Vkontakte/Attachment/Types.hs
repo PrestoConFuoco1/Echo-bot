@@ -6,8 +6,7 @@ module Vkontakte.Attachment.Types where
 
 import Data.Aeson.Types
 import GHC.Generics (Generic)
-import Data.Foldable (asum)
-import qualified Data.Text as T (Text, unpack, pack)
+import qualified Data.Text as T (Text)
 import Control.Applicative ((<|>))
 import GenericPretty
 
@@ -42,6 +41,7 @@ data VkAttsPartition = VkAttsPartition {
     pUnexpected :: [VkUnexpectedAtt]
     } deriving (Show)
 
+nullPartition :: VkAttsPartition
 nullPartition = VkAttsPartition [] [] [] [] [] [] [] [] [] [] [] []
 
 
@@ -209,32 +209,32 @@ class VkAttMessageSendable a where
 
 
 instance VkAttMessageSendable VkPhoto where
-    getType x = "photo"
+    getType _ = "photo"
     getOwnerID = _VPh_owner_id
     getID = _VPh_id
     getAccessKey = _VPh_access_key
 
 instance VkAttMessageSendable VkVideo where
-    getType x = "video"
+    getType _ = "video"
     getOwnerID = _VVd_owner_id
     getID = _VVd_id
     getAccessKey = _VVd_access_key
 
 instance VkAttMessageSendable VkAudio where
-    getType x = "audio"
+    getType _ = "audio"
     getOwnerID = _VAu_owner_id
     getID = _VAu_id
     getAccessKey = _VAu_access_key
 
 instance VkAttMessageSendable VkDocument where
-    getType x = "document"
+    getType _ = "document"
     getOwnerID = _VDoc_owner_id
     getID = _VDoc_id
     getAccessKey = _VDoc_access_key
 
 
 instance VkAttMessageSendable VkWall where
-    getType x = "wall"
+    getType _ = "wall"
     getOwnerID = _VWl_owner_id
     --getOwnerID = _VWl_to_id
     getID = _VWl_id
@@ -242,7 +242,7 @@ instance VkAttMessageSendable VkWall where
 
 
 instance VkAttMessageSendable VkMarket where
-    getType x = "market"
+    getType _ = "market"
     getOwnerID = _VMrk_owner_id
     getID = _VMrk_id
     getAccessKey = _VMrk_access_key

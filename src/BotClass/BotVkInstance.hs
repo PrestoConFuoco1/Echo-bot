@@ -12,10 +12,10 @@ import Vkontakte
 import HTTPRequests as H
 import qualified Stuff as S (emptyToNothing, withMaybe)
 import Data.Aeson.Types as AeT (parseEither, parseJSON, toJSON)
-import qualified Data.Text.Lazy as TL (toStrict)
+import qualified Data.Text.Lazy as TL (toStrict, Text)
 import qualified Data.Text as T (Text, pack)
 import qualified App.Handle as D
-import Control.Monad.Writer (Writer, runWriter)
+import Control.Monad.Writer (runWriter)
 import qualified Control.Monad.Catch as C (throwM, MonadThrow)
 import GenericPretty
 import qualified Exceptions as Ex
@@ -35,9 +35,9 @@ instance BotClassUtility Vk where
     getUpdateValue _ u = _VU_value u
 
 --    getChat :: s -> Msg s -> Maybe (Chat s)
-    getChat d m = Nothing
+    getChat _ _ = Nothing
 --    getUser :: s -> Msg s -> Maybe (User s)
-    getUser d m = Just $ _VM_from_id m
+    getUser _ m = Just $ _VM_from_id m
 --    getText :: s -> Msg s -> Maybe T.Text
     getText _ = {- S.echo .-} _VM_text
 --    getUserID :: s -> User s -> T.Text
@@ -49,11 +49,11 @@ instance BotClassUtility Vk where
         _            -> Nothing
 --
 --    getCallbackUser :: s -> CallbackQuery s -> User s
-    getCallbackUser d = _VMC_from_id
+    getCallbackUser _ = _VMC_from_id
 --    getCallbackData :: s -> CallbackQuery s -> Maybe T.Text
     getCallbackData _ = Just . TL.toStrict . _VP_payload . _VMC_payload
 --    getCallbackChat :: s -> CallbackQuery s -> Maybe (Chat s)
-    getCallbackChat d = const Nothing
+    getCallbackChat _ = const Nothing
 
 
 
@@ -66,7 +66,7 @@ instance BotClass Vk where
     parseUpdatesValueList s rep = do
         res <- maybe (Left "Couldn't parse update list") Right $ getResult s rep
         AeT.parseEither AeT.parseJSON res
-    parseUpdate s = AeT.parseEither AeT.parseJSON
+    parseUpdate _ = AeT.parseEither AeT.parseJSON
 
     sendTextMsg = sendTextMsg1
     repNumKeyboard = repNumKeyboard1
@@ -76,8 +76,8 @@ instance BotClass Vk where
 
 
 
---getUpdatesRequest :: (Monad m) => D.Handle s m -> s -> m H.HTTPRequest
-getUpdatesRequest1 h s = do
+getUpdatesRequest1 :: (Monad m) => D.Handle Vk m -> Vk -> m H.HTTPRequest
+getUpdatesRequest1 h _ = do
     --curTS <- fmap vkTs $ D.getMutState h s
     curTS <- getTimestamp (D.specH h)
     let constState = D.getConstState h
@@ -90,7 +90,7 @@ getUpdatesRequest1 h s = do
                 unit "wait" timeout']
     return $ H.Req H.GET fullUrl pars
 
---    isSuccess :: s -> Rep s -> Bool
+isSuccess1 :: Vk -> VkReply -> Bool
 isSuccess1 _ r = _VR_failed r == Nothing
 
 errorMsg1, errorMsg2, errorMsg3 :: T.Text
@@ -121,11 +121,12 @@ handleFailedUpdatesRequest1 h e@(VkUpdateReplyError {..}) =
         C.throwM Ex.UnableToHandleError
 
 
---    sendTextMsg :: (Monad m) => D.Handle s m -> s -> Maybe (Chat s) -> Maybe (User s) -> T.Text
---        -> m (Either String H.HTTPRequest)
-sendTextMsg1 h s mChat mUser "" = return $ Left "Unable to send empty message."
-sendTextMsg1 h s mChat Nothing text = return $ Left "VK: no user supplied, unable to send messages to chats."
-sendTextMsg1 h s mChat (Just u) text = do
+sendTextMsg1 ::
+    (Monad m) => D.Handle Vk m -> s -> Maybe VkChat -> Maybe VkUser -> T.Text
+    -> m (Either String H.HTTPRequest)
+sendTextMsg1 _ _ _     _ "" = return $ Left "Unable to send empty message."
+sendTextMsg1 _ _ _ Nothing _ = return $ Left "VK: no user supplied, unable to send messages to chats."
+sendTextMsg1 h _ _ (Just u) text = do
     let method = "messages.send"
         sc = D.getConstState h
     randomID <- getRandomID (D.specH h)
@@ -135,17 +136,18 @@ sendTextMsg1 h s mChat (Just u) text = do
                 ++ defaultVkParams sc
     return $ Right $ buildHTTP (vkUrl sc) (method, pars)
 
---    repNumKeyboard :: s -> [Int] -> TL.Text -> H.ParamsList
-repNumKeyboard1 d lst cmd = [unit "keyboard" obj]
+
+repNumKeyboard1 :: Vk -> [Int] -> TL.Text -> H.ParamsList
+repNumKeyboard1 _ lst cmd = [unit "keyboard" obj]
   where obj = toJSON $ repNumKeyboardVkTxt' cmd lst
 
---    epilogue :: (Monad m) => D.Handle s m -> s -> [Upd s] -> Rep s -> m ()
-epilogue1 h s _ rep = case _VURS_ts rep of
+epilogue1 :: (Monad m) => D.Handle Vk m -> Vk -> [VkUpdate] -> VkUpdateReplySuccess -> m ()
+epilogue1 h _ _ rep = case _VURS_ts rep of
     Nothing -> return ()
     Just x  -> putTimestamp (D.specH h) x
 
---    processMessage :: (Monad m) => D.Handle s m -> s -> Msg s -> m (Maybe (m H.HTTPRequest))
-processMessage1 h s m
+processMessage1 :: (Monad m) => D.Handle Vk m -> Vk -> VkMessage -> m (Maybe (m H.HTTPRequest))
+processMessage1 h _ m
  | null atts && maybeText == Nothing = do
         D.logError h $ funcName <> "Unable to send empty message."
         return Nothing
@@ -158,7 +160,7 @@ processMessage1 h s m
             (D.logError h (funcName <> "no text found and unable to send any attachments.") >> 
              return Nothing)
             (return . Just . processMessageVk h user maybeText))
-        (\text -> let justPars = maybe [] id maybePars
+        (\_ -> let justPars = maybe [] id maybePars
             in  return $ Just (processMessageVk h user maybeText justPars))
 
   where

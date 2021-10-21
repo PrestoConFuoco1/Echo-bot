@@ -53,11 +53,11 @@ instance BotClassUtility Tele where
 
 
 --  getCallbackUser :: s -> CallbackQuery s -> User s
-    getCallbackUser d = _TCB_from
+    getCallbackUser _ = _TCB_from
 --  getCallbackData :: s -> CallbackQuery s -> Maybe T.Text
-    getCallbackData d = _TCB_data
+    getCallbackData _ = _TCB_data
 --  getCallbackChat :: s -> CallbackQuery s -> Maybe (Chat s)
-    getCallbackChat d c = _TCB_message c >>= return . _TM_chat
+    getCallbackChat _ c = _TCB_message c >>= return . _TM_chat
 
 
 
@@ -66,7 +66,7 @@ instance BotClass Tele where
     takesJSON _ = tlTakesJSON
 
     --getUpdatesRequest :: (Monad m) => D.Handle s m -> s -> m H.HTTPRequest
-    getUpdatesRequest h s = do
+    getUpdatesRequest h _ = do
         let
             tout = timeout $ D.commonEnv h
             url = tlUrl $ D.getConstState h
@@ -94,17 +94,17 @@ instance BotClass Tele where
         AeT.parseEither AeT.parseJSON res
 
 --  parseUpdate :: s -> Value -> Either String (Upd s)
-    parseUpdate s = AeT.parseEither AeT.parseJSON
+    parseUpdate _ = AeT.parseEither AeT.parseJSON
 
 
     --repNumKeyboard :: s -> [Int] -> T.Text -> H.ParamsList
-    repNumKeyboard d lst cmd = [unit "reply_markup" obj]
+    repNumKeyboard _ lst cmd = [unit "reply_markup" obj]
       where obj = AeT.toJSON $ repNumKeyboardTele' cmd lst
 
 --  sendTextMsg :: D.Handle s m -> s -> Maybe (Chat s) -> Maybe (User s) -> T.Text
 --      -> m (Either String H.HTTPRequest)
-    sendTextMsg h s Nothing _ _ = return $ Left "Telegram: no chat supplied, unable to send messages to users"
-    sendTextMsg h s (Just c) _ text =
+    sendTextMsg _ _ Nothing _ _ = return $ Left "Telegram: no chat supplied, unable to send messages to users"
+    sendTextMsg h _ (Just c) _ text =
         let
             url = tlUrl $ D.getConstState h
         in  return $ Right $ buildHTTP url ("sendMessage",
@@ -113,8 +113,8 @@ instance BotClass Tele where
             
 
 --  epilogue :: D.Handle s m -> s -> [Upd s] -> Rep s -> m ()
-    epilogue h s [] _ = return ()
-    epilogue h s us _ = do
+    epilogue _ _ [] _ = return ()
+    epilogue h _ us _ = do
         let
             funcName = "tl_epilogue: "
             newUpdateID = (maximum $ map _TU_update_id us) + 1
@@ -129,7 +129,8 @@ instance BotClass Tele where
     processMessage = processMessage1
 
 
-processMessage1 h s m =
+processMessage1 :: (Monad m) => D.Handle Tele m -> Tele -> TlMessage -> m (Maybe (m H.HTTPRequest))
+processMessage1 h _ m =
   if isMediaGroup m
   then processMediaGroup h m >> return Nothing
   else either
@@ -137,9 +138,9 @@ processMessage1 h s m =
         D.logError h $ funcName <> T.pack e
         return Nothing)
     (return . Just)
-        $ sendMessage h s m
+        $ sendMessage
   where funcName = "tl_processMessage: "
-        sendMessage h s m =
+        sendMessage =
             let eithMethodParams = sendMessageTele m
                 url = tlUrl $ D.getConstState h
             in  return . buildHTTP url . first TL.fromStrict <$> eithMethodParams

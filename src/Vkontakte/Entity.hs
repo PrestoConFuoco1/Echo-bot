@@ -5,8 +5,8 @@ module Vkontakte.Entity where
 
 import Data.Aeson.Types
 import GHC.Generics (Generic)
-import qualified Data.Text.Lazy as TL (Text, unpack, pack, toStrict)
-import qualified Data.Text as T (Text, unpack, pack)
+import qualified Data.Text.Lazy as TL (Text)
+import qualified Data.Text as T (Text)
 import GenericPretty
 import Vkontakte.Attachment
 

@@ -39,14 +39,15 @@ data RunOptions = RunOptions {
     , logPath :: FilePath
     , messager :: Messager
     }
+
+defaultRunOpts :: RunOptions
 defaultRunOpts = RunOptions {
     testConfig = False
     , loggerSettings = const True
     , logPath = "./log"
     , messager = None }
 
--- for ghci
-qomeFunc :: Messager -> IO ()
+qomeFunc :: Messager -> IO () -- for ghci
 qomeFunc m = runWithConf (defaultRunOpts {messager = m}) "src/bot.conf"
 
 someFunc :: IO ()
@@ -83,15 +84,12 @@ runWithConf opts path =
         Vkontakte -> runWithConf' Vk opts path vkAction
         None -> L.logFatal L.simpleHandle "No messager parameter supplied, terminating..." >>
                 L.logInfo  L.simpleHandle "Use -tl for Telegram and -vk for Vkontakte"
-  where
-        func a = \x y z -> a x y z >> return ()
 
 telegramAction :: L.Handle IO -> EnvironmentCommon -> TlConfig -> IO ()
 telegramAction logger gen tlConf = do
     let tlConfig = T.Config gen tlConf
     resources <- T.initResources logger tlConfig
-    let handle = T.resourcesToHandle resources logger
-    forever' resources $ mainLoop
+    _ <- forever' resources $ mainLoop
         tlConf
         (flip T.resourcesToHandle logger)
         D.log
@@ -103,8 +101,7 @@ vkAction :: L.Handle IO -> EnvironmentCommon -> VkConfig -> IO ()
 vkAction logger gen vkConf = do
     let vkConfig = V.Config gen vkConf
     resources <- V.initResources logger vkConfig
-    let handle = V.resourcesToHandle resources logger
-    forever' resources $ mainLoop
+    _ <- forever' resources $ mainLoop
         vkConf
         (flip V.resourcesToHandle logger)
         D.log
@@ -181,7 +178,7 @@ handleIOError logger exc
   | otherwise = L.logError logger "Unknown error occured"
 
 handleConfigError :: L.Handle IO -> CT.ConfigError -> IO ()
-handleConfigError logger (CT.ParseError path s) =
+handleConfigError logger (CT.ParseError _ _) =
     L.logError logger $ "Failed to parse configuration file."
 
 handleConfig2Error :: L.Handle IO -> ConfigException -> IO ()
@@ -189,7 +186,7 @@ handleConfig2Error logger RequiredFieldMissing =
     L.logError logger "Failed to get required field value."
 
 handleOthers :: L.Handle IO -> E.SomeException -> IO ()
-handleOthers logger exc =
+handleOthers logger _ =
     L.logError logger "Unknown error occured."
 
 

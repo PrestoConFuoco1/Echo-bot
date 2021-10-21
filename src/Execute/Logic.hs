@@ -55,13 +55,13 @@ getCmd e str
 handleCallback :: (BotClass s, Monad m) =>
     D.Handle s m -> s -> CallbackQuery s -> m ()
 handleCallback h s callback =
-    case defineCallbackType h s callback of
+    case defineCallbackType s callback of
         CSetRepNum user mChat n -> handleSetRepNum h s user mChat n
         CError err -> D.logError h $ "handleCallback: " <> T.pack err
 
 defineCallbackType :: (BotClass s) =>
-    D.Handle s m -> s -> CallbackQuery s -> CallbQuery (User s) (Chat s)
-defineCallbackType h s callback =
+    s -> CallbackQuery s -> CallbQuery (User s) (Chat s)
+defineCallbackType s callback =
     let user  = getCallbackUser s callback
         mData = getCallbackData s callback
         mChat = getCallbackChat s callback
@@ -130,13 +130,12 @@ sendRepNumButtons h s mChat mUser = do
 
 logEither :: (BotClass s, Monad m) =>
     D.Handle s m -> s -> (a -> m ()) -> Either String a -> m ()
-logEither h s f = do
+logEither h _ f = do
     either (D.logError h . T.pack) f
 
 sendFixedInfo :: (BotClass s, Monad m) =>
     D.Handle s m -> s -> (a -> m (Either String (Rep s))) -> a -> m ()
 sendFixedInfo h s send request = do
-    let funcName = "sendFixedInfo: "
     eithResp <- send request
     logEitherResponse h s eithResp
 

@@ -1,20 +1,18 @@
-{-# LANGUAGE DeriveGeneric, OverloadedStrings #-}
 
 module Config where
 
 import Telegram (TlConfig(..))
-import qualified Data.Text as T (Text, pack)
+import qualified Data.Text as T (Text)
 import qualified GenericPretty as GP
 import qualified Stuff as S (withEither)
 import qualified Data.Configurator as C
 import qualified Data.Configurator.Types as CT
-import qualified Control.Exception as E (catch, SomeException, Exception (..),
-                                         try, throw, SomeException)
+import qualified Control.Exception as E (SomeException, Exception (..),
+                                         try, throw, SomeException, handle)
 import qualified App.Logger as L
 import Vkontakte (VkConfig(..))
 import Types
 import BotClass.ClassTypes
-import BotClass.Class
 import BotClass.ClassTypesTeleInstance
 import BotClass.ClassTypesVkInstance
 
@@ -42,11 +40,11 @@ loadConfig s logger path = do
 
 
 loadGeneral :: L.Handle IO -> CT.Config -> IO EnvironmentCommon
-loadGeneral logger conf = (flip E.catch $
+loadGeneral _ conf = (E.handle
         (const $ return defStateGen ::
             E.SomeException -> IO EnvironmentCommon)) $ do
     let dg = defStateGen
-        f x s = C.lookupDefault (x dg) conf s
+        f x = C.lookupDefault (x dg) conf
     confHelpMsg <- f helpMsg "help_message"
     confRepQue  <- f repQuestion "repeat_question"
     confRepNum  <- f repNum "default_repeat_num"
@@ -73,7 +71,7 @@ instance BotConfigurable Vk where
 
 
 tryGetConfig :: (BotClassTypes s) => s -> L.Handle IO -> T.Text -> IO (Conf s) -> IO (Conf s)
-tryGetConfig s logger messager atry = do
+tryGetConfig _ logger messager atry = do
     L.logDebug logger $ "Trying to get " <> messager <> " bot configuration"
     eithStMsgError <- E.try atry -- :: IO (Either CT.KeyError a)
     S.withEither eithStMsgError
@@ -86,13 +84,13 @@ tryGetConfig s logger messager atry = do
             return c)
    
 loadTeleConfig :: L.Handle IO -> CT.Config -> IO TlConfig
-loadTeleConfig logger conf = do
+loadTeleConfig _ conf = do
     initialUpdateID <- C.require conf "initial_update_id"
     botURL <- C.require conf "bot_url"
     return $ TlConf initialUpdateID botURL
 
 loadVkConfig :: L.Handle IO -> CT.Config -> IO VkConfig
-loadVkConfig logger conf = do
+loadVkConfig _ conf = do
     botURL <- C.require conf "bot_url"
     accTok <- C.require conf "access_token"
     groupID <- C.require conf "group_id"
@@ -101,6 +99,6 @@ loadVkConfig logger conf = do
 
 
 logKeyException :: L.Handle IO -> CT.KeyError -> IO ()
-logKeyException logger = L.logError L.simpleHandle . f
+logKeyException logger = L.logError logger . f
   where f (CT.KeyError name) = "No field with name " <> {-TL.fromStrict-} name <> " found."
 

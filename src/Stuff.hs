@@ -17,7 +17,7 @@ type Timeout = Integer
 --------------------------------------------
 
 safeHead :: [a] -> Maybe a
-safeHead (x:xs) = Just x
+safeHead (x:_) = Just x
 safeHead _ = Nothing
 
 

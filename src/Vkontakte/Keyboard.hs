@@ -4,7 +4,6 @@
 module Vkontakte.Keyboard where
 
 
-import Data.Aeson (encode, decode)
 import Data.Aeson.Types
 import GHC.Generics (Generic)
 import qualified Data.Text.Lazy as TL (Text, pack)
@@ -79,12 +78,12 @@ repNumKeyboardVkTxt' cmd lst = VkKeyboard True $
     [map (VkButton "primary" . VBAText . repNumButtonVkTxt cmd) lst]
 
 ------------------------------------------
-
+{-
 testVkKeyboard, testVkButton, testVkAction :: T.Text
 testVkKeyboard = "{\"inline\":true,\"buttons\":[[" <> testVkButton <> "]]}"
 testVkButton = "{\"action\":" <> testVkAction <> ",\"color\":\"primary\"}"
 testVkAction = "{\"type\":\"callback\",\"label\":\"Press me\",\"payload\":\"{}\"}"
 
 testVkKeyboard' ="{\"inline\":true,\"buttons\":[[{\"action\":{\"type\":\"callback\",\"label\":\"Press me\",\"payload\":\"{}\"},\"color\":\"primary\"}]]}" 
-
+-}
 

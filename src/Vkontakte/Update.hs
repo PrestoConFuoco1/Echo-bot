@@ -88,7 +88,7 @@ instance FromJSON VkUpdate where
                 
  --           "message_edit" -> fmap VEMsgEdit $ o .: "object"
  --           str -> fail $ T.unpack $ "Failed to parse the event object of type \"" <> str <> "\"."
-            str -> return VEUnexpectedEvent
+            _ -> return VEUnexpectedEvent
         return $ VkUpdate
             --updType
             value event

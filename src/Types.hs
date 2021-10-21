@@ -26,6 +26,7 @@ instance GP.PrettyShow EnvironmentCommon where
         GP.consModifier = const "Common settings"
         }
 
+defStateGen :: EnvironmentCommon
 defStateGen = EnvironmentCommon {
     helpMsg = "Hello! Available commands:\n\
                 \-- /help - to get help\n\

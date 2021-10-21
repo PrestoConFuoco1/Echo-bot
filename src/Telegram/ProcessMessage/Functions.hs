@@ -115,6 +115,7 @@ sendPollTele m = do
 sendDiceTele :: TlMessage -> Maybe (T.Text, H.ParamsList)
 sendDiceTele m = do
     dice <- _TM_dice m
+-- а что делать тут?
     return ("sendDice", [unit "chat_id" $ chatIDfromMsg m])
 
 sendStickerTele :: TlMessage -> Maybe (T.Text, H.ParamsList)

@@ -9,7 +9,7 @@ module Telegram.Entity where
 
 import Data.Aeson.Types
 import GHC.Generics (Generic)
-import qualified Data.Text as T (Text, unpack, pack)
+import qualified Data.Text as T (Text)
 import GenericPretty
 import Telegram.ProcessMessage.Types
 

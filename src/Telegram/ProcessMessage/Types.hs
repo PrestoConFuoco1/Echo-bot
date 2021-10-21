@@ -4,7 +4,6 @@
 module Telegram.ProcessMessage.Types where
 
 
-import HTTPRequests as H
 import Data.Aeson.Types
 import GHC.Generics (Generic)
 import qualified Data.Text as T (Text)
