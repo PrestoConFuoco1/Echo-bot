@@ -227,7 +227,7 @@ instance VkAttMessageSendable VkAudio where
     getAccessKey = _VAu_access_key
 
 instance VkAttMessageSendable VkDocument where
-    getType _ = "document"
+    getType _ = "doc"
     getOwnerID = _VDoc_owner_id
     getID = _VDoc_id
     getAccessKey = _VDoc_access_key

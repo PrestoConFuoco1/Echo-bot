@@ -20,12 +20,18 @@ data VkReply = VkReply {
 --    _VR_ts :: Maybe TL.Text,
 --    _VR_updates :: Maybe Value,
     _VR_failed :: Maybe Int
+    , _VR_val :: Value
     } deriving (Eq, Show, Generic)
 
 instance FromJSON VkReply where
+    parseJSON x = ($ x) $ withObject "Vkontakte reply object" $ \o -> do
+        failed <- o .:? "failed"
+        return $ VkReply failed x
+{-
+instance FromJSON VkReply where
     parseJSON = genericParseJSON defaultOptions {
         fieldLabelModifier = drop 4 }
-
+-}
 data VkUpdateReplySuccess = VkUpdateReplySuccess {
     _VURS_updates :: Value
     , _VURS_ts :: Maybe TL.Text
