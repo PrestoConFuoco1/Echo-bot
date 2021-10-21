@@ -6,18 +6,9 @@ module Vkontakte.Initialize where
 import Data.Aeson (decode)
 import Data.Aeson.Types
 import GHC.Generics (Generic)
-import System.Random (StdGen, randomR)
-import qualified Data.Text.Lazy as TL (Text, unpack, pack, toStrict)
-import qualified Data.Text as T (Text, unpack, pack)
+import qualified Data.Text.Lazy as TL (Text)
 import qualified Data.ByteString.Lazy as BSL (ByteString)
-
 import GenericPretty
-
-import Vkontakte.Entity as VE
-import Vkontakte.Attachment as VA
-import Vkontakte.Keyboard as VKb
-import HTTPRequests as H
-
 
 data VkInitData = VkInitData {
     _VID_key :: TL.Text
@@ -26,7 +17,6 @@ data VkInitData = VkInitData {
     } deriving (Show, Generic)
 instance PrettyShow VkInitData
 
---parseInitResp :: BSL.ByteString -> Either String (TL.Text, TL.Text, TL.Text)
 parseInitResp :: BSL.ByteString -> Either String VkInitData
 parseInitResp = eithParsed
   where parseInitRep = withObject "object: key, server, ts" $ \o' -> do -- Parser a

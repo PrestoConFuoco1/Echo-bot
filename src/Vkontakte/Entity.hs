@@ -1,28 +1,14 @@
 {-# LANGUAGE
-    DeriveGeneric,
-    RecordWildCards
+    DeriveGeneric
     #-}
 module Vkontakte.Entity where
 
-import Data.Aeson (encode, decode)
 import Data.Aeson.Types
 import GHC.Generics (Generic)
-import Data.Foldable (asum)
-import System.Random (StdGen)
-import qualified Stuff as S (showTL)
-import qualified Data.Text.Lazy.Encoding as EL (decodeUtf8, encodeUtf8)
-import qualified Data.Text.Encoding as E (decodeUtf8, encodeUtf8)
 import qualified Data.Text.Lazy as TL (Text, unpack, pack, toStrict)
 import qualified Data.Text as T (Text, unpack, pack)
-import qualified Data.ByteString.Lazy as BSL (ByteString)
-import Control.Applicative ((<|>))
-
 import GenericPretty
-
-import qualified HTTPRequests as H
-
 import Vkontakte.Attachment
-import Types
 
 
 -- Возможный вариант: любое "message_new" при наличии payload интерпретировать
@@ -38,10 +24,6 @@ data VkMessage = VkMessage {
     --_VM_payload :: Maybe VkMyCallback
     } deriving (Eq, Show, Generic)
 
-{-instance ToJSON VkMessage where
-    toJSON = genericToJSON defaultOptions {
-        fieldLabelModifier = drop 4 }
--}
 instance FromJSON VkMessage where
     parseJSON = fmap fixText . genericParseJSON defaultOptions {
         fieldLabelModifier = drop 4 }
@@ -58,7 +40,6 @@ data VkChat = VkChat
 data VkUser = VkUser {
     _VU_id :: Integer
     } deriving (Show, Generic)
--- Eq? Maybe two users are equal if their id is the same?
 
 
 instance ToJSON VkUser where

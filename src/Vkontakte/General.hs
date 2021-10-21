@@ -3,32 +3,23 @@
     #-}
 module Vkontakte.General where
 
-
-import Data.Aeson (decode)
-import Data.Aeson.Types
 import GHC.Generics (Generic)
-import System.Random (StdGen, randomR)
-import qualified Data.Text.Lazy as TL (Text, unpack, pack, toStrict)
-import qualified Data.Text as T (Text, unpack, pack)
-import qualified Data.ByteString.Lazy as BSL (ByteString)
-
+import System.Random (StdGen)
+import qualified Data.Text.Lazy as TL (Text)
+import qualified Data.Text as T (Text)
 import GenericPretty
-
-import Vkontakte.Entity as VE
-import Vkontakte.Attachment as VA
-import Vkontakte.Keyboard as VKb
 import HTTPRequests as H
 
-
-
+defaultVkParams :: VkStateConst -> H.ParamsList
 defaultVkParams sc = defaultVkParams' (vkAccessToken sc) (apiVersion sc)
 
+defaultVkParams' :: TL.Text -> T.Text -> H.ParamsList
 defaultVkParams' accTok apiV =
     [unit "access_token" accTok,
      unit "v" apiV ]
 
 
-
+vkTakesJSON :: Bool
 vkTakesJSON = False
 
 ----------------------------------------------

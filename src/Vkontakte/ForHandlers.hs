@@ -1,24 +1,7 @@
-{-# LANGUAGE
-    DeriveGeneric,
-    RecordWildCards
-    #-}
-
 module Vkontakte.ForHandlers where
 
-import Data.Aeson (decode)
-import Data.Aeson.Types
-import GHC.Generics (Generic)
-import System.Random (StdGen, randomR)
-import qualified Data.Text.Lazy as TL (Text, unpack, pack, toStrict)
-import qualified Data.Text as T (Text, unpack, pack)
-import qualified Data.ByteString.Lazy as BSL (ByteString)
-
-import GenericPretty
-
-import Vkontakte.Entity as VE
-import Vkontakte.Attachment as VA
-import Vkontakte.Keyboard as VKb
-import HTTPRequests as H
+import System.Random (randomR)
+import qualified Data.Text.Lazy as TL (Text)
 import Vkontakte.General
 
 getRandomID' :: VkStateMut -> (VkStateMut, Integer)

@@ -3,15 +3,14 @@
     #-}
 module Vkontakte.Update where
 
-import Data.Aeson (encode, decode)
+import Data.Aeson (decode)
 import Data.Aeson.Types
 import GHC.Generics
 import Data.Foldable (asum)
 import qualified Stuff as S (showTL)
-import qualified Data.Text.Lazy.Encoding as EL (decodeUtf8, encodeUtf8)
-import qualified Data.Text.Lazy as TL (Text, unpack, pack, toStrict)
-import qualified Data.Text as T (Text, unpack, pack)
-
+import qualified Data.Text.Lazy.Encoding as EL (encodeUtf8)
+import qualified Data.Text.Lazy as TL (Text)
+import qualified Data.Text as T (Text)
 import GenericPretty
 import Types
 import Vkontakte.Entity

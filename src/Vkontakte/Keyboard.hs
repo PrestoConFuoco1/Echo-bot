@@ -1,19 +1,14 @@
 {-# LANGUAGE
     DeriveGeneric
-    , RecordWildCards
     #-}
 module Vkontakte.Keyboard where
-
 
 
 import Data.Aeson (encode, decode)
 import Data.Aeson.Types
 import GHC.Generics (Generic)
-import qualified Data.Text.Lazy.Encoding as EL (decodeUtf8, encodeUtf8)
-import qualified Data.Text.Lazy as TL (Text, unpack, pack, toStrict)
-import qualified Data.Text as T (Text, unpack, pack)
-import GenericPretty
-import qualified HTTPRequests as H
+import qualified Data.Text.Lazy as TL (Text, pack)
+import qualified Data.Text as T (Text)
 import Vkontakte.Entity
 
 
@@ -28,7 +23,7 @@ instance ToJSON VkKeyboard where
 ----------------------------------------------------
 
 data VkButton = VkButton {
-    _VB_color :: TL.Text, -- or maybe make an enum for that?
+    _VB_color :: TL.Text,
     _VB_action :: VkButtonActions
     } deriving (Eq, Show, Generic)
 

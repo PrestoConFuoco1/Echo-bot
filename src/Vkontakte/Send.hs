@@ -8,7 +8,6 @@ import qualified Data.Aeson as Ae (decode)
 import qualified Data.ByteString.Lazy.Char8 as BSL (ByteString)
 import Vkontakte.General
 import Vkontakte.Update
-
 import Data.Aeson
 import Data.Aeson.Types
 
@@ -20,7 +19,6 @@ parseUpdatesResponse resp = do -- Either
     return repl
 
 
--- getUpdates :: H.HTTPRequest -> m (Either String (UpdateResponse (RepSucc s) (RepErr s))),
 getUpdates :: L.Handle IO -> H.HTTPRequest -> IO (Either String (UpdateResponse VkUpdateReplySuccess VkUpdateReplyError))
 getUpdates logger request = do
     let
