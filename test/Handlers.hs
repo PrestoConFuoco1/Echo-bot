@@ -38,7 +38,7 @@ defaultTelegramHandle :: TlHandler IO
 defaultTelegramHandle = TlHandler {
     getUpdateID = error "getUpdateID should not be used in this test",
     putUpdateID = error "putUpdateID should not be used in this test",
-    insertMediaGroupPhoto = error "insertMediaGroupPhoto should not be used in this test",
+    insertMediaGroupUnit = error "insertMediaGroupPhoto should not be used in this test",
     purgeMediaGroups = error "purgeMediaGroups should not be used in this test",
     getMediaGroups = error "getMediaGroups should not be used in this test"
     }

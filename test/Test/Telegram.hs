@@ -26,7 +26,7 @@ testTelegram = describe "telegram logic" $ do
     testSetRepNumCommand
     testSetRepNum
     testSendEcho (-1)
-
+    testMediaGroup
 
 testHelpMessage :: Spec
 testHelpMessage = do
@@ -100,3 +100,65 @@ testSendEcho' repnum = do
     handleUpdate handle Tele $ simpleMessageUpdate
     int <- readIORef ref
     return int
+
+testMediaGroup :: Spec
+testMediaGroup =
+    describe "media group test" $ do
+        it "should save media group unit and send no requests immediately" $
+            testMediaGroup' `shouldReturn` 1
+
+testMediaGroup' :: IO Int
+testMediaGroup' = do
+    --ref <- newIORef 0
+    refMap <- newIORef []
+    let handle = (defaultHandle Tele) {
+            D.specH = defaultTelegramHandle {
+                insertMediaGroupUnit = mockInsertMediaGroupUnit refMap
+                }
+            }
+    handleUpdate handle Tele $ mediaGroupUpdate
+    int <- fmap Prelude.length $ readIORef refMap
+    return int
+    
+{-
+    result: 
+        [{"update_id":332501497,"message":{"from":{"first_name":"Yuri","username":"r
+        ozovyi_avtobyc","is_bot":false,"last_name":"Romanowski","id":380847769,"lang
+        uage_code":"ru"},"chat":{"first_name":"Yuri","username":"rozovyi_avtobyc","l
+        ast_name":"Romanowski","id":380847769,"type":"private"},"media_group_id":"13
+        078204525058474","message_id":2435,"date":1634775565,"audio":{"file_id":"CQA
+        CAgIAAxkBAAIJg2Fwsg1NuihCkyJzeMNq-KKNka-1AAKnEgAC9NqJS7fQ3SnOgcvvIQQ","mime_
+        type":"audio/mpeg","file_size":9095212,"file_unique_id":"AgADpxIAAvTaiUs","t
+        itle":"Autumn Leaves (Les Feuilles Mortes) (Sefon.Pro)","duration":226,"perf
+        ormer":"Paul Mauriat","file_name":"0 Paul Mauriat - Autumn Leaves (Les Feuil
+        les Mortes).mp3"}}},{"update_id":332501498,"message":{"from":{"first_name":"
+        Yuri","username":"rozovyi_avtobyc","is_bot":false,"last_name":"Romanowski","
+        id":380847769,"language_code":"ru"},"chat":{"first_name":"Yuri","username":"
+        rozovyi_avtobyc","last_name":"Romanowski","id":380847769,"type":"private"},"
+        media_group_id":"13078204525058474","message_id":2436,"date":1634775565,"aud
+        io":{"file_id":"CQACAgIAAxkBAAIJhGFwsg107_Vpom7GjBbA8MeZlMGhAAKoEgAC9NqJS31D
+        aidnEryJIQQ","mime_type":"audio/mpeg","file_size":8332744,"file_unique_id":"
+        AgADqBIAAvTaiUs","title":"Ci Sarа (Sefon.me)","duration":206,"performer":"Al
+         Bano & Romina Power","file_name":"1 Al Bano & Romina Power - Ci Sarа.mp3"}}
+        }]
+-}
+
+{-
+[Debug]: {Array}
+    [0]: {TlMediaGroupPair}
+        identifier: {TlMediaGroupIdentifier}
+            chat: {TlChat}
+                id: 380847769
+            user: {TlUser}
+                id: 380847769
+                is_bot: False
+                first_name: "Yuri"
+                last_name: "Romanowski"
+                username: "rozovyi_avtobyc"
+            mediaGroupID: "13078204525058474"
+        items: {Array}
+            [0]: {TlInputMediaAudio}
+                media: "CQACAgIAAxkBAAIJhGFwsg107_Vpom7GjBbA8MeZlMGhAAKoEgAC9NqJS31DaidnEryJIQQ"
+            [1]: {TlInputMediaAudio}
+                media: "CQACAgIAAxkBAAIJg2Fwsg1NuihCkyJzeMNq-KKNka-1AAKnEgAC9NqJS7fQ3SnOgcvvIQQ"
+-}

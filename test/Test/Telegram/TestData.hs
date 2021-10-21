@@ -54,8 +54,8 @@ defaultMessage = TlMessage {
     _TM_contact = Nothing,
     _TM_dice = Nothing,
     _TM_venue = Nothing,
-    _TM_location = Nothing
- 
+    _TM_location = Nothing,
+    _TM_poll = Nothing
     }
 
 successReply :: TlReply
@@ -128,3 +128,12 @@ simpleMessageUpdate :: TlUpdate
 simpleMessageUpdate = buildUpdate (TEMsg simpleMessage) "simple message to echo"
 
 
+
+mediaGroupMessage = defaultMessage {
+    _TM_media_group_id = Just "media group id"
+    , _TM_audio = Just TlAudio {
+        _TAu_file_id = "file identifier"
+        }
+    }
+
+mediaGroupUpdate = buildUpdate (TEMsg mediaGroupMessage) "media group update"

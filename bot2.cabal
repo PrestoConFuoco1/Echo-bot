@@ -124,7 +124,6 @@ test-suite bot2-test
       Test.Telegram.TestData
       Test.Vkontakte
       Test.Vkontakte.TestData
-      Test.Vkontakte.Vkontakte
       Paths_bot2
   hs-source-dirs:
       test

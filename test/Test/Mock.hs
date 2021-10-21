@@ -46,3 +46,10 @@ mockGetUserCommon s ref user = do
                             else return Nothing
 
 
+mockInsertMediaGroupUnit ::
+    IORef [(TlMediaGroupIdentifier, TlMediaGroupUnit)]
+    -> TlMediaGroupIdentifier
+    -> TlMediaGroupUnit -> IO ()
+mockInsertMediaGroupUnit ref ident unit = do
+    modifyIORef ref ((ident, unit) :)
+

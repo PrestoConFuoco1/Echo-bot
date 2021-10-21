@@ -51,7 +51,7 @@ sendHelpMessageUpd = VkUpdate {
 sendHelpMessageUpd = buildUpdate (VEMsg sendHelpMessageMsg) "help request update"
 
 successReply :: VkReply
-successReply = VkReply Nothing
+successReply = VkReply Nothing (String "success reply")
 
 
 buildUpdate :: VkEvent -> T.Text -> VkUpdate
