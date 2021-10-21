@@ -9,10 +9,10 @@ if they appear in any message, a warning message is logged.
 Currently, for Vk stickers, photos, videos, audios, documents,
 wall posts and market units are supported.
 For Telegram, all types of messages are supported, including
-media group of photos; currently, media groups containing any
-other types of attachments will be sent back separately.
+media groups. Also, you can roll a dice using /dice command;
+the same effect is when you forward a dice message to bot.
 
-Also, the bot supports some commands:
+Also, the two bots supports some shared commands:
 + `/help` shows help message;
 + `/set` tells the bot to show keyboard with five buttons, after pressing
 one of those buttons every message will be repeated the respective amount of times.
