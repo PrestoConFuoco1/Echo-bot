@@ -41,7 +41,7 @@ instance BotClassUtility Tele where
    getCallbackUser _ = _TCB_from
    getCallbackData _ = _TCB_data
    getCallbackChat _ c =
-      _TCB_message c >>= return . _TM_chat
+      _TM_chat <$> _TCB_message c
 
 instance BotClass Tele
                          where

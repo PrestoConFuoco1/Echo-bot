@@ -1,4 +1,4 @@
-{-# LANGUAGE DeriveGeneric, RecordWildCards #-}
+{-# LANGUAGE DeriveGeneric #-}
 
 module Telegram.Update where
 
@@ -49,13 +49,13 @@ parseUpdatesResponse1 =
    parseEither $
    withObject "Telegram updates object" $ \o -> do
       ok <- o .: "ok"
-      case ok of
-         True -> do
+      if ok
+         then do
             res <- o .: "result"
             return $
                UpdateResponse $
                TlUpdateReplySuccess {_TURS_result = res}
-         False -> do
+         else do
             errCode <- o .: "error_code"
             description <- o .: "description"
             return $

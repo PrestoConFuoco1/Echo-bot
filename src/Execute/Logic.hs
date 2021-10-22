@@ -1,5 +1,6 @@
 module Execute.Logic where
 
+import Data.Maybe
 import qualified App.Handle as D
 import BotClass.Class
 import BotClass.ClassTypes
@@ -44,7 +45,8 @@ defineUpdateType h s u =
           getCmd (D.commonEnv h)
        mCallback = getCallbackQuery s u
        unexpectedValue = getUpdateValue s u
-    in maybe (EError unexpectedValue) id $
+    in
+       fromMaybe (EError unexpectedValue) $
        asum
           [ ECallback <$> mCallback
           , ECommand <$> mCmd <*> Just mChat <*> Just mUser

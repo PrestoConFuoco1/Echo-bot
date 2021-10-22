@@ -68,9 +68,8 @@ resourcesToHandle resources logger =
                  (usersMap resources)
                  (M.insert u i)
       , D.getUser =
-           \u ->
-              readIORef (usersMap resources) >>=
-              return . M.lookup u
+           \u -> M.lookup u <$>
+              readIORef (usersMap resources)
       , D.getUpdates = G.getUpdates logger
       , D.sendEcho = G.sendThis logger
       , D.sendHelp = G.sendThis logger
@@ -141,7 +140,7 @@ resourcesToVkHandler resources _ =
               (mutState resources)
               getRandomID'
       , getTimestamp =
-           fmap getTimestamp' $
+           getTimestamp' <$>
            readIORef (mutState resources)
       , putTimestamp =
            modifyIORef' (mutState resources) . putTimestamp'

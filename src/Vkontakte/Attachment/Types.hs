@@ -1,4 +1,4 @@
-{-# LANGUAGE DeriveGeneric, RecordWildCards #-}
+{-# LANGUAGE DeriveGeneric #-}
 
 module Vkontakte.Attachment.Types where
 
@@ -64,7 +64,7 @@ instance FromJSON VkAttachment where
             "gift" -> fmap VAGift $ o .: "gift"
             str ->
                fmap (VAUnexpectedAtt . VkUnexpectedAtt str) $
-               o .: (str)
+               o .: str
 
 ------------------------------------------
 data VkPhoto =

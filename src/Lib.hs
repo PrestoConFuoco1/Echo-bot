@@ -1,6 +1,6 @@
 {-# LANGUAGE BlockArguments #-}
 module Lib
-   ( someFunc
+   ( main
    ) where
 
 import App.Handle as D
@@ -29,7 +29,7 @@ import qualified Data.Text as T (pack)
 import Execute
 import qualified Stuff as S (withMaybe)
 import System.Environment (getArgs)
-import qualified System.Exit as Q (ExitCode(..), exitWith)
+import qualified System.Exit as Q (ExitCode(..), exitWith, exitSuccess)
 import System.IO (hPutStrLn, stderr)
 import qualified System.IO.Error as E
    ( isAlreadyInUseError
@@ -41,7 +41,7 @@ import Text.Read (readMaybe)
 import Types
 import Vkontakte
 
-data Messager
+data Messenger
    = Vkontakte
    | Telegram
    | None
@@ -51,7 +51,7 @@ data RunOptions =
       { testConfig :: Bool
       , loggerSettings :: L.Priority -> Bool
       , logPath :: FilePath
-      , messager :: Messager
+      , messager :: Messenger
       }
 
 defaultRunOpts :: RunOptions
@@ -63,14 +63,14 @@ defaultRunOpts =
       , messager = None
       }
 
-qomeFunc :: Messager -> IO () -- for ghci
+qomeFunc :: Messenger -> IO () -- for ghci
 qomeFunc m =
    runWithConf
       (defaultRunOpts {messager = m})
       "src/bot.conf"
 
-someFunc :: IO ()
-someFunc = do
+main :: IO ()
+main = do
    args <- getArgs
    case args of
       [] -> do
@@ -123,10 +123,10 @@ telegramAction logger gen tlConf = do
       forever' resources $
       mainLoop
          tlConf
-         (flip T.resourcesToHandle logger)
+         (`T.resourcesToHandle` logger)
          D.log
          T.tlHandlers
-         (flip execute Tele)
+         (`execute` Tele)
    return ()
 
 vkAction ::
@@ -138,10 +138,10 @@ vkAction logger gen vkConf = do
       forever' resources $
       mainLoop
          vkConf
-         (flip V.resourcesToHandle logger)
+         (`V.resourcesToHandle` logger)
          D.log
          V.vkHandlers
-         (flip execute Vk)
+         (`execute` Vk)
    return ()
 
 forever' :: a -> (a -> IO a) -> IO a
@@ -184,7 +184,7 @@ runWithConf' s opts path todo = do
    L.logInfo
       configLogger
       "Successfully got bot configuration."
-   when (testConfig opts) $ Q.exitWith Q.ExitSuccess
+   when (testConfig opts) Q.exitSuccess
    L.withSelfSufficientLogger loggerConfig $ \logger ->
       todo logger gen conf `C.catch` defaultHandler logger
 

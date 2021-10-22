@@ -1,6 +1,6 @@
 module App.Logger where
 
-import Control.Monad (when)
+import Control.Monad (when, unless)
 import qualified Control.Monad.Catch as C
 import Data.IORef
 import qualified Data.Text as T (Text, pack)
@@ -61,7 +61,7 @@ data LoggerConfig =
       , lcPath :: FilePath
       }
 
-data LoggerResources =
+newtype LoggerResources =
    LoggerResources
       { flHandle :: S.Handle
       }
@@ -114,7 +114,7 @@ initializeSelfSufficientLoggerResources conf = do
       , C.Handler initializeDefaultHandler
       ]
    lockAcquired <- Lk.hTryLock h Lk.ExclusiveLock
-   when (not lockAcquired) $ do
+   unless lockAcquired $ do
       logFatal simpleHandle "failed to initialize logger"
       logFatal simpleHandle lockedmsg
       Q.exitWith (Q.ExitFailure 1)

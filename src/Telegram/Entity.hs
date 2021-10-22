@@ -1,5 +1,4 @@
-{-# LANGUAGE DeriveGeneric, RecordWildCards #-}
-
+{-# LANGUAGE DeriveGeneric #-}
 module Telegram.Entity where
 
 import Data.Aeson.Types
@@ -8,6 +7,7 @@ import qualified Data.Text as T (Text)
 import GHC.Generics (Generic)
 import GenericPretty
 import Telegram.ProcessMessage.Types
+import Data.Function (on)
 
 chatIDfromMsg :: TlMessage -> Integer
 chatIDfromMsg = _TC_id . _TM_chat
@@ -88,7 +88,7 @@ instance FromJSON TlUser where
          defaultOptions {fieldLabelModifier = drop 5}
 
 instance Eq TlUser where
-   (==) u1 u2 = (==) (_TUs_id u1) (_TUs_id u2)
+   (==) = (==) `on` _TUs_id
 
 instance Ord TlUser where
    compare u1 u2 = compare (_TUs_id u1) (_TUs_id u2)

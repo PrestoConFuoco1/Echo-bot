@@ -59,4 +59,4 @@ repNumButtonTele cmd n =
 
 repNumKeyboardTele' :: T.Text -> [Int] -> TlInlineKeyboard
 repNumKeyboardTele' cmd lst =
-   TlInlineKeyboard $ [map (repNumButtonTele cmd) lst]
+   TlInlineKeyboard [map (repNumButtonTele cmd) lst]

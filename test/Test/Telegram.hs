@@ -109,11 +109,10 @@ testMediaGroup =
 
 testMediaGroup' :: IO Int
 testMediaGroup' = do
-    --ref <- newIORef 0
     refMap <- newIORef []
     let handle = (defaultHandle Tele) {
-            D.specH = defaultTelegramHandle {
-                insertMediaGroupUnit = mockInsertMediaGroupUnit refMap
+            D.specH = defaultTelegramHandle
+                { insertMediaGroupUnit = mockInsertMediaGroupUnit refMap
                 }
             }
     handleUpdate handle Tele $ mediaGroupUpdate

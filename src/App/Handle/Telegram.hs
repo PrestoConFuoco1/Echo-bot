@@ -59,8 +59,7 @@ resourcesToHandle resources logger =
                  (M.insert u i)
       , D.getUser =
            \u ->
-              readIORef (usersMap resources) >>=
-              return . M.lookup u
+              M.lookup u <$> readIORef (usersMap resources)
       , D.getUpdates = G.getUpdates logger
       , D.sendEcho = G.sendThis logger
       , D.sendHelp = G.sendThis logger
@@ -75,7 +74,7 @@ resourcesToTelegramHandler ::
 resourcesToTelegramHandler resources _ =
    TlHandler
       { getUpdateID =
-           fmap getUpdateID' $
+           getUpdateID' <$>
            readIORef (mutState resources)
       , putUpdateID =
            modifyIORef' (mutState resources) . putUpdateID'
@@ -88,7 +87,7 @@ resourcesToTelegramHandler resources _ =
               (mutState resources)
               purgeMediaGroups'
       , getMediaGroups =
-           fmap getMediaGroups' $
+           getMediaGroups' <$>
            readIORef (mutState resources)
       }
 

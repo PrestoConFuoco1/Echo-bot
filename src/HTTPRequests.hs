@@ -1,4 +1,3 @@
-{-# LANGUAGE OverloadedStrings, DeriveGeneric, DeriveAnyClass #-}
 
 module HTTPRequests
    ( sendRequest
@@ -142,7 +141,7 @@ buildRequest takesJSON (Req method url params) =
           ' ' : T.unpack url ++ makeParamsString params
        parsedReqWithoutJSON = parseRequest reqWithoutJSON
        reqJSON = show method ++ ' ' : T.unpack url
-       parsedReqJSON = fmap f $ parseRequest reqJSON
+       parsedReqJSON = f <$> parseRequest reqJSON
        f = setRequestBodyJSON (makeParamsValue params)
 
 
@@ -150,8 +149,8 @@ makeParamsString :: ParamsList -> String
 makeParamsString lst =
    let paramsList = (intercalate "&" . mapMaybe f) lst
        f (s, x) =
-          ((\q -> T.unpack s ++ "=" ++ q) .
-           urlEncode . parValToString) <$>
+          (\q -> T.unpack s ++ "=" ++ q) .
+           urlEncode . parValToString <$>
           x
     in if null paramsList
           then ""
@@ -160,7 +159,7 @@ makeParamsString lst =
 makeParamsValue :: ParamsList -> Ae.Value
 makeParamsValue lst =
    let lst' = mapMaybe f lst
-       f (s, x) = fmap (\q -> s Ae..= q) x
+       f (s, x) = fmap (s Ae..= ) x
     in Ae.object lst'
 
 addParams :: ParamsList -> HTTPRequest -> HTTPRequest

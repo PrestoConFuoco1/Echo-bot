@@ -33,7 +33,7 @@ getUpdates ::
    -> IO (Either String (UpdateResponse TlUpdateReplySuccess TlUpdateReplyError))
 getUpdates logger request = do
    let takesJSON = True
-   eithRespStr <- H.sendRequest logger (takesJSON) request -- Either String a
+   eithRespStr <- H.sendRequest logger takesJSON request -- Either String a
    let eithResp = eithRespStr >>= parseUpdatesResponse
    return eithResp
 
@@ -51,6 +51,6 @@ sendThis ::
    -> IO (Either String TlReply)
 sendThis logger request = do
    let takesJSON = tlTakesJSON
-   eithRespStr <- H.sendRequest logger (takesJSON) request
+   eithRespStr <- H.sendRequest logger takesJSON request
    let eithResp = eithRespStr >>= parseHTTPResponse
    return eithResp

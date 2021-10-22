@@ -8,6 +8,7 @@ import HTTPRequests as H
 import qualified Stuff as S (safeHead)
 import Telegram.Entity
 import Telegram.ProcessMessage.Types
+import Control.Monad ((>=>))
 
 sendMessageTele ::
       TlMessage -> Either String (T.Text, H.ParamsList)
@@ -62,7 +63,7 @@ sendTextTele m = do
 sendPhotoTele :: TlMessage -> Maybe (T.Text, H.ParamsList)
 sendPhotoTele =
    sendWithCaption
-      ((>>= S.safeHead) . _TM_photo)
+      (_TM_photo >=> S.safeHead)
       _TPS_file_id
       "sendPhoto"
       "photo"

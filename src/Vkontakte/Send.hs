@@ -34,7 +34,7 @@ getUpdates ::
    -> IO (Either String (UpdateResponse VkUpdateReplySuccess VkUpdateReplyError))
 getUpdates logger request = do
    let takesJSON = True
-   eithRespStr <- H.sendRequest logger (takesJSON) request -- Either String a
+   eithRespStr <- H.sendRequest logger takesJSON request -- Either String a
    let eithResp = eithRespStr >>= parseUpdatesResponse
    return eithResp
 
@@ -52,6 +52,6 @@ sendThis ::
    -> IO (Either String VkReply)
 sendThis logger request = do
    let takesJSON = vkTakesJSON
-   eithRespStr <- H.sendRequest logger (takesJSON) request
+   eithRespStr <- H.sendRequest logger takesJSON request
    let eithResp = eithRespStr >>= parseHTTPResponse
    return eithResp

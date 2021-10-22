@@ -2,6 +2,7 @@
 
 module BotClass.BotVkInstance where
 
+import Data.Maybe (isNothing, fromMaybe)
 import qualified App.Handle as D
 import BotClass.Class
 import BotClass.ClassTypesVkInstance
@@ -77,7 +78,8 @@ getUpdatesRequest1 h _
    return $ H.Req H.GET fullUrl pars
 
 isSuccess1 :: Vk -> VkReply -> Bool
-isSuccess1 _ r = _VR_failed r == Nothing
+--isSuccess1 _ r = _VR_failed r == Nothing
+isSuccess1 _ = isNothing . _VR_failed
 
 errorMsg1, errorMsg2, errorMsg3 :: T.Text
 errorMsg1 =
@@ -174,7 +176,8 @@ processMessage1 ::
    -> VkMessage
    -> m (Maybe (m H.HTTPRequest))
 processMessage1 h _ m
-   | null atts && maybeText == Nothing = do
+  -- | null atts && maybeText == Nothing = do
+   | null atts && isNothing maybeText = do
       D.logError h $
          funcName <> "Unable to send empty message."
       return Nothing
@@ -196,7 +199,7 @@ processMessage1 h _ m
              (return .
               Just . processMessageVk h user maybeText))
          (\_ ->
-             let justPars = maybe [] id maybePars
+             let justPars = fromMaybe [] maybePars
               in return $
                  Just
                     (processMessageVk
