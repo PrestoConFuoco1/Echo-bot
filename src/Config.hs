@@ -53,13 +53,13 @@ loadConfig s logger path = do
       logger
       "Loaded messager-specific configuration:"
    L.logDebug logger $ GP.textPretty stSpec
-   return (stGen, stSpec)
+   pure (stGen, stSpec)
 
 loadGeneral ::
       L.Handle IO -> CT.Config -> IO EnvironmentCommon
 loadGeneral _ conf =
    E.handle
-      (const $ return defStateGen :: E.SomeException -> IO EnvironmentCommon) $ do
+      (const $ pure defStateGen :: E.SomeException -> IO EnvironmentCommon) $ do
       let dg = defStateGen
           f x = C.lookupDefault (x dg) conf
       confHelpMsg <- f helpMsg "help_message"
@@ -69,7 +69,7 @@ loadGeneral _ conf =
       confHelpCmd <- f helpCommand "help_command"
       confSetRepNumCmd <-
          f setRepNumCommand "set_rep_num_command"
-      return $
+      pure $
          EnvironmentCommon
             confHelpMsg
             confRepQue
@@ -118,13 +118,13 @@ tryGetConfig _ logger messager atry = do
       (\c -> do
           L.logDebug logger $
              "Ok, " <> messager <> " bot config loaded."
-          return c)
+          pure c)
 
 loadTeleConfig :: L.Handle IO -> CT.Config -> IO TlConfig
 loadTeleConfig _ conf = do
    initialUpdateID <- C.require conf "initial_update_id"
    botURL <- C.require conf "bot_url"
-   return $ TlConf initialUpdateID botURL
+   pure $ TlConf initialUpdateID botURL
 
 loadVkConfig :: L.Handle IO -> CT.Config -> IO VkConfig
 loadVkConfig _ conf = do
@@ -132,7 +132,7 @@ loadVkConfig _ conf = do
    accTok <- C.require conf "access_token"
    groupID <- C.require conf "group_id"
    apiVersion <- C.require conf "api_version"
-   return $ VkConf botURL accTok groupID apiVersion
+   pure $ VkConf botURL accTok groupID apiVersion
 
 logKeyException :: L.Handle IO -> CT.KeyError -> IO ()
 logKeyException logger = L.logError logger . f

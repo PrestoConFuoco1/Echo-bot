@@ -53,7 +53,7 @@ stdLogger :: Priority -> T.Text -> IO ()
 stdLogger p s = T.hPutStrLn S.stderr $ logString p s
 
 emptyLogger :: Handle IO
-emptyLogger = Handle $ \_ _ -> return ()
+emptyLogger = Handle $ \_ _ -> pure ()
 
 data LoggerConfig =
    LoggerConfig
@@ -118,8 +118,7 @@ initializeSelfSufficientLoggerResources conf = do
       logFatal simpleHandle "failed to initialize logger"
       logFatal simpleHandle lockedmsg
       Q.exitWith (Q.ExitFailure 1)
-   let resources = LoggerResources {flHandle = h}
-   newIORef resources
+   newIORef $ LoggerResources {flHandle = h}
 
 closeSelfSufficientLogger :: IORef LoggerResources -> IO ()
 closeSelfSufficientLogger resourcesRef = do
@@ -152,4 +151,4 @@ loggerHandler resources e = do
    logError simpleHandle "failed to use log file, error is:"
    logError simpleHandle $ T.pack $ C.displayException e
    logError simpleHandle "using standard error handle"
-   return $ resources {flHandle = S.stderr}
+   pure $ resources {flHandle = S.stderr}

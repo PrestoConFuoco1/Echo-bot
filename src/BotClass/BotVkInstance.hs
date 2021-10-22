@@ -75,7 +75,7 @@ getUpdatesRequest1 h _
           , unit "ts" curTS
           , unit "wait" timeout'
           ]
-   return $ H.Req H.GET fullUrl pars
+   pure $ H.Req H.GET fullUrl pars
 
 isSuccess1 :: Vk -> VkReply -> Bool
 --isSuccess1 _ r = _VR_failed r == Nothing
@@ -135,9 +135,9 @@ sendTextMsg1 ::
    -> T.Text
    -> m (Either String H.HTTPRequest)
 sendTextMsg1 _ _ _ _ "" =
-   return $ Left "Unable to send empty message."
+   pure $ Left "Unable to send empty message."
 sendTextMsg1 _ _ _ Nothing _ =
-   return $
+   pure $
    Left
       "VK: no user supplied, unable to send messages to chats."
 sendTextMsg1 h _ _ (Just u) text = do
@@ -150,7 +150,7 @@ sendTextMsg1 h _ _ (Just u) text = do
           , unit "random_id" randomID
           ] ++
           defaultVkParams sc
-   return $ Right $ buildHTTP (vkUrl sc) (method, pars)
+   pure $ Right $ buildHTTP (vkUrl sc) (method, pars)
 
 repNumKeyboard1 :: Vk -> [Int] -> T.Text -> H.ParamsList
 repNumKeyboard1 _ lst cmd = [unit "keyboard" obj]
@@ -166,7 +166,7 @@ epilogue1 ::
    -> m ()
 epilogue1 h _ _ rep =
    case _VURS_ts rep of
-      Nothing -> return ()
+      Nothing -> pure ()
       Just x -> putTimestamp (D.specH h) x
 
 processMessage1 ::
@@ -180,7 +180,7 @@ processMessage1 h _ m
    | null atts && isNothing maybeText = do
       D.logError h $
          funcName <> "Unable to send empty message."
-      return Nothing
+      pure Nothing
    | otherwise = do
       let (maybePars, toLog) =
              runWriter $ attsToParsVk' atts
@@ -195,12 +195,12 @@ processMessage1 h _ m
                  h
                  (funcName <>
                   "no text found and unable to send any attachments.")
-              return Nothing)
-             (return .
+              pure Nothing)
+             (pure .
               Just . processMessageVk h user maybeText))
          (\_ ->
              let justPars = fromMaybe [] maybePars
-              in return $
+              in pure $
                  Just
                     (processMessageVk
                         h
@@ -230,5 +230,5 @@ processMessageVk h user maybeText attachmentsEtc = do
           , unit "random_id" randomID
           ] ++
           defaultVkParams sc
-   return $
+   pure $
       buildHTTP (vkUrl sc) (method, attachmentsEtc ++ pars)

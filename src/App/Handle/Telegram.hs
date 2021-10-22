@@ -37,7 +37,7 @@ initResources _ (Config common tlConf) = do
        const_ = TSC {tlUrl = _TC_url tlConf}
    mut <- newIORef initStateTele
    umap <- newIORef M.empty
-   return
+   pure
       Resources
          { commonEnv = common
          , constState = const_

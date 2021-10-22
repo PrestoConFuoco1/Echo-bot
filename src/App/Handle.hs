@@ -38,10 +38,8 @@ findWithDefault ::
    -> m Int
 findWithDefault h _ def mUser =
    case mUser of
-      Nothing -> return def
-      Just user -> do
-         mRepNum <- getUser h user
-         return $ fromMaybe def mRepNum
+      Nothing -> pure def
+      Just user -> fromMaybe def <$> getUser h user
 
 logDebug, logInfo, logWarning, logError, logFatal ::
       Handle s m -> T.Text -> m ()

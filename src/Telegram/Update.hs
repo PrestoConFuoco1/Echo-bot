@@ -52,13 +52,13 @@ parseUpdatesResponse1 =
       if ok
          then do
             res <- o .: "result"
-            return $
+            pure $
                UpdateResponse $
                TlUpdateReplySuccess {_TURS_result = res}
          else do
             errCode <- o .: "error_code"
             description <- o .: "description"
-            return $
+            pure $
                UpdateError $
                TlUpdateReplyError
                   { _TURE_error_code = errCode
@@ -86,11 +86,11 @@ instance FromJSON TlUpdate where
          uid <- o .: "update_id"
          ev <-
             asum
-               [ fmap TEMsg (o .: "message")
-               , fmap TECallback (o .: "callback_query")
-               , return TEUnexpectedEvent
+               [ TEMsg <$> (o .: "message")
+               , TECallback <$> (o .: "callback_query")
+               , pure TEUnexpectedEvent
                ]
-         return $ TlUpdate uid ev value
+         pure $ TlUpdate uid ev value
 
 instance PrettyShow TlReply
 

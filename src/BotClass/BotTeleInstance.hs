@@ -55,7 +55,7 @@ instance BotClass Tele
                 (url <> "getUpdates")
                 [unit "offset" uid, unit "timeout" tout]
       curUpdID <- getUpdateID (D.specH h)
-      return $ req curUpdID
+      pure $ req curUpdID
    isSuccess _ = _TR_ok
    handleFailedUpdatesRequest h err = do
       let funcName = "tl_handleFailedUpdatesRequest: "
@@ -74,18 +74,18 @@ instance BotClass Tele
      where
        obj = AeT.toJSON $ repNumKeyboardTele' cmd lst
    sendTextMsg _ _ Nothing _ _ =
-      return $
+      pure $
       Left
          "Telegram: no chat supplied, unable to send messages to users"
    sendTextMsg h _ (Just c) _ text =
       let url = tlUrl $ D.getConstState h
-       in return $
+       in pure $
           Right $
           buildHTTP
              url
              ( "sendMessage"
              , [unit "chat_id" $ _TC_id c, unit "text" text])
-   epilogue _ _ [] _ = return ()
+   epilogue _ _ [] _ = pure ()
    epilogue h _ us _ = do
       let funcName = "tl_epilogue: "
           newUpdateID = maximum (map _TU_update_id us) + 1
@@ -107,19 +107,19 @@ processMessage1 ::
    -> m (Maybe (m H.HTTPRequest))
 processMessage1 h _ m =
    if isMediaGroup m
-      then processMediaGroup h m >> return Nothing
+      then processMediaGroup h m >> pure Nothing
       else S.withEither
               sendMessage
               (\e -> do
                   D.logError h $ funcName <> T.pack e
-                  return Nothing)
-              (return . Just)
+                  pure Nothing)
+              (pure . Just)
   where
     funcName = "tl_processMessage: "
     sendMessage =
        let eithMethodParams = sendMessageTele m
            url = tlUrl $ D.getConstState h
-        in return . buildHTTP url <$>
+        in pure . buildHTTP url <$>
            eithMethodParams
 
 processMediaGroup ::
@@ -167,4 +167,4 @@ sendMediaGroup h (TlMediaGroupPair ident items) = do
           , mUnit "caption" mCaption
           ]
        req = buildHTTP url (method, pars)
-   E.sendNTimes h Tele mUser (return req)
+   E.sendNTimes h Tele mUser (pure req)

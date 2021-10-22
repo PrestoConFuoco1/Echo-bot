@@ -178,7 +178,7 @@ instance FromJSON VkWall where
          iD <- o .: "id"
          accKey <- o .:? "access_key"
          ownerID <- o .: "owner_id" <|> o .: "to_id"
-         return $ VkWall ownerID iD accKey
+         pure $ VkWall ownerID iD accKey
 
 ----------------------------------------------
 data VkWallReply =

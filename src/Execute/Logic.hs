@@ -246,7 +246,7 @@ handleMessage h s m = do
    let funcName = "handleMessage: "
        maybeUser = getUser s m
    mReqFunc <- processMessage h s m
-   S.withMaybe mReqFunc (return ()) $ \req -> do
+   S.withMaybe mReqFunc (pure ()) $ \req -> do
       D.logDebug h $
          funcName <> "sending some copies of message"
       D.logDebug h $ T.pack $ GP.defaultPretty m

@@ -48,9 +48,9 @@ data HTTPMethod
 
 handleHTTPError :: HttpException -> IO (Either String a)
 handleHTTPError (HttpExceptionRequest _ content) =
-   return . Left . show $ content
+   pure . Left . show $ content
 handleHTTPError (InvalidUrlException _ _) =
-   return $ Left "invalid URL"
+   pure $ Left "invalid URL"
 
 ------------------------------------------------------------------
 data ParVal
@@ -119,7 +119,7 @@ sendRequest h takesJSON r = do
    L.logDebug h (showTReq r)
    case parsedReq of
           Nothing ->
-             return . Left $
+             pure . Left $
              "Couldn't parse the HTTP request" ++ req
           Just parsedReq' ->
              (fmap (Right . getResponseBody) . httpLBS)

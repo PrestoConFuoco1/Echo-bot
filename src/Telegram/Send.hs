@@ -34,8 +34,8 @@ getUpdates ::
 getUpdates logger request = do
    let takesJSON = True
    eithRespStr <- H.sendRequest logger takesJSON request -- Either String a
-   let eithResp = eithRespStr >>= parseUpdatesResponse
-   return eithResp
+   pure $ eithRespStr >>= parseUpdatesResponse
+
 
 parseHTTPResponse :: BSL.ByteString -> Either String TlReply
 parseHTTPResponse resp -- Either
@@ -52,5 +52,4 @@ sendThis ::
 sendThis logger request = do
    let takesJSON = tlTakesJSON
    eithRespStr <- H.sendRequest logger takesJSON request
-   let eithResp = eithRespStr >>= parseHTTPResponse
-   return eithResp
+   pure $ eithRespStr >>= parseHTTPResponse

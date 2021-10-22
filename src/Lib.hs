@@ -127,7 +127,7 @@ telegramAction logger gen tlConf = do
          D.log
          T.tlHandlers
          (`execute` Tele)
-   return ()
+   pure ()
 
 vkAction ::
       L.Handle IO -> EnvironmentCommon -> VkConfig -> IO ()
@@ -142,7 +142,7 @@ vkAction logger gen vkConf = do
          D.log
          V.vkHandlers
          (`execute` Vk)
-   return ()
+   pure ()
 
 forever' :: a -> (a -> IO a) -> IO a
 forever' res action = do
@@ -160,7 +160,7 @@ mainLoop ::
 mainLoop conf resourcesToHandles toLogger errorHandlers action resources = do
    let handle = resourcesToHandles resources
        logger = toLogger handle
-   (action handle >> return resources) `C.catches`
+   (action handle >> pure resources) `C.catches`
       errorHandlers logger conf resources
 
 runWithConf' ::

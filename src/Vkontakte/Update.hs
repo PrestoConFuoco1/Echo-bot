@@ -26,7 +26,7 @@ instance FromJSON VkReply where
       ($ x) $
       withObject "Vkontakte reply object" $ \o -> do
          failed <- o .:? "failed"
-         return $ VkReply failed x
+         pure $ VkReply failed x
 
 data VkUpdateReplySuccess =
    VkUpdateReplySuccess
@@ -57,12 +57,12 @@ parseUpdatesResponse2 =
             ]
       let success = do
              updates <- o .: "updates"
-             return $
+             pure $
                 VkUpdateReplySuccess
                    {_VURS_updates = updates, _VURS_ts = ts}
           err = do
              failed <- o .: "failed"
-             return $
+             pure $
                 VkUpdateReplyError
                    {_VURE_failed = failed, _VURE_ts = ts}
       asum
@@ -96,8 +96,8 @@ instance FromJSON VkUpdate where
                      [ VECallback <$> parseCallback msg
                      , VEMsg <$> parseJSON msg
                      ]
-               _ -> return VEUnexpectedEvent
-         return $
+               _ -> pure VEUnexpectedEvent
+         pure $
             VkUpdate
                value
                event
@@ -111,12 +111,12 @@ parseCallback =
       payload <-
          maybe
             (fail "unable to parse payload object")
-            return
+            pure
             pVal >>=
          parseJSON
       text <- msg .: "text"
       from_id <- msg .: "from_id"
-      return $ VkMyCallback from_id text payload
+      pure $ VkMyCallback from_id text payload
 
 instance PrettyShow VkReply
 

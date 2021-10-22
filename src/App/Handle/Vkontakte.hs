@@ -47,7 +47,7 @@ initResources h (Config common vkConf) = do
    (sc, sm) <- initialize h vkConf
    umap <- newIORef M.empty
    mut <- newIORef sm
-   return
+   pure
       Resources
          { commonEnv = common
          , constState = sc
@@ -100,7 +100,7 @@ getNewKey ::
       L.Handle IO -> VkConfig -> Resources -> IO Resources
 getNewKey logger config resources = do
    initData <- getLongPollServer logger config
-   return $ modifyKey (_VID_key initData) resources
+   pure $ modifyKey (_VID_key initData) resources
 
 getNewKeyAndTs ::
       L.Handle IO -> VkConfig -> Resources -> IO Resources
@@ -110,7 +110,7 @@ getNewKeyAndTs logger config resources = do
    let sm' = sm {vkTs = _VID_timestamp initData}
    smRef' <- newIORef sm'
    let resources' = resources {mutState = smRef'}
-   return $ modifyKey (_VID_key initData) resources'
+   pure $ modifyKey (_VID_key initData) resources'
 
 vkHandlers ::
       L.Handle IO
@@ -163,18 +163,18 @@ getLongPollServer logger VkConf {..} = do
       funcName <> "sending initialize request"
    eithInitReply <- H.sendRequest logger takesJson initReq
    initReply <-
-      either (initRequestFail logger) return eithInitReply
+      either (initRequestFail logger) pure eithInitReply
    let eithParsed = parseInitResp initReply
    initData <-
       either
          (initRequestParseFail logger initReply)
-         return
+         pure
          eithParsed
    L.logDebug logger $
       funcName <> "received initial vk api data"
    L.logDebug logger $
       funcName <> GP.defaultPrettyT initData
-   return initData
+   pure initData
 
 initialize ::
       L.Handle IO
@@ -183,7 +183,7 @@ initialize ::
 initialize logger conf@(VkConf {..}) = do
    initData <- getLongPollServer logger conf
    initRndNum <- newStdGen
-   return
+   pure
       ( VKSC
            { vkKey = _VID_key initData
            , vkServer = _VID_server initData

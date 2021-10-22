@@ -29,7 +29,7 @@ parseInitResp = eithParsed
           key <- o .: "key" :: Parser T.Text
           server <- o .: "server" :: Parser T.Text
           ts <- o .: "ts" :: Parser T.Text
-          return
+          pure
              VkInitData
                 { _VID_key = key
                 , _VID_server = server

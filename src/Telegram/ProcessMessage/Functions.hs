@@ -46,7 +46,7 @@ sendWithCaption ::
 sendWithCaption fromMsg getFileID method objName m = do
    let mCaption = _TM_caption m
    obj <- fromMsg m
-   return
+   pure
       ( method
       , [ unit "chat_id" $ chatIDfromMsg m
         , unit objName $ getFileID obj
@@ -56,7 +56,7 @@ sendWithCaption fromMsg getFileID method objName m = do
 sendTextTele :: TlMessage -> Maybe (T.Text, H.ParamsList)
 sendTextTele m = do
    text <- _TM_text m
-   return
+   pure
       ( "sendMessage"
       , [unit "chat_id" $ chatIDfromMsg m, unit "text" text])
 
@@ -123,7 +123,7 @@ sendLocationTele ::
       TlMessage -> Maybe (T.Text, H.ParamsList)
 sendLocationTele m = do
    location <- _TM_location m
-   return
+   pure
       ( "sendLocation"
       , [ unit "chat_id" $ chatIDfromMsg m
         , unit "latitude" $ _Toc_latitude location
@@ -133,7 +133,7 @@ sendLocationTele m = do
 sendVenueTele :: TlMessage -> Maybe (T.Text, H.ParamsList)
 sendVenueTele m = do
    venue <- _TM_venue m
-   return
+   pure
       ( "sendVenue"
       , [ unit "chat_id" $ chatIDfromMsg m
         , unit "latitude" $
@@ -147,7 +147,7 @@ sendVenueTele m = do
 sendContactTele :: TlMessage -> Maybe (T.Text, H.ParamsList)
 sendContactTele m = do
    contact <- _TM_contact m
-   return
+   pure
       ( "sendContact"
       , [ unit "chat_id" $ chatIDfromMsg m
         , unit "phone_number" $ _TCon_phone_number contact
@@ -159,7 +159,7 @@ sendContactTele m = do
 sendPollTele :: TlMessage -> Maybe (T.Text, H.ParamsList)
 sendPollTele m = do
    poll <- _TM_poll m
-   return
+   pure
       ( "sendPoll"
       , [ unit "chat_id" $ chatIDfromMsg m
         , unit "question" $ _TPoll_question poll
@@ -171,7 +171,7 @@ sendDiceTele :: TlMessage -> Maybe (T.Text, H.ParamsList)
 sendDiceTele m
  = do
    if _TM_text m == Just "/dice" || isJust (_TM_dice m)
-      then return
+      then pure
               ( "sendDice"
               , [unit "chat_id" $ chatIDfromMsg m])
       else Nothing
@@ -179,7 +179,7 @@ sendDiceTele m
 sendStickerTele :: TlMessage -> Maybe (T.Text, H.ParamsList)
 sendStickerTele m = do
    sticker <- _TM_sticker m
-   return
+   pure
       ( "sendSticker"
       , [ unit "chat_id" $ chatIDfromMsg m
         , unit "sticker" $ _TS_file_id sticker

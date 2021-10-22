@@ -40,11 +40,11 @@ attsToParsVk' atts = do
                 "Found " <>
                 (T.pack . show . length $ xs) <>
                 " unexpected attachments."
-   S.withMaybe maybeUnexpectedAttsMsg (return ()) $ \u -> do
+   S.withMaybe maybeUnexpectedAttsMsg (pure ()) $ \u -> do
       tell . (: []) $ (L.Warning, u)
       let f x = (L.Warning, GP.defaultPrettyT x)
       tell $ map f unexpList
-   return $ fmap (: []) maybePars
+   pure $ fmap (: []) maybePars
 
 encodeVkAtt :: (VkAttMessageSendable a) => a -> T.Text
 encodeVkAtt x =
