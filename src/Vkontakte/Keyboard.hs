@@ -87,8 +87,8 @@ repNumButtonVkTxt cmd n =
   where
     shown = T.pack $ show n
 
-repNumKeyboardVkTxt' :: T.Text -> [Int] -> VkKeyboard
-repNumKeyboardVkTxt' cmd lst =
+repNumKeyboardVkTxt :: T.Text -> [Int] -> VkKeyboard
+repNumKeyboardVkTxt cmd lst =
    VkKeyboard
       True
       [ map

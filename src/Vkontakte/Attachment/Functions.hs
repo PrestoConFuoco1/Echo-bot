@@ -9,10 +9,10 @@ import HTTPRequests as H
 import qualified Stuff as S
 import Vkontakte.Attachment.Types
 
-attsToParsVk' ::
+attsToParsVk ::
       [VkAttachment]
    -> Writer [L.LoggerEntry] (Maybe H.ParamsList)
-attsToParsVk' atts = do
+attsToParsVk atts = do
    let part = partitionVkAttachments atts
        messageSendable =
           map encodeVkAtt (pPhotos part) <>

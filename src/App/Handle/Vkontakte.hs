@@ -93,8 +93,7 @@ modifyKey :: T.Text -> Resources -> Resources
 modifyKey key resources =
    let sc = constState resources
        sc' = sc {vkKey = key}
-       resources' = resources {constState = sc'}
-    in resources'
+   in  resources {constState = sc'}
 
 getNewKey ::
       L.Handle IO -> VkConfig -> Resources -> IO Resources
@@ -138,12 +137,12 @@ resourcesToVkHandler resources _ =
       { getRandomID =
            atomicModifyIORef'
               (mutState resources)
-              getRandomID'
+              getRandomIDPure
       , getTimestamp =
-           getTimestamp' <$>
+           getTimestampPure <$>
            readIORef (mutState resources)
       , putTimestamp =
-           modifyIORef' (mutState resources) . putTimestamp'
+           modifyIORef' (mutState resources) . putTimestampPure
       }
 
 getLongPollServer ::

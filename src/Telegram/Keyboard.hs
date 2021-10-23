@@ -44,12 +44,6 @@ instance FromJSON TlInlineKeyboard where
          defaultOptions {fieldLabelModifier = drop 5}
 
 ----------------------------------------------------------
-repNumKeyboardTele :: T.Text -> [Int] -> T.Text
-repNumKeyboardTele cmd lst =
-   E.decodeUtf8 $ BS.toStrict $
-   encode $
-   toJSON $
-   TlInlineKeyboard [map (repNumButtonTele cmd) lst]
 
 repNumButtonTele :: T.Text -> Int -> TlInlineButton
 repNumButtonTele cmd n =
@@ -57,6 +51,6 @@ repNumButtonTele cmd n =
   where
     shown = T.pack $ show n
 
-repNumKeyboardTele' :: T.Text -> [Int] -> TlInlineKeyboard
-repNumKeyboardTele' cmd lst =
+repNumKeyboardTele :: T.Text -> [Int] -> TlInlineKeyboard
+repNumKeyboardTele cmd lst =
    TlInlineKeyboard [map (repNumButtonTele cmd) lst]

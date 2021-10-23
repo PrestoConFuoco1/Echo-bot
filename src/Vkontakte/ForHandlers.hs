@@ -4,18 +4,18 @@ import qualified Data.Text as T (Text)
 import System.Random (randomR)
 import Vkontakte.General
 
-getRandomID' :: VkStateMut -> (VkStateMut, Integer)
-getRandomID' sm =
+getRandomIDPure :: VkStateMut -> (VkStateMut, Integer)
+getRandomIDPure sm =
    let (rndInt32, g') =
           randomR (0 :: Integer, 2 ^ (32 - 1 :: Int)) $
           vkRndGen sm
     in (sm {vkRndGen = g'}, rndInt32)
 
-putTimestamp' :: T.Text -> VkStateMut -> VkStateMut
-putTimestamp' newTs sm = sm {vkTs = newTs}
+putTimestampPure :: T.Text -> VkStateMut -> VkStateMut
+putTimestampPure newTs sm = sm {vkTs = newTs}
 
-getTimestamp' :: VkStateMut -> T.Text
-getTimestamp' = vkTs
+getTimestampPure :: VkStateMut -> T.Text
+getTimestampPure = vkTs
 
 data VkHandler m =
    VkHandler

@@ -75,20 +75,20 @@ resourcesToTelegramHandler ::
 resourcesToTelegramHandler resources _ =
    TlHandler
       { getUpdateID =
-           getUpdateID' <$>
+           getUpdateIDPure <$>
            readIORef (mutState resources)
       , putUpdateID =
-           modifyIORef' (mutState resources) . putUpdateID'
+           modifyIORef' (mutState resources) . putUpdateIDPure
       , insertMediaGroupUnit =
            \k v ->
               modifyIORef' (mutState resources) $
-              insertMediaGroupUnit' k v
+              insertMediaGroupUnitPure k v
       , purgeMediaGroups =
            modifyIORef'
               (mutState resources)
-              purgeMediaGroups'
+              purgeMediaGroupsPure
       , getMediaGroups =
-           getMediaGroups' <$>
+           getMediaGroupsPure <$>
            readIORef (mutState resources)
       }
 

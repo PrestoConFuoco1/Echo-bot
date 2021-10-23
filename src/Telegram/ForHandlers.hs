@@ -5,27 +5,27 @@ import Telegram.General
 import Telegram.MediaGroup.Types
 
 -----------------------------------------------------------
-getUpdateID' :: TlStateMut -> Integer
-getUpdateID' = tlUpdateID
+getUpdateIDPure :: TlStateMut -> Integer
+getUpdateIDPure = tlUpdateID
 
-putUpdateID' :: Integer -> TlStateMut -> TlStateMut
-putUpdateID' uid m = m {tlUpdateID = uid}
+putUpdateIDPure :: Integer -> TlStateMut -> TlStateMut
+putUpdateIDPure uid m = m {tlUpdateID = uid}
 
-insertMediaGroupUnit' ::
+insertMediaGroupUnitPure ::
       TlMediaGroupIdentifier
    -> TlMediaGroupUnit
    -> TlStateMut
    -> TlStateMut
-insertMediaGroupUnit' key value sm =
+insertMediaGroupUnitPure key value sm =
    let newMap =
           M.insertWith (++) key [value] $ mediaGroups sm
     in sm {mediaGroups = newMap}
 
-purgeMediaGroups' :: TlStateMut -> TlStateMut
-purgeMediaGroups' sm = sm {mediaGroups = M.empty}
+purgeMediaGroupsPure :: TlStateMut -> TlStateMut
+purgeMediaGroupsPure sm = sm {mediaGroups = M.empty}
 
-getMediaGroups' :: TlStateMut -> [TlMediaGroupPair]
-getMediaGroups' TSM {mediaGroups = x} = map f $ M.toList x
+getMediaGroupsPure :: TlStateMut -> [TlMediaGroupPair]
+getMediaGroupsPure TSM {mediaGroups = x} = map f $ M.toList x
   where
     f (k, v) = TlMediaGroupPair k v
 

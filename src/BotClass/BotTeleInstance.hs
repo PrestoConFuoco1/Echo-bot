@@ -72,7 +72,7 @@ instance BotClass 'Telegram
    parseUpdate = AeT.parseEither AeT.parseJSON
    repNumKeyboard lst cmd = [unit "reply_markup" obj]
      where
-       obj = AeT.toJSON $ repNumKeyboardTele' cmd lst
+       obj = AeT.toJSON $ repNumKeyboardTele cmd lst
    sendTextMsg _ Nothing _ _ =
       pure $
       Left
@@ -156,13 +156,13 @@ sendMediaGroup ::
 sendMediaGroup h (TlMediaGroupPair ident items) = do
    let chat = _TMGI_chat ident
        mUser = _TMGI_user ident
-       items' = reverse items
+       reversedItems = reverse items
        method = "sendMediaGroup"
        url = tlUrl $ D.getConstState h
        mCaption = S.safeHead items >>= photoVideoCaption
        pars =
           [ unit "chat_id" $ _TC_id chat
-          , unit "media" $ AeT.toJSON items'
+          , unit "media" $ AeT.toJSON reversedItems
           , mUnit "caption" mCaption
           ]
        req = buildHTTP url (method, pars)

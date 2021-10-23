@@ -32,29 +32,29 @@ import qualified GenericPretty as GP
 
 ghciMain :: Messenger -> IO () -- for ghci
 ghciMain m =
-   runWithConf
+   runWithOpts
       (ghciRunOpts {messenger = m})
 
 main :: IO ()
 main = do
     opts <- getOptsIO
     L.logDebug L.stdHandle $ GP.textPretty opts
-    runWithConf opts
+    runWithOpts opts
 
 
-runWithConf :: RunOptions -> IO ()
-runWithConf opts =
+runWithOpts :: RunOptions -> IO ()
+runWithOpts opts =
    case messenger opts of
-      Telegram -> runWithConf' @Telegram opts telegramAction
-      Vkontakte -> runWithConf' @Vkontakte opts vkAction
+      Telegram -> runBotWithOpts @Telegram opts telegramAction
+      Vkontakte -> runBotWithOpts @Vkontakte opts vkAction
 
 
-runWithConf' ::
+runBotWithOpts ::
       forall s. (BotConfigurable s)
    => RunOptions
    -> (L.Handle IO -> EnvironmentCommon -> Conf s -> IO ())
    -> IO ()
-runWithConf' opts todo = do
+runBotWithOpts opts todo = do
    let configLogger =
           L.stdCondHandle $ toLoggerFilter $ loggerSettings opts
        loggerConfig =
@@ -80,7 +80,7 @@ telegramAction logger gen tlConf = do
    let tlConfig = T.Config gen tlConf
    resources <- T.initResources logger tlConfig
    _ <-
-      forever' resources $
+      forever resources $
       mainLoop
          tlConf
          (`T.resourcesToHandle` logger)
@@ -95,7 +95,7 @@ vkAction logger gen vkConf = do
    let vkConfig = V.Config gen vkConf
    resources <- V.initResources logger vkConfig
    _ <-
-      forever' resources $
+      forever resources $
       mainLoop
          vkConf
          (`V.resourcesToHandle` logger)
@@ -104,10 +104,10 @@ vkAction logger gen vkConf = do
          (execute @Vkontakte)
    pure ()
 
-forever' :: a -> (a -> IO a) -> IO a
-forever' res action = do
+forever :: a -> (a -> IO a) -> IO a
+forever res action = do
    res' <- action res
-   forever' res' action
+   forever res' action
 
 mainLoop ::
       d -- config

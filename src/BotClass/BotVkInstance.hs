@@ -154,7 +154,7 @@ sendTextMsg1 h _ (Just u) text = do
 repNumKeyboard1 :: [Int] -> T.Text -> H.ParamsList
 repNumKeyboard1 lst cmd = [unit "keyboard" obj]
   where
-    obj = toJSON $ repNumKeyboardVkTxt' cmd lst
+    obj = toJSON $ repNumKeyboardVkTxt cmd lst
 
 epilogue1 ::
       (Monad m)
@@ -173,14 +173,13 @@ processMessage1 ::
    -> VkMessage
    -> m (Maybe (m H.HTTPRequest))
 processMessage1 h m
-  -- | null atts && maybeText == Nothing = do
    | null atts && isNothing maybeText = do
       D.logError h $
          funcName <> "Unable to send empty message."
       pure Nothing
    | otherwise = do
       let (maybePars, toLog) =
-             runWriter $ attsToParsVk' atts
+             runWriter $ attsToParsVk atts
       D.logDebug h $ funcName <> "processing vk attachments"
       mapM_ (D.logEntry h) toLog
       S.withMaybe

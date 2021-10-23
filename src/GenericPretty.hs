@@ -41,14 +41,6 @@ defaultModif x = x
 defaultConsModif :: String -> String
 defaultConsModif = id
 
-defaultConsModif' :: String -> String
-defaultConsModif' (x:xs)
-   | isUpper x =
-      case dropWhile (not . isUpper) xs of
-         [] -> x : xs
-         y -> y
-   | otherwise = x : xs
-defaultConsModif' x = x
 
 data LayoutUnit =
    LayoutUnit String LayoutValue
@@ -76,17 +68,17 @@ defaultWidth = 80
 numToIndent :: Int -> String
 numToIndent ind = replicate (ind * defaultIndent) ' '
 
-splitToFixedWidth :: Int -> String -> [String]
-splitToFixedWidth ind s =
+splitToFixedWidthWithIndent :: Int -> String -> [String]
+splitToFixedWidthWithIndent ind s =
    let width = defaultWidth - ind * defaultIndent
-    in splitToFixedWidth' width s
+    in splitToFixedWidth width s
 
-splitToFixedWidth' :: Int -> String -> [String]
-splitToFixedWidth' _ [] = []
-splitToFixedWidth' wid s =
+splitToFixedWidth :: Int -> String -> [String]
+splitToFixedWidth _ [] = []
+splitToFixedWidth wid s =
    let splitted = splitAt wid s
     in case splitted of
-          (pref, suf) -> pref : splitToFixedWidth' wid suf
+          (pref, suf) -> pref : splitToFixedWidth wid suf
 
 withIndent :: Int -> String -> String
 withIndent ind str = numToIndent ind ++ str
@@ -112,7 +104,7 @@ prettyValue ind (LLay typ ls) =
 prettyValue ind (LJSON s) =
    ('\n' :) $
    unlines $
-   map (withIndent $ ind + 1) $ splitToFixedWidth ind s
+   map (withIndent $ ind + 1) $ splitToFixedWidthWithIndent ind s
 prettyValue _ LEmpty = "empty\n"
 
 prettyLayout :: Int -> Layout -> String

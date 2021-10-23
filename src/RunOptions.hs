@@ -49,7 +49,7 @@ getOpts = RunOptions
     <$> argument str (metavar "CONFPATH")
     <*> (vkMessenger <|> telegramMessenger)
     <*> (
-        (getLoggerSettings' <$> option auto ( short 'l' <> metavar "LOGLEVEL" <> help "Log level" ))
+        (getLoggerSettings <$> option auto ( short 'l' <> metavar "LOGLEVEL" <> help "Log level" ))
         <|> pure LogAll)
     <*> ( 
         strOption ( long "logpath" <> metavar "LOGFILE" <> help "Log path")
@@ -71,6 +71,6 @@ vkMessenger = flag' Vkontakte (long "vk" <> help "Vk bot")
 telegramMessenger :: Parser Messenger
 telegramMessenger = flag' Telegram (long "tl" <> long "telegram" <> help "Telegram bot")
 
-getLoggerSettings' :: L.Priority -> LoggerSettings
-getLoggerSettings' = LogGreaterThan
+getLoggerSettings :: L.Priority -> LoggerSettings
+getLoggerSettings = LogGreaterThan
 
