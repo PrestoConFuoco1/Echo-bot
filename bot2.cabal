@@ -42,6 +42,7 @@ library
       GenericPretty
       HTTPRequests
       Lib
+      RunOptions
       Stuff
       Telegram
       Telegram.Entity
@@ -84,6 +85,7 @@ library
     , exceptions
     , http-conduit
     , mtl
+    , optparse-applicative
     , random
     , text
     , time
@@ -109,6 +111,7 @@ executable bot2-exe
     , exceptions
     , http-conduit
     , mtl
+    , optparse-applicative
     , random
     , text
     , time
@@ -142,6 +145,7 @@ test-suite bot2-test
     , hspec
     , http-conduit
     , mtl
+    , optparse-applicative
     , random
     , text
     , time

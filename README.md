@@ -186,12 +186,13 @@ The order of all subsequent parameters is arbitrary.
 
 + `--test-config` is used to test bot configuration. Data from config file will be get and then process will terminate
 with success exitcode.
-+ `-tl` is used to indicate that Telegram bot will be used, `-vk` - for Vk bot. One of these arguments is required, otherwise
-application will terminate with error.
++ `--tl` or `--telegram` is used to indicate that Telegram bot will be used, `--vk` - for Vk bot.
+One of these arguments is required, otherwise application will terminate with error.
 + `-l` is used to define logging settings. Currently logger can only log messages with
 given priority or higher. For example, to log Warning, Error and Fatal messages use
-`-lWarning`. The default is `-lDebug`, which logs all messages.
-+ `--logpath=<path>` is used to define the path to the log file.
+`-l Warning`. The default is `-l Debug`, which logs all messages.
++ `--logpath <path>` is used to define the path to the log file.
++ `-h` or `--help` for help message.
 
 
 

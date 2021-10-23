@@ -42,17 +42,19 @@ logFatal = (`log` Fatal)
 logString :: Priority -> T.Text -> T.Text
 logString pri s = "[" <> S.showT pri <> "]: " <> s
 
-simpleHandle :: Handle IO
-simpleHandle = simpleCondHandle (const True)
+stdHandle :: Handle IO
+stdHandle = stdCondHandle $ const True
 
-simpleCondHandle :: (Priority -> Bool) -> Handle IO
-simpleCondHandle predicate =
-   Handle $ \p s -> when (predicate p) $ stdLogger p s
+stdCondHandle :: (Priority -> Bool) -> Handle IO
+stdCondHandle predicate = Handle $ \p s ->
+    let h | p >= Warning = S.stderr
+          | otherwise    = S.stdout
+    in  when (predicate p) $ handleLogger h p s
 
-stdLogger :: Priority -> T.Text -> IO ()
-stdLogger p s = T.hPutStrLn S.stderr $ logString p s
+handleLogger :: S.Handle -> Priority -> T.Text -> IO ()
+handleLogger h p s = T.hPutStrLn h $ logString p s
 
-emptyLogger :: Handle IO
+emptyLogger :: (Monad m) => Handle m
 emptyLogger = Handle $ \_ _ -> pure ()
 
 data LoggerConfig =
@@ -71,17 +73,17 @@ pathToHandle path = S.openFile path S.AppendMode
 
 initializeErrorHandler :: IOE.IOError -> IO a
 initializeErrorHandler e = do
-   logFatal simpleHandle "failed to initialize logger"
+   logFatal stdHandle "failed to initialize logger"
    func e
    Q.exitWith (Q.ExitFailure 1)
   where
     func err
        | IOE.isAlreadyInUseError err =
-          logError simpleHandle lockedmsg
+          logError stdHandle lockedmsg
        | IOE.isPermissionError err =
-          logError simpleHandle "not enough permissions"
+          logError stdHandle "not enough permissions"
        | otherwise =
-          logError simpleHandle $
+          logError stdHandle $
           "unexpected IO error: " <>
           T.pack (C.displayException err)
 
@@ -90,8 +92,8 @@ lockedmsg = "target log file is locked"
 
 initializeDefaultHandler :: C.SomeException -> IO a
 initializeDefaultHandler e = do
-   logFatal simpleHandle "failed to initialize logger"
-   logFatal simpleHandle $ T.pack $ C.displayException e
+   logFatal stdHandle "failed to initialize logger"
+   logFatal stdHandle $ T.pack $ C.displayException e
    Q.exitWith (Q.ExitFailure 1)
 
 withSelfSufficientLogger ::
@@ -115,8 +117,8 @@ initializeSelfSufficientLoggerResources conf = do
       ]
    lockAcquired <- Lk.hTryLock h Lk.ExclusiveLock
    unless lockAcquired $ do
-      logFatal simpleHandle "failed to initialize logger"
-      logFatal simpleHandle lockedmsg
+      logFatal stdHandle "failed to initialize logger"
+      logFatal stdHandle lockedmsg
       Q.exitWith (Q.ExitFailure 1)
    newIORef $ LoggerResources {flHandle = h}
 
@@ -148,7 +150,7 @@ loggerHandler ::
    -> C.SomeException
    -> IO LoggerResources
 loggerHandler resources e = do
-   logError simpleHandle "failed to use log file, error is:"
-   logError simpleHandle $ T.pack $ C.displayException e
-   logError simpleHandle "using standard error handle"
+   logError stdHandle "failed to use log file, error is:"
+   logError stdHandle $ T.pack $ C.displayException e
+   logError stdHandle "using standard error handle"
    pure $ resources {flHandle = S.stderr}

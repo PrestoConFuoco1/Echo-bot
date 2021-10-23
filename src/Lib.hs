@@ -13,106 +13,67 @@ import BotClass.ClassTypes
 import BotClass.ClassTypesTeleInstance
 import BotClass.ClassTypesVkInstance
 import Config
-import qualified Control.Exception as E
-   ( Handler(..)
-   , IOException
-   , SomeException
-   , catches
-   )
 import Control.Monad (when)
 import qualified Control.Monad.Catch as C
 import qualified Data.Configurator.Types as CT
    ( ConfigError(..)
    )
-import Data.List (isPrefixOf)
-import qualified Data.Text as T (pack)
+import qualified Data.Text as T (pack, unpack)
 import Execute
 import qualified Stuff as S (withMaybe)
 import System.Environment (getArgs)
 import qualified System.Exit as Q (ExitCode(..), exitWith, exitSuccess)
 import System.IO (hPutStrLn, stderr)
-import qualified System.IO.Error as E
-   ( isAlreadyInUseError
-   , isDoesNotExistError
-   , isPermissionError
-   )
 import Telegram
-import Text.Read (readMaybe)
 import Types
 import Vkontakte
+import RunOptions
+import qualified GenericPretty as GP
 
-data Messenger
-   = Vkontakte
-   | Telegram
-   | None
-
-data RunOptions =
-   RunOptions
-      { testConfig :: Bool
-      , loggerSettings :: L.Priority -> Bool
-      , logPath :: FilePath
-      , messager :: Messenger
-      }
-
-defaultRunOpts :: RunOptions
-defaultRunOpts =
-   RunOptions
-      { testConfig = False
-      , loggerSettings = const True
-      , logPath = "./log"
-      , messager = None
-      }
-
-qomeFunc :: Messenger -> IO () -- for ghci
-qomeFunc m =
+ghciMain :: Messenger -> IO () -- for ghci
+ghciMain m =
    runWithConf
-      (defaultRunOpts {messager = m})
-      "src/bot.conf"
+      (ghciRunOpts {messenger = m})
 
 main :: IO ()
 main = do
-   args <- getArgs
-   case args of
-      [] -> do
-         hPutStrLn
-            stderr
-            "Expected path to configuration file."
-         Q.exitWith (Q.ExitFailure 1)
-      (x:xs) -> runWithConf (getOpts xs) x
+    opts <- getOptsIO
+    L.logDebug L.stdHandle $ GP.textPretty opts
+    runWithConf opts
 
-getOpts :: [String] -> RunOptions
-getOpts = foldr f defaultRunOpts
-  where
-    logpath = "--logpath=" :: String
-    logPathLength = length logpath
-    f "--test-config" acc = acc {testConfig = True}
-    f "-vk" acc = acc {messager = Vkontakte}
-    f "-tl" acc = acc {messager = Telegram}
-    f str acc
-       | "--logpath=" `isPrefixOf` str =
-          acc {logPath = drop logPathLength str}
-       | "-l" `isPrefixOf` str =
-          S.withMaybe
-             (getLoggerSettings $ drop 2 str)
-             acc
-             (\x -> acc {loggerSettings = x})
-    f _ acc = acc
 
-getLoggerSettings :: String -> Maybe (L.Priority -> Bool)
-getLoggerSettings str = (\x -> (>= x)) <$> readMaybe str
+runWithConf :: RunOptions -> IO ()
+runWithConf opts =
+   case messenger opts of
+      Telegram -> runWithConf' Tele opts telegramAction
+      Vkontakte -> runWithConf' Vk opts vkAction
 
-runWithConf :: RunOptions -> FilePath -> IO ()
-runWithConf opts path =
-   case messager opts of
-      Telegram -> runWithConf' Tele opts path telegramAction
-      Vkontakte -> runWithConf' Vk opts path vkAction
-      None -> do
-         L.logFatal
-            L.simpleHandle
-            "No messager parameter supplied, terminating..."
-         L.logInfo
-            L.simpleHandle
-            "Use -tl for Telegram and -vk for Vkontakte"
+
+runWithConf' ::
+      (BotConfigurable s)
+   => s
+   -> RunOptions
+   -> (L.Handle IO -> EnvironmentCommon -> Conf s -> IO ())
+   -> IO ()
+runWithConf' s opts todo = do
+   let configLogger =
+          L.stdCondHandle $ toLoggerFilter $ loggerSettings opts
+       loggerConfig =
+          L.LoggerConfig
+             { L.lcFilter = toLoggerFilter $ loggerSettings opts
+             , L.lcPath = T.unpack $ logPath opts
+             }
+   (gen, conf) <-
+      loadConfig s configLogger (T.unpack $ confPath opts) `C.catches`
+      configHandlers configLogger
+   L.logInfo
+      configLogger
+      "Successfully got bot configuration."
+   when (testConfig opts) Q.exitSuccess
+   L.withSelfSufficientLogger loggerConfig $ \logger ->
+      todo logger gen conf `C.catch` defaultHandler logger
+
+
 
 telegramAction ::
       L.Handle IO -> EnvironmentCommon -> TlConfig -> IO ()
@@ -163,31 +124,6 @@ mainLoop conf resourcesToHandles toLogger errorHandlers action resources = do
    (action handle >> pure resources) `C.catches`
       errorHandlers logger conf resources
 
-runWithConf' ::
-      (BotConfigurable s)
-   => s
-   -> RunOptions
-   -> FilePath
-   -> (L.Handle IO -> EnvironmentCommon -> Conf s -> IO ())
-   -> IO ()
-runWithConf' s opts path todo = do
-   let configLogger =
-          L.simpleCondHandle $ loggerSettings opts
-       loggerConfig =
-          L.LoggerConfig
-             { L.lcFilter = loggerSettings opts
-             , L.lcPath = logPath opts
-             }
-   (gen, conf) <-
-      loadConfig s configLogger path `E.catches`
-      configHandlers configLogger
-   L.logInfo
-      configLogger
-      "Successfully got bot configuration."
-   when (testConfig opts) Q.exitSuccess
-   L.withSelfSufficientLogger loggerConfig $ \logger ->
-      todo logger gen conf `C.catch` defaultHandler logger
-
 defaultHandler :: L.Handle IO -> C.SomeException -> IO a
 defaultHandler h e = do
    L.logFatal h "some exception raised:"
@@ -195,45 +131,3 @@ defaultHandler h e = do
    L.logFatal h "terminating..."
    C.throwM e
 
-configHandlers :: L.Handle IO -> [E.Handler a]
-configHandlers h =
-   let f (E.Handler g) =
-          E.Handler
-             \e -> do
-                 g e
-                 L.logFatal
-                    h
-                    "Failed to get required data from configuration files, terminating..."
-                 Q.exitWith (Q.ExitFailure 1)
-    in map
-          f
-          [ E.Handler (handleIOError h)
-          , E.Handler (handleConfigError h)
-          , E.Handler (handleConfig2Error h)
-          , E.Handler (handleOthers h)
-          ]
-
-handleIOError :: L.Handle IO -> E.IOException -> IO ()
-handleIOError logger exc
-   | E.isDoesNotExistError exc =
-      L.logError logger "File does not exist."
-   | E.isPermissionError exc =
-      L.logError
-         logger
-         "Not enough permissions to open file."
-   | E.isAlreadyInUseError exc =
-      L.logError logger "File is already in use."
-   | otherwise = L.logError logger "Unknown error occured"
-
-handleConfigError :: L.Handle IO -> CT.ConfigError -> IO ()
-handleConfigError logger (CT.ParseError _ _) =
-   L.logError logger "Failed to parse configuration file."
-
-handleConfig2Error ::
-      L.Handle IO -> ConfigException -> IO ()
-handleConfig2Error logger RequiredFieldMissing =
-   L.logError logger "Failed to get required field value."
-
-handleOthers :: L.Handle IO -> E.SomeException -> IO ()
-handleOthers logger _ =
-   L.logError logger "Unknown error occured."
