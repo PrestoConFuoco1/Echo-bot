@@ -6,8 +6,18 @@ import Data.Aeson.Types (Value)
 import qualified Data.Text as T (Text)
 import GHC.Generics
 import qualified GenericPretty as GP
-import GenericPretty
 import qualified Stuff as S (Timeout)
+
+
+
+data Messenger
+   = Vkontakte
+   | Telegram
+    deriving (Show, Eq)
+instance GP.PrettyShow Messenger where
+    prettyShow = GP.LStr . show
+
+
 
 data EnvironmentCommon =
    EnvironmentCommon -- never changes
@@ -60,7 +70,7 @@ data CallbQuery u c
 data UpdateResponse r e
    = UpdateResponse r
    | UpdateError e
-   deriving (Show, Generic, PrettyShow)
+   deriving (Show, Generic, GP.PrettyShow)
 
 instance Show (Event h u m b) where
    show ECommand {} = "Command"

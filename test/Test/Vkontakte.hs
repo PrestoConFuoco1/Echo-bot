@@ -1,3 +1,4 @@
+{-# LANGUAGE TypeApplications, DataKinds #-}
 module Test.Vkontakte where
 
 import Vkontakte
@@ -39,12 +40,12 @@ testHelpMessage' :: IO Int
 testHelpMessage' = do
     ref <- newIORef 0
     let 
-        helpSender = const $ sendCounterCommon Vk ref successReply
-        handle = (defaultHandle Vk) {
+        helpSender = const $ sendCounterCommon @Vkontakte ref successReply
+        handle = (defaultHandle @Vkontakte) {
                 D.sendHelp = helpSender
                 , D.specH = withRandomIDVkHandle
               }
-    handleUpdate handle Vk sendHelpMessageUpd
+    handleUpdate @Vkontakte handle sendHelpMessageUpd
     int <- readIORef ref
     return int
 
@@ -57,12 +58,12 @@ testSetRepNumCommand = do
 testSetRepNumCommand' :: IO Int
 testSetRepNumCommand' = do
     ref <- newIORef 0
-    let keyboardSender = const $ sendCounterCommon Vk ref successReply
-        handle = (defaultHandle Vk) {
+    let keyboardSender = const $ sendCounterCommon @Vkontakte ref successReply
+        handle = (defaultHandle @Vkontakte) {
             D.sendKeyboard = keyboardSender
             , D.specH = withRandomIDVkHandle
             }
-    handleUpdate handle Vk sendKeyboardMessageUpd
+    handleUpdate @Vkontakte handle sendKeyboardMessageUpd
     int <- readIORef ref
     return int
 
@@ -76,14 +77,14 @@ testSetRepNum' :: Int -> IO Bool
 testSetRepNum' repnum = do
     ref <- newIORef 0
     refMap <- newIORef Nothing
-    let infoMessageSender = const $ sendCounterCommon Vk ref successReply
+    let infoMessageSender = const $ sendCounterCommon @Vkontakte ref successReply
         
-        handle = (defaultHandle Vk) {
+        handle = (defaultHandle @Vkontakte) {
             D.sendRepNumMessage = infoMessageSender
-            , D.insertUser = mockInsertUserCommon Vk refMap
+            , D.insertUser = mockInsertUserCommon @Vkontakte refMap
             , D.specH = withRandomIDVkHandle
             }
-    handleUpdate handle Vk $ setRepNumUpdate repnum
+    handleUpdate @Vkontakte handle $ setRepNumUpdate repnum
     int <- readIORef ref
     maybeUserRepnum <- readIORef refMap
     let bool = int == 1 && maybeUserRepnum == Just (defaultUser, repnum)
@@ -100,12 +101,12 @@ testSendEcho' :: Int -> IO Int
 testSendEcho' repnum = do
     ref <- newIORef 0
     refMap <- newIORef $ Just (defaultUser, repnum)
-    let echoSender = const $ sendCounterCommon Vk ref successReply
-        handle = (defaultHandle Vk) {
+    let echoSender = const $ sendCounterCommon @Vkontakte ref successReply
+        handle = (defaultHandle @Vkontakte) {
             D.sendEcho = echoSender
-            , D.getUser = mockGetUserCommon Vk refMap
+            , D.getUser = mockGetUserCommon @Vkontakte refMap
             , D.specH = withRandomIDVkHandle
             }
-    handleUpdate handle Vk $ simpleMessageUpdate
+    handleUpdate @Vkontakte handle $ simpleMessageUpdate
     int <- readIORef ref
     return int

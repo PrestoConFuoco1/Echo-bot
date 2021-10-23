@@ -1,3 +1,4 @@
+{-# LANGUAGE AllowAmbiguousTypes, TypeApplications, ScopedTypeVariables #-}
 module Execute.Logic where
 
 import Data.Maybe
@@ -17,15 +18,14 @@ import Types
 handleUpdate ::
       (BotClass s, Monad m)
    => D.Handle s m
-   -> s
    -> Upd s
    -> m ()
-handleUpdate h s u = do
-   case defineUpdateType h s u of
+handleUpdate h u = do
+   case defineUpdateType h u of
       ECommand cmd mChat mUser ->
-         handleCommand h s cmd mChat mUser
-      EMessage m -> handleMessage h s m
-      ECallback callback -> handleCallback h s callback
+         handleCommand h cmd mChat mUser
+      EMessage m -> handleMessage h m
+      ECallback callback -> handleCallback h callback
       EError err -> do
          D.logError h "handleUpdate: unexpected update type"
          D.logError h $ GP.defaultPrettyT err
@@ -34,17 +34,17 @@ type EventT s
     = Event (Chat s) (User s) (Msg s) (CallbackQuery s)
 
 defineUpdateType ::
-      (BotClass s) => D.Handle s m -> s -> Upd s -> EventT s
-defineUpdateType h s u =
-   let mMsg = getMsg s u
-       mText = mMsg >>= getText s
-       mUser = mMsg >>= getUser s
-       mChat = mMsg >>= getChat s
+      forall s m. (BotClass s) => D.Handle s m -> Upd s -> Event (Chat s) (User s) (Msg s) (CallbackQuery s)
+defineUpdateType h u =
+   let mMsg = getMsg @s u
+       mText = mMsg >>= getText @s
+       mUser = mMsg >>= getUser @s
+       mChat = mMsg >>= getChat @s
        mCmd =
           mText >>= S.safeHead . T.words >>=
           getCmd (D.commonEnv h)
-       mCallback = getCallbackQuery s u
-       unexpectedValue = getUpdateValue s u
+       mCallback = getCallbackQuery @s u
+       unexpectedValue = getUpdateValue @s u
     in
        fromMaybe (EError unexpectedValue) $
        asum
@@ -60,27 +60,25 @@ getCmd e str
    | otherwise = Nothing
 
 handleCallback ::
-      (BotClass s, Monad m)
+      forall s m. (BotClass s, Monad m)
    => D.Handle s m
-   -> s
    -> CallbackQuery s
    -> m ()
-handleCallback h s callback =
-   case defineCallbackType s callback of
+handleCallback h callback =
+   case defineCallbackType @s callback of
       CSetRepNum user mChat n ->
-         handleSetRepNum h s user mChat n
+         handleSetRepNum @s h user mChat n
       CError err ->
          D.logError h $ "handleCallback: " <> T.pack err
 
 defineCallbackType ::
-      (BotClass s)
-   => s
-   -> CallbackQuery s
+      forall s. (BotClass s)
+   => CallbackQuery s
    -> CallbQuery (User s) (Chat s)
-defineCallbackType s callback =
-   let user = getCallbackUser s callback
-       mData = getCallbackData s callback
-       mChat = getCallbackChat s callback
+defineCallbackType callback =
+   let user = getCallbackUser @s callback
+       mData = getCallbackData @s callback
+       mChat = getCallbackChat @s callback
        eithSetN = do
           dat <-
              maybe
@@ -100,64 +98,61 @@ defineCallbackType s callback =
        asum [CSetRepNum user mChat <$> eithSetN]
 
 handleSetRepNum ::
-      (BotClass s, Monad m)
+      forall s m. (BotClass s, Monad m)
    => D.Handle s m
-   -> s
    -> User s
    -> Maybe (Chat s)
    -> Int
    -> m ()
-handleSetRepNum h s user mChat repnum = do
+handleSetRepNum h user mChat repnum = do
    let funcName = "handleSetRepNum: "
        text =
           "Now every your message will be repeated " <>
           S.showT repnum <> " times."
        afterLog =
           "User with ID = " <>
-          getUserID s user <>
+          getUserID @s user <>
           " set " <> S.showT repnum <> " repeats."
        sendFail x =
           D.logError h $
           funcName <> "failed to send message: " <> T.pack x
    D.insertUser h user repnum
-   eithReqFunc <- sendTextMsg h s mChat (Just user) text
+   eithReqFunc <- sendTextMsg h mChat (Just user) text
    D.logInfo h $ funcName <> afterLog
    either
       sendFail
-      (sendFixedInfo h s $ D.sendRepNumMessage h)
+      (sendFixedInfo h $ D.sendRepNumMessage h)
       eithReqFunc
 
 handleCommand ::
       (BotClass s, Monad m)
    => D.Handle s m
-   -> s
    -> Command
    -> Maybe (Chat s)
    -> Maybe (User s)
    -> m ()
-handleCommand h s cmd mChat mUser =
+handleCommand h cmd mChat mUser =
    case cmd of
-      Help -> sendHelp h s mChat mUser
-      SetRepNum -> sendRepNumButtons h s mChat mUser
+      Help -> sendHelp h mChat mUser
+      SetRepNum -> sendRepNumButtons h mChat mUser
 
 sendHelp ::
       (BotClass s, Monad m)
    => D.Handle s m
-   -> s
    -> Maybe (Chat s)
    -> Maybe (User s)
    -> m ()
-sendHelp h s mChat mUser = do
+sendHelp h mChat mUser = do
    let funcName = "sendHelp: "
    eithReqFunc <-
-      sendTextMsg h s mChat mUser (helpMsg $ D.commonEnv h)
+      sendTextMsg h mChat mUser (helpMsg $ D.commonEnv h)
    D.logDebug h $
       funcName <>
       "sending HTTP request to send help message"
    S.withEither
       eithReqFunc
       (D.logError h . (funcName <>) . T.pack)
-      (sendFixedInfo h s $ D.sendHelp h)
+      (sendFixedInfo h $ D.sendHelp h)
 
 minRepNum, maxRepNum :: Int
 minRepNum = 1
@@ -165,71 +160,65 @@ minRepNum = 1
 maxRepNum = 5
 
 sendRepNumButtons ::
-      (BotClass s, Monad m)
+      forall s m. (BotClass s, Monad m)
    => D.Handle s m
-   -> s
    -> Maybe (Chat s)
    -> Maybe (User s)
    -> m ()
-sendRepNumButtons h s mChat mUser = do
+sendRepNumButtons h mChat mUser = do
    let funcName = "sendRepNumButtons: "
    eithReqFunc <-
       sendTextMsg
          h
-         s
          mChat
          mUser
          (repQuestion $ D.commonEnv h)
    let eithReqFuncKeyboard =
           fmap (H.addParams inlKeyboardPars) eithReqFunc
        inlKeyboardPars =
-          repNumKeyboard s [minRepNum .. maxRepNum] "set"
+          repNumKeyboard @s [minRepNum .. maxRepNum] "set"
    D.logDebug h $
       funcName <>
       "sending HTTP request to send repeat number buttons"
    S.withEither
       eithReqFuncKeyboard
       (D.logError h . (funcName <>) . T.pack)
-      (sendFixedInfo h s $ D.sendKeyboard h)
+      (sendFixedInfo h $ D.sendKeyboard h)
 
 logEither ::
       (BotClass s, Monad m)
    => D.Handle s m
-   -> s
    -> (a -> m ())
    -> Either String a
    -> m ()
-logEither h _ f = do
+logEither h f = do
    either (D.logError h . T.pack) f
 
 sendFixedInfo ::
       (BotClass s, Monad m)
    => D.Handle s m
-   -> s
    -> (a -> m (Either String (Rep s)))
    -> a
    -> m ()
-sendFixedInfo h s send request = do
+sendFixedInfo h send request = do
    eithResp <- send request
-   logEitherResponse h s eithResp
+   logEitherResponse h eithResp
 
 logEitherResponse ::
       (BotClass s, Monad m)
    => D.Handle s m
-   -> s
    -> Either String (Rep s)
    -> m ()
-logEitherResponse h s = logEither h s (logResponse h s)
+logEitherResponse h = logEither h (logResponse h)
 
 logResponse ::
-      (BotClass s, Monad m)
+      forall s m. (BotClass s, Monad m)
    => D.Handle s m
-   -> s
    -> Rep s
    -> m ()
-logResponse h s resp =
+logResponse h resp =
    let funcName = "logResponse: "
-    in if isSuccess s resp
+    in if isSuccess @s resp
           then D.logInfo h $
                funcName <> "Ok: " <> GP.textPretty resp
           else D.logError h $
@@ -237,32 +226,30 @@ logResponse h s resp =
                "Failed request: " <> GP.textPretty resp
 
 handleMessage ::
-      (BotClass s, Monad m)
+      forall s m. (BotClass s, Monad m)
    => D.Handle s m
-   -> s
    -> Msg s
    -> m ()
-handleMessage h s m = do
+handleMessage h m = do
    let funcName = "handleMessage: "
-       maybeUser = getUser s m
-   mReqFunc <- processMessage h s m
+       maybeUser = getUser @s m
+   mReqFunc <- processMessage h m
    S.withMaybe mReqFunc (pure ()) $ \req -> do
       D.logDebug h $
          funcName <> "sending some copies of message"
       D.logDebug h $ T.pack $ GP.defaultPretty m
-      sendNTimes h s maybeUser req
+      sendNTimes @s h maybeUser req
 
 sendNTimes ::
       (BotClass s, Monad m)
    => D.Handle s m
-   -> s
    -> Maybe (User s)
    -> m H.HTTPRequest
    -> m ()
-sendNTimes h s maybeUser req = do
+sendNTimes h maybeUser req = do
    let funcName = "sendNTimes: "
        defaultRepNum = repNum $ D.commonEnv h
-   repNraw <- D.findWithDefault h s defaultRepNum maybeUser
+   repNraw <- D.findWithDefault h defaultRepNum maybeUser
    let repN = validateRepNum repNraw
    D.logDebug h $
       funcName <>
@@ -271,7 +258,7 @@ sendNTimes h s maybeUser req = do
    eithRespList <- mapM (D.sendEcho h) reqs
    let (errs, resps) = partitionEithers eithRespList
    mapM_ (D.logError h . T.pack) errs
-   mapM_ (logResponse h s) resps
+   mapM_ (logResponse h) resps
 
 validateRepNum :: Int -> Int
 validateRepNum x

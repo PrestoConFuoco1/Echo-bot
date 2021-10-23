@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 module App.Handle.Telegram where
 
 import qualified App.Handle as D
@@ -46,7 +47,7 @@ initResources _ (Config common tlConf) = do
          }
 
 resourcesToHandle ::
-      Resources -> L.Handle IO -> D.Handle Tele IO
+      Resources -> L.Handle IO -> D.Handle 'Telegram IO
 resourcesToHandle resources logger =
    D.Handle
       { D.log = logger

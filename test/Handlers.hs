@@ -12,8 +12,8 @@ import Data.IORef
 import Types
 
 
-defaultHandle :: (BotClassTypes s) => s -> Handle s IO
-defaultHandle s = Handle {
+defaultHandle :: (BotClassTypes s) => Handle s IO
+defaultHandle = Handle {
     log = L.emptyLogger,
 
     --D.commonEnv = error "commonEnv should not be used in this test",

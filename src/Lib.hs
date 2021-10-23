@@ -1,4 +1,4 @@
-{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE BlockArguments, DataKinds, TypeApplications, AllowAmbiguousTypes, ScopedTypeVariables #-}
 module Lib
    ( main
    ) where
@@ -45,17 +45,16 @@ main = do
 runWithConf :: RunOptions -> IO ()
 runWithConf opts =
    case messenger opts of
-      Telegram -> runWithConf' Tele opts telegramAction
-      Vkontakte -> runWithConf' Vk opts vkAction
+      Telegram -> runWithConf' @Telegram opts telegramAction
+      Vkontakte -> runWithConf' @Vkontakte opts vkAction
 
 
 runWithConf' ::
-      (BotConfigurable s)
-   => s
-   -> RunOptions
+      forall s. (BotConfigurable s)
+   => RunOptions
    -> (L.Handle IO -> EnvironmentCommon -> Conf s -> IO ())
    -> IO ()
-runWithConf' s opts todo = do
+runWithConf' opts todo = do
    let configLogger =
           L.stdCondHandle $ toLoggerFilter $ loggerSettings opts
        loggerConfig =
@@ -64,7 +63,7 @@ runWithConf' s opts todo = do
              , L.lcPath = T.unpack $ logPath opts
              }
    (gen, conf) <-
-      loadConfig s configLogger (T.unpack $ confPath opts) `C.catches`
+      loadConfig @s configLogger (T.unpack $ confPath opts) `C.catches`
       configHandlers configLogger
    L.logInfo
       configLogger
@@ -87,7 +86,7 @@ telegramAction logger gen tlConf = do
          (`T.resourcesToHandle` logger)
          D.log
          T.tlHandlers
-         (`execute` Tele)
+         (execute @Telegram)
    pure ()
 
 vkAction ::
@@ -102,7 +101,7 @@ vkAction logger gen vkConf = do
          (`V.resourcesToHandle` logger)
          D.log
          V.vkHandlers
-         (`execute` Vk)
+         (execute @Vkontakte)
    pure ()
 
 forever' :: a -> (a -> IO a) -> IO a

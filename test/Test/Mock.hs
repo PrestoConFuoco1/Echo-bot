@@ -1,5 +1,6 @@
 {-# LANGUAGE
     FlexibleContexts
+    , AllowAmbiguousTypes
     #-}
 module Test.Mock where
 
@@ -23,21 +24,21 @@ import qualified Stuff as S
 
 
 
-sendCounterCommon :: (BotClassTypes s) => s -> IORef Int -> Rep s -> IO (Either String (Rep s))
-sendCounterCommon s ref rep = do
+sendCounterCommon :: (BotClassTypes s) => IORef Int -> Rep s -> IO (Either String (Rep s))
+sendCounterCommon ref rep = do
     modifyIORef ref (+1)
  --   return $ Right successReply
     return $ Right rep
 
 
-mockInsertUserCommon :: (BotClassTypes s) => s -> IORef (Maybe (User s, Int)) -> User s -> Int -> IO ()
-mockInsertUserCommon s ref user repnum =
+mockInsertUserCommon :: (BotClassTypes s) => IORef (Maybe (User s, Int)) -> User s -> Int -> IO ()
+mockInsertUserCommon ref user repnum =
     writeIORef ref $ Just (user, repnum)
 
 
 
-mockGetUserCommon :: (BotClassTypes s, Eq (User s)) => s -> IORef (Maybe (User s, Int)) -> User s -> IO (Maybe Int)
-mockGetUserCommon s ref user = do
+mockGetUserCommon :: (BotClassTypes s, Eq (User s)) => IORef (Maybe (User s, Int)) -> User s -> IO (Maybe Int)
+mockGetUserCommon ref user = do
     maybePair <- readIORef ref
     case maybePair of
         Nothing -> return Nothing

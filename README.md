@@ -66,14 +66,11 @@ Its main peculiarity is that for different messagers, though
 logic is similar, but not exactly the same, and even types are not the same too.
 Hence, all functions should be parameterized by a "messager", which can be done
 in some way.
-Here, the method of type families is used. For each messager there is a type
-(`Vk` for Vk, `Tele` for Telegram, see `Vkontakte/Types.hs`, `Telegram/ForHandlers.hs`),
-that does nothing in runtime, but it is the "parent" for other types in type family.
-The type family itself (`BotClassTypes`) is defined in module `BotClass/ClassTypes.hs`.
-So, for example when we need to get user from a received message, we can use something like
-`getUserFromMessage :: (BotClassTypes s) :: s -> Msg s -> User s`. As we go down to
+The type family (`BotClassTypes`) is defined in module `BotClass/ClassTypes.hs`.
+For example when we need to get user from a received message, we can use something like
+`getUserFromMessage :: (BotClassTypes s) :: Msg s -> User s`. As we go down to
 the specific messager, we can add an instance of this type family for it. For instance,
-Msg Vk = VkMessage, User Vk = VkUser, so we finally get something like
+Msg 'Vkontakte = VkMessage, User 'Vkontakte = VkUser, so we finally get something like
 `getUserFromMessage :: VkMessage -> VkUser`.
 
 For messager specific functions there are some typeclasses:

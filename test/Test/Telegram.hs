@@ -1,3 +1,4 @@
+{-# LANGUAGE TypeApplications, DataKinds #-}
 module Test.Telegram where
 
 import Telegram
@@ -37,9 +38,9 @@ testHelpMessage = do
 testHelpMessage' :: IO Int
 testHelpMessage' = do
     ref <- newIORef 0
-    let helpSender = const $ sendCounterCommon Tele ref successReply
-        handle = (defaultHandle Tele) { D.sendHelp = helpSender }
-    handleUpdate handle Tele sendHelpMessageUpd
+    let helpSender = const $ sendCounterCommon @Telegram ref successReply
+        handle = (defaultHandle @Telegram) { D.sendHelp = helpSender }
+    handleUpdate @Telegram handle sendHelpMessageUpd
     int <- readIORef ref
     return int
 
@@ -53,9 +54,9 @@ testSetRepNumCommand = do
 testSetRepNumCommand' :: IO Int
 testSetRepNumCommand' = do
     ref <- newIORef 0
-    let keyboardSender = const $ sendCounterCommon Tele ref successReply
-        handle = (defaultHandle Tele) { D.sendKeyboard = keyboardSender }
-    handleUpdate handle Tele sendKeyboardMessageUpd
+    let keyboardSender = const $ sendCounterCommon  @Telegram ref successReply
+        handle = (defaultHandle  @Telegram) { D.sendKeyboard = keyboardSender }
+    handleUpdate @Telegram handle sendKeyboardMessageUpd
     int <- readIORef ref
     return int
 
@@ -69,13 +70,13 @@ testSetRepNum' :: Int -> IO Bool
 testSetRepNum' repnum = do
     ref <- newIORef 0
     refMap <- newIORef Nothing :: IO (IORef (Maybe (TlUser, Int)))
-    let infoMessageSender = const $ sendCounterCommon Tele ref successReply
+    let infoMessageSender = const $ sendCounterCommon @Telegram ref successReply
         
-        handle = (defaultHandle Tele) {
+        handle = (defaultHandle @Telegram) {
             D.sendRepNumMessage = infoMessageSender
-            , D.insertUser = mockInsertUserCommon Tele refMap
+            , D.insertUser = mockInsertUserCommon @Telegram refMap
             }
-    handleUpdate handle Tele $ setRepNumUpdate repnum
+    handleUpdate @Telegram handle $ setRepNumUpdate repnum
     int <- readIORef ref
     maybeUserRepnum <- readIORef refMap
     let bool = int == 1 && maybeUserRepnum == Just (defaultUser, repnum)
@@ -92,12 +93,12 @@ testSendEcho' :: Int -> IO Int
 testSendEcho' repnum = do
     ref <- newIORef 0
     refMap <- newIORef $ Just (defaultUser, repnum)
-    let echoSender = const $ sendCounterCommon Tele ref successReply
-        handle = (defaultHandle Tele) {
+    let echoSender = const $ sendCounterCommon @Telegram ref successReply
+        handle = (defaultHandle @Telegram) {
             D.sendEcho = echoSender
-            , D.getUser = mockGetUserCommon Tele refMap
+            , D.getUser = mockGetUserCommon @Telegram refMap
             }
-    handleUpdate handle Tele $ simpleMessageUpdate
+    handleUpdate @Telegram handle $ simpleMessageUpdate
     int <- readIORef ref
     return int
 
@@ -110,12 +111,12 @@ testMediaGroup =
 testMediaGroup' :: IO Int
 testMediaGroup' = do
     refMap <- newIORef []
-    let handle = (defaultHandle Tele) {
+    let handle = (defaultHandle @Telegram) {
             D.specH = defaultTelegramHandle
                 { insertMediaGroupUnit = mockInsertMediaGroupUnit refMap
                 }
             }
-    handleUpdate handle Tele $ mediaGroupUpdate
+    handleUpdate handle $ mediaGroupUpdate
     int <- fmap Prelude.length $ readIORef refMap
     return int
     

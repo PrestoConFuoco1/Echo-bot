@@ -1,4 +1,4 @@
-{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE BlockArguments, DataKinds, AllowAmbiguousTypes, TypeApplications, ScopedTypeVariables #-}
 module Config where
 
 import qualified App.Logger as L
@@ -30,12 +30,11 @@ instance CMC.Exception ConfigException
 
 -----------------------------------------------------
 loadConfig ::
-      (BotConfigurable s)
-   => s
-   -> L.Handle IO
+      forall s. (BotConfigurable s)
+   => L.Handle IO
    -> FilePath
    -> IO (EnvironmentCommon, Conf s)
-loadConfig s logger path = do
+loadConfig logger path = do
    conf <- C.load [CT.Required path]
    let genConf = C.subconfig "general" conf
    L.logDebug
@@ -48,8 +47,8 @@ loadConfig s logger path = do
    L.logDebug logger "Loaded general configuration:"
    L.logDebug logger $ GP.textPretty stGen
    stSpec <-
-      tryGetConfig s logger (messagerName s) $
-      loadSpecial s logger conf
+      tryGetConfig @s logger (messagerName @s) $
+      loadSpecial @s logger conf
    L.logDebug
       logger
       "Loaded messager-specific configuration:"
@@ -83,29 +82,28 @@ class (BotClassTypes s) =>
       BotConfigurable s
    where
    loadSpecial ::
-         s -> L.Handle IO -> CT.Config -> IO (Conf s)
-   messagerName :: s -> T.Text
+         L.Handle IO -> CT.Config -> IO (Conf s)
+   messagerName :: T.Text
 
-instance BotConfigurable Tele where
-   loadSpecial _ logger conf =
+instance BotConfigurable 'Telegram where
+   loadSpecial logger conf =
       let teleConf = C.subconfig "telegram" conf
        in loadTeleConfig logger teleConf
-   messagerName _ = "Telegram"
+   messagerName = "Telegram"
 
-instance BotConfigurable Vk where
-   loadSpecial _ logger conf =
+instance BotConfigurable 'Vkontakte where
+   loadSpecial logger conf =
       let vkConf = C.subconfig "vkontakte" conf
        in loadVkConfig logger vkConf
-   messagerName _ = "Vkontakte"
+   messagerName = "Vkontakte"
 
 tryGetConfig ::
       (BotClassTypes s)
-   => s
-   -> L.Handle IO
+   => L.Handle IO
    -> T.Text
    -> IO (Conf s)
    -> IO (Conf s)
-tryGetConfig _ logger messager atry = do
+tryGetConfig logger messager atry = do
    L.logDebug logger $
       "Trying to get " <> messager <> " bot configuration"
    eithStMsgError <- CMC.try atry -- :: IO (Either CT.KeyError a)

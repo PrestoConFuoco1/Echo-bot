@@ -32,11 +32,10 @@ data Handle s m =
 findWithDefault ::
       (BotClassTypes s, Monad m)
    => Handle s m
-   -> s
    -> Int
    -> Maybe (User s)
    -> m Int
-findWithDefault h _ def mUser =
+findWithDefault h def mUser =
    case mUser of
       Nothing -> pure def
       Just user -> fromMaybe def <$> getUser h user

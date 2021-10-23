@@ -10,13 +10,7 @@ import Options.Applicative
 import Data.Maybe (fromMaybe)
 import qualified GenericPretty as P
 import qualified Data.Text as T
-
-data Messenger
-   = Vkontakte
-   | Telegram
-    deriving (Show, Eq)
-instance P.PrettyShow Messenger where
-    prettyShow = P.LStr . show
+import Types
 
 data LoggerSettings =
     LogAll

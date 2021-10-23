@@ -1,4 +1,4 @@
-{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE TypeFamilies, AllowAmbiguousTypes #-}
 
 module BotClass.Class where
 
@@ -17,52 +17,49 @@ buildHTTP url (method, params) =
 class (BotClassTypes s) =>
       BotClassUtility s
    where
-   getResult :: s -> RepSucc s -> Maybe Value
-   getMsg :: s -> Upd s -> Maybe (Msg s)
-   getUpdateValue :: s -> Upd s -> Value
-   getChat :: s -> Msg s -> Maybe (Chat s)
-   getUser :: s -> Msg s -> Maybe (User s)
-   getText :: s -> Msg s -> Maybe T.Text
-   getUserID :: s -> User s -> T.Text
-   getCallbackQuery :: s -> Upd s -> Maybe (CallbackQuery s)
-   getCallbackUser :: s -> CallbackQuery s -> User s
-   getCallbackData :: s -> CallbackQuery s -> Maybe T.Text
-   getCallbackChat :: s -> CallbackQuery s -> Maybe (Chat s)
+   getResult :: RepSucc s -> Maybe Value
+   getMsg :: Upd s -> Maybe (Msg s)
+   getUpdateValue :: Upd s -> Value
+   getChat :: Msg s -> Maybe (Chat s)
+   getUser :: Msg s -> Maybe (User s)
+   getText :: Msg s -> Maybe T.Text
+   getUserID :: User s -> T.Text
+   getCallbackQuery :: Upd s -> Maybe (CallbackQuery s)
+   getCallbackUser :: CallbackQuery s -> User s
+   getCallbackData :: CallbackQuery s -> Maybe T.Text
+   getCallbackChat :: CallbackQuery s -> Maybe (Chat s)
 
 class (BotClassUtility s) =>
       BotClass s
    where
-   takesJSON :: s -> Bool
+   takesJSON :: Bool
    getUpdatesRequest ::
-         (Monad m) => D.Handle s m -> s -> m H.HTTPRequest
-   isSuccess :: s -> Rep s -> Bool
+         (Monad m) => D.Handle s m -> m H.HTTPRequest
+   isSuccess :: Rep s -> Bool
    handleFailedUpdatesRequest ::
          (C.MonadThrow m)
       => D.Handle s m
       -> RepErr s
       -> m ()
    parseUpdatesValueList ::
-         s -> RepSucc s -> Either String [Value]
-   parseUpdate :: s -> Value -> Either String (Upd s)
+         RepSucc s -> Either String [Value]
+   parseUpdate :: Value -> Either String (Upd s)
    sendTextMsg ::
          (Monad m)
       => D.Handle s m
-      -> s
       -> Maybe (Chat s)
       -> Maybe (User s)
       -> T.Text
       -> m (Either String H.HTTPRequest)
-   repNumKeyboard :: s -> [Int] -> T.Text -> H.ParamsList
+   repNumKeyboard :: [Int] -> T.Text -> H.ParamsList
    processMessage ::
          (Monad m)
       => D.Handle s m
-      -> s
       -> Msg s
       -> m (Maybe (m H.HTTPRequest))
    epilogue ::
          (Monad m)
       => D.Handle s m
-      -> s
       -> [Upd s]
       -> RepSucc s
       -> m ()

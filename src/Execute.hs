@@ -1,3 +1,4 @@
+{-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 module Execute where
 
 import qualified App.Handle as D
@@ -17,15 +18,14 @@ import Types
 execute ::
       (BotClass s, C.MonadThrow m)
    => D.Handle s m
-   -> s
    -> m ()
-execute h s = do
+execute h= do
    let funcName = "execute: "
        respParseFail =
           D.logError h .
           ("failed to parse server reply: " <>) .
           (funcName <>) . T.pack
-   request <- getUpdatesRequest h s
+   request <- getUpdatesRequest h
    eithResp <- D.getUpdates h request
    S.withEither eithResp respParseFail $ \resp' -> do
       D.logDebug h $
@@ -36,7 +36,7 @@ execute h s = do
          UpdateError updErr ->
             handleFailedUpdatesRequest h updErr
          UpdateResponse resp ->
-            handleUpdatesSuccess h s resp
+            handleUpdatesSuccess h resp
 
 updLstParseFail ::
       (C.MonadThrow m) => D.Handle s m -> String -> m a
@@ -67,26 +67,25 @@ logUpdatesErrors h errs upds = do
 -- normal work is impossible if we are not able to parse any updates
 -- we will try to parse them again and again resulting an infinite worthless loop
 handleUpdatesSuccess ::
-      (BotClass s, C.MonadThrow m)
+      forall s m. (BotClass s, C.MonadThrow m)
    => D.Handle s m
-   -> s
    -> RepSucc s
    -> m ()
-handleUpdatesSuccess h s resp = do
-   let eithUpdValueList = parseUpdatesValueList s resp
+handleUpdatesSuccess h resp = do
+   let eithUpdValueList = parseUpdatesValueList @s resp
    S.withEither eithUpdValueList (updLstParseFail h) $ \updValues -> do
       let parsedUpdates =
              map
-                (attachErrorReason $ parseUpdate s)
+                (attachErrorReason $ parseUpdate @s)
                 updValues
           (errs, upds) = partitionEithers parsedUpdates
           errLength = length errs
-      when (errLength > 0) $ logUpdatesErrors h errs upds
-      mapM_ (handleUpdate h s) upds
-      epilogue h s upds resp
+      when (errLength > 0) $ logUpdatesErrors @s h errs upds
+      mapM_ (handleUpdate @s h) upds
+      epilogue @s h upds resp
 
 singleUpdateParseFail ::
-      (BotClass s, Monad m)
+      forall s m. (BotClass s, Monad m)
    => D.Handle s m
    -> (Ae.Value, String)
    -> m ()

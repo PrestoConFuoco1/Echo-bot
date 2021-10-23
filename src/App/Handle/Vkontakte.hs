@@ -1,4 +1,4 @@
-{-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE RecordWildCards, DataKinds #-}
 
 module App.Handle.Vkontakte where
 
@@ -56,7 +56,7 @@ initResources h (Config common vkConf) = do
          }
 
 resourcesToHandle ::
-      Resources -> L.Handle IO -> D.Handle Vk IO
+      Resources -> L.Handle IO -> D.Handle 'Vkontakte IO
 resourcesToHandle resources logger =
    D.Handle
       { D.log = logger

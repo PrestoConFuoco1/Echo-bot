@@ -1,23 +1,22 @@
-{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE TypeFamilies, DataKinds #-}
 
 module BotClass.ClassTypesTeleInstance where
 
 import BotClass.ClassTypes
 import Telegram
+import Types
 
-data Tele =
-   Tele
 
-instance BotClassTypes Tele where
-   type Conf Tele = TlConfig -- don't care
-   type StateC Tele = TlStateConst
-   type StateM Tele = TlStateMut
-   type Rep Tele = TlReply
-   type RepErr Tele = TlUpdateReplyError
-   type RepSucc Tele = TlUpdateReplySuccess
-   type Upd Tele = TlUpdate
-   type Msg Tele = TlMessage
-   type Chat Tele = TlChat
-   type User Tele = TlUser
-   type CallbackQuery Tele = TlCallback
-   type Hndl Tele = TlHandler
+instance BotClassTypes 'Telegram where
+   type Conf 'Telegram = TlConfig -- don't care
+   type StateC 'Telegram = TlStateConst
+   type StateM 'Telegram = TlStateMut
+   type Rep 'Telegram = TlReply
+   type RepErr 'Telegram = TlUpdateReplyError
+   type RepSucc 'Telegram = TlUpdateReplySuccess
+   type Upd 'Telegram = TlUpdate
+   type Msg 'Telegram = TlMessage
+   type Chat 'Telegram = TlChat
+   type User 'Telegram = TlUser
+   type CallbackQuery 'Telegram = TlCallback
+   type Hndl 'Telegram = TlHandler
