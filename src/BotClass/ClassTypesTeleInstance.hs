@@ -1,11 +1,9 @@
 {-# LANGUAGE TypeFamilies, DataKinds #-}
-
 module BotClass.ClassTypesTeleInstance where
 
 import BotClass.ClassTypes
 import Telegram
 import Types
-
 
 instance BotClassTypes 'Telegram where
    type Conf 'Telegram = TlConfig -- don't care

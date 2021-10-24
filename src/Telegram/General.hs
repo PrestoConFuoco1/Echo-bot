@@ -1,5 +1,4 @@
 {-# LANGUAGE DeriveGeneric #-}
-
 module Telegram.General where
 
 import qualified Data.Map as M
@@ -11,7 +10,6 @@ import Telegram.MediaGroup.Types
 tlTakesJSON :: Bool
 tlTakesJSON = True -- this is better
 
---tlTakesJSON = False
 data TlConfig =
    TlConf
       { _TC_updID :: Integer
@@ -21,7 +19,7 @@ data TlConfig =
 
 instance PrettyShow TlConfig
 
-data TlStateConst =
+newtype TlStateConst =
    TSC
       { tlUrl :: T.Text
       }

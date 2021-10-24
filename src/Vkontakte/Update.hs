@@ -1,5 +1,4 @@
 {-# LANGUAGE DeriveGeneric #-}
-
 module Vkontakte.Update where
 
 import Data.Aeson (decode)
@@ -68,7 +67,6 @@ parseUpdatesResponse2 =
       asum
          [fmap UpdateResponse success, fmap UpdateError err]
 
-----------------------------------------------
 data VkUpdate =
    VkUpdate
       { _VU_value :: Value

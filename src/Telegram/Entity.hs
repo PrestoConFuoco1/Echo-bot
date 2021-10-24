@@ -47,7 +47,7 @@ instance FromJSON TlMessage where
          defaultOptions {fieldLabelModifier = drop 4}
 
 -----------------------------------------------------------
-data TlChat =
+newtype TlChat =
    TlChat
       { _TC_id :: Integer
       }

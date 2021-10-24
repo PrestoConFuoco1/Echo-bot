@@ -4,7 +4,6 @@ import qualified Data.Map as M
 import Telegram.General
 import Telegram.MediaGroup.Types
 
------------------------------------------------------------
 getUpdateIDPure :: TlStateMut -> Integer
 getUpdateIDPure = tlUpdateID
 

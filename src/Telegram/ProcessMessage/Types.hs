@@ -1,5 +1,4 @@
 {-# LANGUAGE DeriveGeneric #-}
-
 module Telegram.ProcessMessage.Types where
 
 import Data.Aeson.Types
@@ -27,7 +26,7 @@ instance FromJSON TlSticker where
       genericParseJSON
          defaultOptions {fieldLabelModifier = drop 4}
 
-data TlAudio =
+newtype TlAudio =
    TlAudio
       { _TAu_file_id :: T.Text
       }
@@ -38,7 +37,7 @@ instance FromJSON TlAudio where
       genericParseJSON
          defaultOptions {fieldLabelModifier = drop 5}
 
-data TlDocument =
+newtype TlDocument =
    TlDocument
       { _TDoc_file_id :: T.Text
       }
@@ -49,7 +48,7 @@ instance FromJSON TlDocument where
       genericParseJSON
          defaultOptions {fieldLabelModifier = drop 6}
 
-data TlPhotoSize =
+newtype TlPhotoSize =
    TlPhotoSize
       { _TPS_file_id :: T.Text
       }
@@ -60,7 +59,7 @@ instance FromJSON TlPhotoSize where
       genericParseJSON
          defaultOptions {fieldLabelModifier = drop 5}
 
-data TlVideo =
+newtype TlVideo =
    TlVideo
       { _TVid_file_id :: T.Text
       }
@@ -71,7 +70,7 @@ instance FromJSON TlVideo where
       genericParseJSON
          defaultOptions {fieldLabelModifier = drop 6}
 
-data TlAnimation =
+newtype TlAnimation =
    TlAnimation
       { _TAni_file_id :: T.Text
       }
@@ -82,7 +81,7 @@ instance FromJSON TlAnimation where
       genericParseJSON
          defaultOptions {fieldLabelModifier = drop 6}
 
-data TlVoice =
+newtype TlVoice =
    TlVoice
       { _TVoi_file_id :: T.Text
       }
@@ -93,7 +92,7 @@ instance FromJSON TlVoice where
       genericParseJSON
          defaultOptions {fieldLabelModifier = drop 6}
 
-data TlVideoNote =
+newtype TlVideoNote =
    TlVideoNote
       { _TVNt_file_id :: T.Text
       }

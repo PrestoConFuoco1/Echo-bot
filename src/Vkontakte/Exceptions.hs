@@ -6,5 +6,4 @@ data VkException
    = KeyOutOfDate_GetNew
    | KeyAndTsLosed_GetNew
    deriving (Show, Eq)
-
 instance C.Exception VkException

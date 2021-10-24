@@ -1,5 +1,4 @@
 {-# LANGUAGE DeriveGeneric #-}
-
 module Vkontakte.Initialize where
 
 import Data.Aeson (decode)

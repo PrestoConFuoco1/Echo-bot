@@ -1,5 +1,4 @@
 {-# LANGUAGE DeriveGeneric, RecordWildCards #-}
-
 module Telegram.MediaGroup.Types where
 
 import Data.Aeson.Types

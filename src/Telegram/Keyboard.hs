@@ -1,5 +1,4 @@
 {-# LANGUAGE DeriveGeneric #-}
-
 module Telegram.Keyboard where
 
 import Data.Aeson (encode)
@@ -26,8 +25,7 @@ instance FromJSON TlInlineButton where
       genericParseJSON
          defaultOptions {fieldLabelModifier = drop 5}
 
-----------------------------------------------------------
-data TlInlineKeyboard =
+newtype TlInlineKeyboard =
    TlInlineKeyboard
       { _TIK_inline_keyboard :: [[TlInlineButton]]
       }
@@ -42,8 +40,6 @@ instance FromJSON TlInlineKeyboard where
    parseJSON =
       genericParseJSON
          defaultOptions {fieldLabelModifier = drop 5}
-
-----------------------------------------------------------
 
 repNumButtonTele :: T.Text -> Int -> TlInlineButton
 repNumButtonTele cmd n =

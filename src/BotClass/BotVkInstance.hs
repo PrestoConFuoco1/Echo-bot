@@ -78,7 +78,6 @@ getUpdatesRequest1 h
    pure $ H.Req H.GET fullUrl pars
 
 isSuccess1 :: VkReply -> Bool
---isSuccess1 r = _VR_failed r == Nothing
 isSuccess1 = isNothing . _VR_failed
 
 errorMsg1, errorMsg2, errorMsg3 :: T.Text

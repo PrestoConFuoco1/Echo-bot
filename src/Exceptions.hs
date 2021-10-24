@@ -7,5 +7,4 @@ data BotException
    | FailedToParseUpdatesListFromResult
    | UnableToHandleError
    deriving (Show)
-
 instance Exception BotException

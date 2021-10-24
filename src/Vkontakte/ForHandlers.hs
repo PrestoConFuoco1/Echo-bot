@@ -23,4 +23,3 @@ data VkHandler m =
       , getTimestamp :: m T.Text
       , putTimestamp :: T.Text -> m ()
       }
---------------------------------------------

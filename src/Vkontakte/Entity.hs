@@ -1,5 +1,4 @@
 {-# LANGUAGE DeriveGeneric #-}
-
 module Vkontakte.Entity where
 
 import Data.Aeson.Types
@@ -8,7 +7,6 @@ import GHC.Generics (Generic)
 import GenericPretty
 import Vkontakte.Attachment
 
---------------------------------------------------
 data VkMessage =
    VkMessage
       { _VM_id :: Integer
@@ -29,12 +27,9 @@ instance FromJSON VkMessage where
              then m {_VM_text = Nothing}
              else m
 
------------------------------------------------------
-data VkChat =
-   VkChat
+data VkChat = VkChat
 
------------------------------------------------------
-data VkUser =
+newtype VkUser =
    VkUser
       { _VU_id :: Integer
       }
@@ -72,7 +67,7 @@ instance FromJSON VkMyCallback where
       genericParseJSON
          defaultOptions {fieldLabelModifier = drop 5}
 
-data VkPayload =
+newtype VkPayload =
    VkPayload
       { _VP_payload :: T.Text
       }

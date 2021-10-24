@@ -1,5 +1,4 @@
 {-# LANGUAGE DeriveGeneric, DeriveAnyClass #-}
-
 module Types where
 
 import Data.Aeson.Types (Value)
@@ -8,16 +7,12 @@ import GHC.Generics
 import qualified GenericPretty as GP
 import qualified Stuff as S (Timeout)
 
-
-
 data Messenger
    = Vkontakte
    | Telegram
     deriving (Show, Eq)
 instance GP.PrettyShow Messenger where
     prettyShow = GP.LStr . show
-
-
 
 data EnvironmentCommon =
    EnvironmentCommon -- never changes

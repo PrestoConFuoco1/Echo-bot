@@ -1,5 +1,4 @@
 {-# LANGUAGE DeriveGeneric #-}
-
 module Vkontakte.Keyboard where
 
 import Data.Aeson.Types
@@ -19,7 +18,6 @@ instance ToJSON VkKeyboard where
       genericToJSON
          defaultOptions {fieldLabelModifier = drop 5}
 
-----------------------------------------------------
 data VkButton =
    VkButton
       { _VB_color :: T.Text
@@ -32,7 +30,6 @@ instance ToJSON VkButton where
       genericToJSON
          defaultOptions {fieldLabelModifier = drop 4}
 
-----------------------------------------------------
 data VkButtonActions
    = VBACallback VkCallbackButton
    | VBAText VkTextButton

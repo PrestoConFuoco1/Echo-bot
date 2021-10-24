@@ -19,7 +19,6 @@ defaultVkParams' accTok apiV =
 vkTakesJSON :: Bool
 vkTakesJSON = False
 
-----------------------------------------------
 data VkConfig =
    VkConf
       { _VC_vkUrl :: T.Text
@@ -44,7 +43,6 @@ defaultVkConfig :: VkConfigDefault
 defaultVkConfig =
    VkConfDef "https://api.vk.com/method/" "5.124"
 
----------------------------------------------
 data VkStateConst =
    VKSC
       { vkKey :: T.Text

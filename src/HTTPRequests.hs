@@ -1,4 +1,3 @@
-
 module HTTPRequests
    ( sendRequest
    , ParamsList

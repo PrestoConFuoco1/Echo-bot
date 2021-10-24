@@ -1,7 +1,5 @@
 {-# LANGUAGE TypeFamilies, FlexibleContexts, DataKinds #-}
-
 module BotClass.ClassTypes where
-
 
 import Types
 import qualified GenericPretty as GP

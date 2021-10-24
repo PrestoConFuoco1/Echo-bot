@@ -1,5 +1,4 @@
 {-# LANGUAGE TypeFamilies, DataKinds #-}
-
 module BotClass.ClassTypesVkInstance where
 
 import BotClass.ClassTypes

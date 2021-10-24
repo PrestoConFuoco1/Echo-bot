@@ -1,5 +1,4 @@
 {-# LANGUAGE DeriveGeneric #-}
-
 module Telegram.Update where
 
 import Data.Aeson.Types
@@ -29,7 +28,7 @@ instance FromJSON TlReply where
       genericParseJSON
          defaultOptions {fieldLabelModifier = drop 4}
 
-data TlUpdateReplySuccess =
+newtype TlUpdateReplySuccess =
    TlUpdateReplySuccess
       { _TURS_result :: Value
       }

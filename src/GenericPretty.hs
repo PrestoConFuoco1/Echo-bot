@@ -1,6 +1,5 @@
 {-# LANGUAGE FlexibleContexts, FlexibleInstances, DefaultSignatures
   #-}
-
 module GenericPretty where
 
 import Data.Aeson (encode)

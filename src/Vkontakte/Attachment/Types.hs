@@ -1,5 +1,4 @@
 {-# LANGUAGE DeriveGeneric #-}
-
 module Vkontakte.Attachment.Types where
 
 import Control.Applicative ((<|>))
@@ -194,7 +193,7 @@ instance FromJSON VkWallReply where
          defaultOptions {fieldLabelModifier = drop 5}
 
 -----------------------------------------------
-data VkSticker =
+newtype VkSticker =
    VkSticker
       { _VSt_sticker_id :: Integer
       }
@@ -206,7 +205,7 @@ instance FromJSON VkSticker where
          defaultOptions {fieldLabelModifier = drop 5}
 
 -----------------------------------------------
-data VkGift =
+newtype VkGift =
    VkGift -- how to send this?
       { _VGft_id :: Integer
       }

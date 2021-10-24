@@ -25,10 +25,8 @@ import qualified Control.Monad.Catch as CMC
 data ConfigException =
    RequiredFieldMissing
    deriving (Show, Eq)
-
 instance CMC.Exception ConfigException
 
------------------------------------------------------
 loadConfig ::
       forall s. (BotConfigurable s)
    => L.Handle IO
@@ -70,13 +68,14 @@ loadGeneral _ conf =
       confSetRepNumCmd <-
          f setRepNumCommand "set_rep_num_command"
       pure $
-         EnvironmentCommon
-            confHelpMsg
-            confRepQue
-            confRepNum
-            confTimeout
-            confHelpCmd
-            confSetRepNumCmd
+         EnvironmentCommon {
+            helpMsg = confHelpMsg
+            , repQuestion = confRepQue
+            , repNum = confRepNum
+            , timeout = confTimeout
+            , helpCommand = confHelpCmd
+            , setRepNumCommand = confSetRepNumCmd
+            }
 
 class (BotClassTypes s) =>
       BotConfigurable s
