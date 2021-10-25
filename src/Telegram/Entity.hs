@@ -1,13 +1,14 @@
-{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DeriveGeneric, FlexibleContexts, UndecidableInstances, DerivingStrategies, DerivingVia #-}
 module Telegram.Entity where
 
 import Data.Aeson.Types
 import Data.Maybe (isJust)
 import qualified Data.Text as T (Text)
-import GHC.Generics (Generic)
+import GHC.Generics
 import GenericPretty
 import Telegram.ProcessMessage.Types
 import Data.Function (on)
+import qualified Stuff as S
 
 chatIDfromMsg :: TlMessage -> Integer
 chatIDfromMsg = _TC_id . _TM_chat
@@ -27,6 +28,7 @@ data TlMessage =
       , _TM_audio :: Maybe TlAudio
       , _TM_document :: Maybe TlDocument
       , _TM_photo :: Maybe [TlPhotoSize]
+      --, _TM_sticker :: Maybe TlSticker
       , _TM_sticker :: Maybe TlSticker
       , _TM_video :: Maybe TlVideo
       , _TM_video_note :: Maybe TlVideoNote
@@ -39,13 +41,23 @@ data TlMessage =
       , _TM_venue :: Maybe TlVenue
       , _TM_location :: Maybe TlLocation
       }
-   deriving (Show, Eq, Generic)
+   --deriving (Show, Eq, Generic)
+    deriving stock (Show, Eq, Generic)
+    deriving FromJSON via (RemovePrefix TlMessage)
 
+newtype RemovePrefix a = RemovePrefix a
+
+instance (Generic a, GFromJSON Zero (Rep a)) => FromJSON (RemovePrefix a) where
+    parseJSON val = fmap RemovePrefix $ genericParseJSON
+        --(defaultOptions {fieldLabelModifier = S.removeTwoUnderscores})
+        (defaultOptions {fieldLabelModifier = S.removeTwoUnderscores})
+        val
+{-
 instance FromJSON TlMessage where
    parseJSON =
       genericParseJSON
          defaultOptions {fieldLabelModifier = drop 4}
-
+-}
 -----------------------------------------------------------
 newtype TlChat =
    TlChat

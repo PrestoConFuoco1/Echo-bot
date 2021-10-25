@@ -33,3 +33,12 @@ withEither e left right = either left right e
 
 withMaybe :: Maybe a -> b -> (a -> b) -> b
 withMaybe m nothing just = maybe nothing just m
+
+removeTwoUnderscores :: String -> String
+removeTwoUnderscores x@('_':ys) =
+   case dropWhile (/= '_') ys of
+      ('_':zs) -> zs
+      _ -> x
+removeTwoUnderscores x = x
+
+
