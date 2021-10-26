@@ -109,7 +109,7 @@ showTParams = T.concat . map f
        T.concat ["    ", field, ": ", S.showT value, "\n"]
 
 sendRequest ::
-      L.Handle IO
+      L.LoggerHandler IO
    -> Bool
    -> HTTPRequest
    -> IO (Either String BSL.ByteString)

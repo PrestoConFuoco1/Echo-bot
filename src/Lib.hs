@@ -38,7 +38,7 @@ ghciMain m =
 main :: IO ()
 main = do
     opts <- getOptsIO
-    L.logDebug L.stdHandle $ GP.textPretty opts
+    L.logDebug L.stdHandler $ GP.textPretty opts
     runWithOpts opts
 
 
@@ -52,11 +52,11 @@ runWithOpts opts =
 runBotWithOpts ::
       forall s. (BotConfigurable s)
    => RunOptions
-   -> (L.Handle IO -> Y.EnvironmentCommon -> Conf s -> IO ())
+   -> (L.LoggerHandler IO -> Y.EnvironmentCommon -> Conf s -> IO ())
    -> IO ()
 runBotWithOpts opts todo = do
    let configLogger =
-          L.stdCondHandle $ toLoggerFilter $ loggerSettings opts
+          L.stdCondHandler $ toLoggerFilter $ loggerSettings opts
        loggerConfig =
           L.LoggerConfig
              { L.lcFilter = toLoggerFilter $ loggerSettings opts
@@ -75,7 +75,7 @@ runBotWithOpts opts todo = do
 
 
 telegramAction ::
-      L.Handle IO -> Y.EnvironmentCommon -> TlConfig -> IO ()
+      L.LoggerHandler IO -> Y.EnvironmentCommon -> TlConfig -> IO ()
 telegramAction logger gen tlConf = do
    let tlConfig = T.Config gen tlConf
    resources <- T.initResources logger tlConfig
@@ -90,7 +90,7 @@ telegramAction logger gen tlConf = do
    pure ()
 
 vkAction ::
-      L.Handle IO -> Y.EnvironmentCommon -> VkConfig -> IO ()
+      L.LoggerHandler IO -> Y.EnvironmentCommon -> VkConfig -> IO ()
 vkAction logger gen vkConf = do
    let vkConfig = V.Config gen vkConf
    resources <- V.initResources logger vkConfig
@@ -112,8 +112,8 @@ forever res action = do
 mainLoop ::
       d -- config
    -> (a -> b) -- resources to handlers
-   -> (b -> L.Handle IO) -- handlers to logger
-   -> (L.Handle IO -> d -> a -> [C.Handler IO a]) -- error handlers
+   -> (b -> L.LoggerHandler IO) -- handlers to logger
+   -> (L.LoggerHandler IO -> d -> a -> [C.Handler IO a]) -- error handlers
    -> (b -> IO ()) -- handlers to execute-action
    -> a -- resources
    -> IO a
@@ -123,7 +123,7 @@ mainLoop conf resourcesToHandles toLogger errorHandlers action resources = do
    (action handle >> pure resources) `C.catches`
       errorHandlers logger conf resources
 
-defaultHandler :: L.Handle IO -> C.SomeException -> IO a
+defaultHandler :: L.LoggerHandler IO -> C.SomeException -> IO a
 defaultHandler h e = do
    L.logFatal h "some exception raised:"
    L.logFatal h $ T.pack $ C.displayException e

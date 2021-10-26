@@ -29,7 +29,7 @@ parseUpdatesResponse resp -- Either
    parseUpdatesResponse2 val
 
 getUpdates ::
-      L.Handle IO
+      L.LoggerHandler IO
    -> H.HTTPRequest
    -> IO (Either String (Y.UpdateResponse VkUpdateReplySuccess VkUpdateReplyError))
 getUpdates logger request = do
@@ -46,7 +46,7 @@ parseHTTPResponse resp -- Either
    parseEither parseJSON val
 
 sendThis ::
-      L.Handle IO
+      L.LoggerHandler IO
    -> H.HTTPRequest
    -> IO (Either String VkReply)
 sendThis logger request = do

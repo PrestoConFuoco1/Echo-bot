@@ -1,7 +1,7 @@
 {-# LANGUAGE RankNTypes #-}
 module App.Handle where
 
-import qualified App.Logger as Logger
+import qualified App.Logger as L
 import BotClass.ClassTypes (BotClassTypes (..))
 import Data.Maybe (fromMaybe)
 import qualified Data.Text as T (Text)
@@ -11,7 +11,7 @@ import qualified Types as Y
 
 data Handle s m =
    Handle
-      { log :: Logger.Handle m
+      { log :: L.LoggerHandler m
       , commonEnv :: Y.EnvironmentCommon
       , insertUser :: (BotClassTypes s) =>
                          User s -> Int -> m ()
@@ -41,15 +41,15 @@ findWithDefault h def mUser =
 
 logDebug, logInfo, logWarning, logError, logFatal ::
       Handle s m -> T.Text -> m ()
-logDebug h = Logger.logDebug (log h)
+logDebug h = L.logDebug (log h)
 
-logInfo h = Logger.logInfo (log h)
+logInfo h = L.logInfo (log h)
 
-logWarning h = Logger.logWarning (log h)
+logWarning h = L.logWarning (log h)
 
-logError h = Logger.logError (log h)
+logError h = L.logError (log h)
 
-logFatal h = Logger.logFatal (log h)
+logFatal h = L.logFatal (log h)
 
-logEntry :: Handle s m -> Logger.LoggerEntry -> m ()
-logEntry h (pri, msg) = Logger.log (log h) pri msg
+logEntry :: Handle s m -> L.LoggerEntry -> m ()
+logEntry h (pri, msg) = L.log (log h) pri msg

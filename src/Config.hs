@@ -34,7 +34,7 @@ instance CMC.Exception ConfigException
 
 loadConfig ::
       forall s. (BotConfigurable s)
-   => L.Handle IO
+   => L.LoggerHandler IO
    -> FilePath
    -> IO (Y.EnvironmentCommon, Conf s)
 loadConfig logger path = do
@@ -59,7 +59,7 @@ loadConfig logger path = do
    pure (stGen, stSpec)
 
 loadGeneral ::
-      L.Handle IO -> CT.Config -> IO Y.EnvironmentCommon
+      L.LoggerHandler IO -> CT.Config -> IO Y.EnvironmentCommon
 loadGeneral _ conf =
    CMC.handle
       (const $ pure Y.defStateGen :: CMC.SomeException -> IO Y.EnvironmentCommon) $ do
@@ -92,7 +92,7 @@ class (BotClassTypes s) =>
       BotConfigurable s
    where
    loadSpecial ::
-         L.Handle IO -> CT.Config -> IO (Conf s)
+         L.LoggerHandler IO -> CT.Config -> IO (Conf s)
    messagerName :: T.Text
 
 instance BotConfigurable 'Y.Telegram where
@@ -109,7 +109,7 @@ instance BotConfigurable 'Y.Vkontakte where
 
 tryGetConfig ::
       (BotClassTypes s)
-   => L.Handle IO
+   => L.LoggerHandler IO
    -> T.Text
    -> IO (Conf s)
    -> IO (Conf s)
@@ -129,13 +129,13 @@ tryGetConfig logger messager atry = do
              "Ok, " <> messager <> " bot config loaded."
           pure c)
 
-loadTeleConfig :: L.Handle IO -> CT.Config -> IO TlConfig
+loadTeleConfig :: L.LoggerHandler IO -> CT.Config -> IO TlConfig
 loadTeleConfig _ conf = do
    initialUpdateID <- C.require conf "initial_update_id"
    botURL <- C.require conf "bot_url"
    pure $ TlConf initialUpdateID botURL
 
-loadVkConfig :: L.Handle IO -> CT.Config -> IO VkConfig
+loadVkConfig :: L.LoggerHandler IO -> CT.Config -> IO VkConfig
 loadVkConfig _ conf = do
    botURL <- C.require conf "bot_url"
    accTok <- C.require conf "access_token"
@@ -143,7 +143,7 @@ loadVkConfig _ conf = do
    apiVersion <- C.require conf "api_version"
    pure $ VkConf botURL accTok groupID apiVersion
 
-logKeyException :: L.Handle IO -> CT.KeyError -> IO ()
+logKeyException :: L.LoggerHandler IO -> CT.KeyError -> IO ()
 logKeyException logger = L.logError logger . f
   where
     f (CT.KeyError name) =
@@ -151,7 +151,7 @@ logKeyException logger = L.logError logger . f
 
 
 
-configHandlers :: L.Handle IO -> [CMC.Handler IO a]
+configHandlers :: L.LoggerHandler IO -> [CMC.Handler IO a]
 configHandlers h =
    let f (CMC.Handler g) =
           CMC.Handler
@@ -169,7 +169,7 @@ configHandlers h =
           , CMC.Handler (handleOthers h)
           ]
 
-handleIOError :: L.Handle IO -> E.IOException -> IO ()
+handleIOError :: L.LoggerHandler IO -> E.IOException -> IO ()
 handleIOError logger exc
    | E.isDoesNotExistError exc =
       L.logError logger "File does not exist."
@@ -181,15 +181,15 @@ handleIOError logger exc
       L.logError logger "File is already in use."
    | otherwise = L.logError logger "Unknown error occured"
 
-handleConfigError :: L.Handle IO -> CT.ConfigError -> IO ()
+handleConfigError :: L.LoggerHandler IO -> CT.ConfigError -> IO ()
 handleConfigError logger (CT.ParseError _ _) =
    L.logError logger "Failed to parse configuration file."
 
 handleConfig2Error ::
-      L.Handle IO -> ConfigException -> IO ()
+      L.LoggerHandler IO -> ConfigException -> IO ()
 handleConfig2Error logger RequiredFieldMissing =
    L.logError logger "Failed to get required field value."
 
-handleOthers :: L.Handle IO -> CMC.SomeException -> IO ()
+handleOthers :: L.LoggerHandler IO -> CMC.SomeException -> IO ()
 handleOthers logger _ =
    L.logError logger "Unknown error occured."

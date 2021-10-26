@@ -42,7 +42,7 @@ data Resources =
       , usersMap :: IORef (M.Map VkUser Int)
       }
 
-initResources :: L.Handle IO -> Config -> IO Resources
+initResources :: L.LoggerHandler IO -> Config -> IO Resources
 initResources h (Config common vkConf) = do
    (sc, sm) <- initialize h vkConf
    umap <- newIORef M.empty
@@ -56,7 +56,7 @@ initResources h (Config common vkConf) = do
          }
 
 resourcesToHandle ::
-      Resources -> L.Handle IO -> D.Handle 'Y.Vkontakte IO
+      Resources -> L.LoggerHandler IO -> D.Handle 'Y.Vkontakte IO
 resourcesToHandle resources logger =
    D.Handle
       { D.log = logger
@@ -79,7 +79,7 @@ resourcesToHandle resources logger =
       }
 
 vkErrorHandler ::
-      L.Handle IO
+      L.LoggerHandler IO
    -> VkConfig
    -> Resources
    -> VkEx.VkException
@@ -96,13 +96,13 @@ modifyKey key resources =
    in  resources {constState = sc'}
 
 getNewKey ::
-      L.Handle IO -> VkConfig -> Resources -> IO Resources
+      L.LoggerHandler IO -> VkConfig -> Resources -> IO Resources
 getNewKey logger config resources = do
    initData <- getLongPollServer logger config
    pure $ modifyKey (initKey initData) resources
 
 getNewKeyAndTs ::
-      L.Handle IO -> VkConfig -> Resources -> IO Resources
+      L.LoggerHandler IO -> VkConfig -> Resources -> IO Resources
 getNewKeyAndTs logger config resources = do
    initData <- getLongPollServer logger config
    sm <- readIORef (mutState resources)
@@ -112,7 +112,7 @@ getNewKeyAndTs logger config resources = do
    pure $ modifyKey (initKey initData) resources'
 
 vkHandlers ::
-      L.Handle IO
+      L.LoggerHandler IO
    -> VkConfig
    -> Resources
    -> [C.Handler IO Resources]
@@ -121,7 +121,7 @@ vkHandlers logger conf resources =
    ]
 
 defaultHandler ::
-      L.Handle IO
+      L.LoggerHandler IO
    -> Resources
    -> C.SomeException
    -> IO Resources
@@ -131,7 +131,7 @@ defaultHandler logger _ e = do
    Q.exitWith (Q.ExitFailure 1)
 
 resourcesToVkHandler ::
-      Resources -> L.Handle IO -> VkHandler IO
+      Resources -> L.LoggerHandler IO -> VkHandler IO
 resourcesToVkHandler resources _ =
    VkHandler
       { getRandomID =
@@ -146,7 +146,7 @@ resourcesToVkHandler resources _ =
       }
 
 getLongPollServer ::
-      L.Handle IO -> VkConfig -> IO VkInitData
+      L.LoggerHandler IO -> VkConfig -> IO VkInitData
 getLongPollServer logger VkConf {..} = do
    let funcName = "vk_initialize: "
        pars =
@@ -176,7 +176,7 @@ getLongPollServer logger VkConf {..} = do
    pure initData
 
 initialize ::
-      L.Handle IO
+      L.LoggerHandler IO
    -> VkConfig
    -> IO (VkStateConst, VkStateMut)
 initialize logger conf@(VkConf {..}) = do
@@ -196,14 +196,14 @@ initialize logger conf@(VkConf {..}) = do
            , vkRndGen = initRndNum
            })
 
-initRequestFail :: L.Handle IO -> String -> IO a
+initRequestFail :: L.LoggerHandler IO -> String -> IO a
 initRequestFail logger err = do
    L.logFatal logger "Failed to get initial data"
    L.logFatal logger $ T.pack err
    Q.exitWith $ Q.ExitFailure 1
 
 initRequestParseFail ::
-      L.Handle IO -> BSL.ByteString -> String -> IO a
+      L.LoggerHandler IO -> BSL.ByteString -> String -> IO a
 initRequestParseFail logger s err = do
    L.logFatal logger "Failed to parse initial data"
    L.logFatal logger $ "response: " <> T.pack (BSL.unpack s)

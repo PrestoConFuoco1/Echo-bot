@@ -28,7 +28,7 @@ data Resources =
       , usersMap :: IORef (M.Map TlUser Int)
       }
 
-initResources :: L.Handle IO -> Config -> IO Resources
+initResources :: L.LoggerHandler IO -> Config -> IO Resources
 initResources _ (Config common tlConf) = do
    let initStateTele =
           TSM
@@ -47,7 +47,7 @@ initResources _ (Config common tlConf) = do
          }
 
 resourcesToHandle ::
-      Resources -> L.Handle IO -> D.Handle 'Y.Telegram IO
+      Resources -> L.LoggerHandler IO -> D.Handle 'Y.Telegram IO
 resourcesToHandle resources logger =
    D.Handle
       { D.log = logger
@@ -71,7 +71,7 @@ resourcesToHandle resources logger =
       }
 
 resourcesToTelegramHandler ::
-      Resources -> L.Handle IO -> TlHandler IO
+      Resources -> L.LoggerHandler IO -> TlHandler IO
 resourcesToTelegramHandler resources _ =
    TlHandler
       { getUpdateID =
@@ -93,7 +93,7 @@ resourcesToTelegramHandler resources _ =
       }
 
 tlErrorHandler ::
-      L.Handle IO
+      L.LoggerHandler IO
    -> TlConfig
    -> Resources
    -> TlEx.TlException
@@ -105,7 +105,7 @@ tlErrorHandler logger _ _ TlEx.TlException = do
    Q.exitWith (Q.ExitFailure 1)
 
 defaultHandler ::
-      L.Handle IO
+      L.LoggerHandler IO
    -> Resources
    -> C.SomeException
    -> IO Resources
@@ -115,7 +115,7 @@ defaultHandler logger _ e = do
    Q.exitWith (Q.ExitFailure 1)
 
 tlHandlers ::
-      L.Handle IO
+      L.LoggerHandler IO
    -> TlConfig
    -> Resources
    -> [C.Handler IO Resources]
