@@ -30,18 +30,18 @@ instance BotClassUtility 'Telegram where
          TEMsg m -> Just m
          _ -> Nothing
    getUpdateValue = _TU_value
-   getChat = Just . _TM_chat
-   getUser = _TM_from
-   getText = _TM_text
-   getUserID = T.pack . show . _TUs_id
+   getChat = Just . messageChat
+   getUser = messageFrom
+   getText = messageText
+   getUserID = T.pack . show . userID
    getCallbackQuery TlUpdate {..} =
       case _TU_event of
          TECallback cb -> Just cb
          _ -> Nothing
-   getCallbackUser = _TCB_from
-   getCallbackData = _TCB_data
+   getCallbackUser = callbackFrom
+   getCallbackData = callbackData
    getCallbackChat c =
-      _TM_chat <$> _TCB_message c
+      messageChat <$> callbackMessage c
 
 instance BotClass 'Telegram
                          where
@@ -84,7 +84,7 @@ instance BotClass 'Telegram
           buildHTTP
              url
              ( "sendMessage"
-             , [unit "chat_id" $ _TC_id c, unit "text" text])
+             , [unit "chat_id" $ chatID c, unit "text" text])
    epilogue _ [] _ = pure ()
    epilogue h us _ = do
       let funcName = "tl_epilogue: "
@@ -125,9 +125,9 @@ processMediaGroup ::
       (Monad m) => D.Handle 'Telegram m -> TlMessage -> m ()
 processMediaGroup h m =
    let funcName = "processMediaGroup: "
-       chat = _TM_chat m
-       mUser = _TM_from m
-       mMediaGroupID = _TM_media_group_id m
+       chat = messageChat m
+       mUser = messageFrom m
+       mMediaGroupID = messageMediaGroupID m
        mMediaGroupIdent =
           TlMediaGroupIdentifier chat mUser <$>
           mMediaGroupID
@@ -161,7 +161,7 @@ sendMediaGroup h (TlMediaGroupPair ident items) = do
        url = tlUrl $ D.getConstState h
        mCaption = S.safeHead items >>= photoVideoCaption
        pars =
-          [ unit "chat_id" $ _TC_id chat
+          [ unit "chat_id" $ chatID chat
           , unit "media" $ AeT.toJSON reversedItems
           , mUnit "caption" mCaption
           ]

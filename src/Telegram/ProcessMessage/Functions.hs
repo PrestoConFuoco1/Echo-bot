@@ -44,7 +44,7 @@ sendWithCaption ::
    -> TlMessage
    -> Maybe (T.Text, ParamsList)
 sendWithCaption fromMsg getFileID method objName m = do
-   let mCaption = _TM_caption m
+   let mCaption = messageCaption m
    obj <- fromMsg m
    pure
       ( method
@@ -55,7 +55,7 @@ sendWithCaption fromMsg getFileID method objName m = do
 
 sendTextTele :: TlMessage -> Maybe (T.Text, H.ParamsList)
 sendTextTele m = do
-   text <- _TM_text m
+   text <- messageText m
    pure
       ( "sendMessage"
       , [unit "chat_id" $ chatIDfromMsg m, unit "text" text])
@@ -63,16 +63,16 @@ sendTextTele m = do
 sendPhotoTele :: TlMessage -> Maybe (T.Text, H.ParamsList)
 sendPhotoTele =
    sendWithCaption
-      (_TM_photo >=> S.safeHead)
-      _TPS_file_id
+      (messagePhoto >=> S.safeHead)
+      photosizeFileID
       "sendPhoto"
       "photo"
 
 sendAudioTele :: TlMessage -> Maybe (T.Text, H.ParamsList)
 sendAudioTele =
    sendWithCaption
-      _TM_audio
-      _TAu_file_id
+      messageAudio
+      audioFileID
       "sendAudio"
       "audio"
 
@@ -80,16 +80,16 @@ sendDocumentTele ::
       TlMessage -> Maybe (T.Text, H.ParamsList)
 sendDocumentTele =
    sendWithCaption
-      _TM_document
-      _TDoc_file_id
+      messageDocument
+      documentFileID
       "sendDocument"
       "document"
 
 sendVideoTele :: TlMessage -> Maybe (T.Text, H.ParamsList)
 sendVideoTele =
    sendWithCaption
-      _TM_video
-      _TVid_file_id
+      messageVideo
+      videoFileID
       "sendVideo"
       "video"
 
@@ -97,16 +97,16 @@ sendAnimationTele ::
       TlMessage -> Maybe (T.Text, H.ParamsList)
 sendAnimationTele =
    sendWithCaption
-      _TM_animation
-      _TAni_file_id
+      messageAnimation
+      animationFileID
       "sendAnimation"
       "animation"
 
 sendVoiceTele :: TlMessage -> Maybe (T.Text, H.ParamsList)
 sendVoiceTele =
    sendWithCaption
-      _TM_voice
-      _TVoi_file_id
+      messageVoice
+      voiceFileID
       "sendVoice"
       "voice"
 
@@ -114,63 +114,63 @@ sendVideoNoteTele ::
       TlMessage -> Maybe (T.Text, H.ParamsList)
 sendVideoNoteTele =
    sendWithCaption
-      _TM_video_note
-      _TVNt_file_id
+      messageVideoNote
+      videonoteFileID
       "sendVideoNote"
       "video_note"
 
 sendLocationTele ::
       TlMessage -> Maybe (T.Text, H.ParamsList)
 sendLocationTele m = do
-   location <- _TM_location m
+   location <- messageLocation m
    pure
       ( "sendLocation"
       , [ unit "chat_id" $ chatIDfromMsg m
-        , unit "latitude" $ _Toc_latitude location
-        , unit "longitude" $ _Toc_longitude location
+        , unit "latitude" $ locationLatitude location
+        , unit "longitude" $ locationLongitude location
         ])
 
 sendVenueTele :: TlMessage -> Maybe (T.Text, H.ParamsList)
 sendVenueTele m = do
-   venue <- _TM_venue m
+   venue <- messageVenue m
    pure
       ( "sendVenue"
       , [ unit "chat_id" $ chatIDfromMsg m
         , unit "latitude" $
-          _Toc_latitude . _TVen_location $ venue
+          locationLatitude . venueLocation $ venue
         , unit "longitude" $
-          _Toc_longitude . _TVen_location $ venue
-        , unit "title" $ _TVen_title venue
-        , unit "address" $ _TVen_address venue
+          locationLongitude . venueLocation $ venue
+        , unit "title" $ venueTitle venue
+        , unit "address" $ venueAddress venue
         ])
 
 sendContactTele :: TlMessage -> Maybe (T.Text, H.ParamsList)
 sendContactTele m = do
-   contact <- _TM_contact m
+   contact <- messageContact m
    pure
       ( "sendContact"
       , [ unit "chat_id" $ chatIDfromMsg m
-        , unit "phone_number" $ _TCon_phone_number contact
-        , unit "first_name" $ _TCon_first_name contact
-        , mUnit "last_name" $ _TCon_last_name contact
-        , mUnit "vcard" $ _TCon_vcard contact
+        , unit "phone_number" $ contactPhoneNumber contact
+        , unit "first_name" $ contactFirstName contact
+        , mUnit "last_name" $ contactLastName contact
+        , mUnit "vcard" $ contactVcard contact
         ])
 
 sendPollTele :: TlMessage -> Maybe (T.Text, H.ParamsList)
 sendPollTele m = do
-   poll <- _TM_poll m
+   poll <- messagePoll m
    pure
       ( "sendPoll"
       , [ unit "chat_id" $ chatIDfromMsg m
-        , unit "question" $ _TPoll_question poll
+        , unit "question" $ pollQuestion poll
         , unit "options" $
-          map _TPollO_text $ _TPoll_options poll
+          map polloptionText $ pollOptions poll
         ])
 
 sendDiceTele :: TlMessage -> Maybe (T.Text, H.ParamsList)
 sendDiceTele m
  = do
-   if _TM_text m == Just "/dice" || isJust (_TM_dice m)
+   if messageText m == Just "/dice" || isJust (messageDice m)
       then pure
               ( "sendDice"
               , [unit "chat_id" $ chatIDfromMsg m])
@@ -178,9 +178,9 @@ sendDiceTele m
 
 sendStickerTele :: TlMessage -> Maybe (T.Text, H.ParamsList)
 sendStickerTele m = do
-   sticker <- _TM_sticker m
+   sticker <- messageSticker m
    pure
       ( "sendSticker"
       , [ unit "chat_id" $ chatIDfromMsg m
-        , unit "sticker" $ _TS_file_id sticker
+        , unit "sticker" $ stickerFileID sticker
         ])

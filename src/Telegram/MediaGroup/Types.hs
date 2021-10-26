@@ -136,27 +136,27 @@ photoVideoCaption (TlpvAudio (TlInputMediaAudio {..})) =
 
 maybeMediaGroupUnit :: TlMessage -> Maybe TlMediaGroupUnit
 maybeMediaGroupUnit m =
-   let mCaption = _TM_caption m
+   let mCaption = messageCaption m
        mPhoto =
-          _TM_photo m >>= S.safeHead :: Maybe TlPhotoSize
-       mVideo = _TM_video m
-       mDocument = _TM_document m
-       mAudio = _TM_audio m
+          messagePhoto m >>= S.safeHead :: Maybe TlPhotoSize
+       mVideo = messageVideo m
+       mDocument = messageDocument m
+       mAudio = messageAudio m
        mInputMediaPhoto =
           fmap
-             (TlInputMediaPhoto mCaption . _TPS_file_id)
+             (TlInputMediaPhoto mCaption . photosizeFileID)
              mPhoto
        mInputMediaVideo =
           fmap
-             (TlInputMediaVideo mCaption . _TVid_file_id)
+             (TlInputMediaVideo mCaption . videoFileID)
              mVideo
        mInputMediaDocument =
           fmap
-             (TlInputMediaDocument mCaption . _TDoc_file_id)
+             (TlInputMediaDocument mCaption . documentFileID)
              mDocument
        mInputMediaAudio =
           fmap
-             (TlInputMediaAudio mCaption . _TAu_file_id)
+             (TlInputMediaAudio mCaption . audioFileID)
              mAudio
     in asum
           [ fmap TlpvPhoto mInputMediaPhoto

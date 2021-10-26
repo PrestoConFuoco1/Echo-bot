@@ -37,7 +37,7 @@ instance P.PrettyShow RunOptions
 ghciRunOpts :: RunOptions
 ghciRunOpts =
    RunOptions
-      { confPath = "./bot.conf"
+      { confPath = "src/bot.conf"
       , messenger = Telegram
       , loggerSettings = LogAll
       , logPath = "./log"

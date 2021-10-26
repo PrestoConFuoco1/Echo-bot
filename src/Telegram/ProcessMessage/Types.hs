@@ -1,210 +1,141 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DerivingVia #-}
+{-# LANGUAGE DeriveAnyClass #-}
+
 module Telegram.ProcessMessage.Types where
 
 import Data.Aeson.Types
 import qualified Data.Text as T (Text)
 import GHC.Generics (Generic)
 import GenericPretty
+import DerivingJSON
 
 data TlSticker =
    TlSticker
-      { _TS_file_id :: T.Text
-      , _TS_file_unique_id :: T.Text
-      , _TS_width :: Int
-      , _TS_height :: Int
-      , _TS_is_animated :: Bool
+      { stickerFileID :: T.Text
+      , stickerFileUniqueID :: T.Text
+      , stickerWidth :: Int
+      , stickerHeight :: Int
+      , stickerIsAnimated :: Bool
       }
-   deriving (Show, Eq, Generic)
-
-instance ToJSON TlSticker where
-   toJSON =
-      genericToJSON
-         defaultOptions {fieldLabelModifier = drop 4}
-
-instance FromJSON TlSticker where
-   parseJSON =
-      genericParseJSON
-         defaultOptions {fieldLabelModifier = drop 4}
+    deriving stock (Show, Eq, Generic)
+    deriving (ToJSON, FromJSON) via BotSelectorModifier TlSticker
+    deriving anyclass PrettyShow
 
 newtype TlAudio =
    TlAudio
-      { _TAu_file_id :: T.Text
+      { audioFileID :: T.Text
       }
-   deriving (Show, Eq, Generic)
-
-instance FromJSON TlAudio where
-   parseJSON =
-      genericParseJSON
-         defaultOptions {fieldLabelModifier = drop 5}
+    deriving stock (Show, Eq, Generic)
+    deriving FromJSON via BotSelectorModifier TlAudio
+    deriving anyclass PrettyShow
 
 newtype TlDocument =
    TlDocument
-      { _TDoc_file_id :: T.Text
+      { documentFileID :: T.Text
       }
-   deriving (Show, Eq, Generic)
-
-instance FromJSON TlDocument where
-   parseJSON =
-      genericParseJSON
-         defaultOptions {fieldLabelModifier = drop 6}
+    deriving stock (Show, Eq, Generic)
+    deriving FromJSON via BotSelectorModifier TlDocument
+    deriving anyclass PrettyShow
+    
 
 newtype TlPhotoSize =
    TlPhotoSize
-      { _TPS_file_id :: T.Text
+      { photosizeFileID :: T.Text
       }
-   deriving (Show, Eq, Generic)
-
-instance FromJSON TlPhotoSize where
-   parseJSON =
-      genericParseJSON
-         defaultOptions {fieldLabelModifier = drop 5}
+    deriving stock (Show, Eq, Generic)
+    deriving FromJSON via BotSelectorModifier TlPhotoSize
+    deriving anyclass PrettyShow
 
 newtype TlVideo =
    TlVideo
-      { _TVid_file_id :: T.Text
+      { videoFileID :: T.Text
       }
-   deriving (Show, Eq, Generic)
-
-instance FromJSON TlVideo where
-   parseJSON =
-      genericParseJSON
-         defaultOptions {fieldLabelModifier = drop 6}
+    deriving stock (Show, Eq, Generic)
+    deriving FromJSON via BotSelectorModifier TlVideo
+    deriving anyclass PrettyShow
 
 newtype TlAnimation =
    TlAnimation
-      { _TAni_file_id :: T.Text
+      { animationFileID :: T.Text
       }
-   deriving (Show, Eq, Generic)
-
-instance FromJSON TlAnimation where
-   parseJSON =
-      genericParseJSON
-         defaultOptions {fieldLabelModifier = drop 6}
+    deriving stock (Show, Eq, Generic)
+    deriving FromJSON via BotSelectorModifier TlAnimation
+    deriving anyclass PrettyShow
 
 newtype TlVoice =
    TlVoice
-      { _TVoi_file_id :: T.Text
+      { voiceFileID :: T.Text
       }
-   deriving (Show, Eq, Generic)
-
-instance FromJSON TlVoice where
-   parseJSON =
-      genericParseJSON
-         defaultOptions {fieldLabelModifier = drop 6}
+    deriving stock (Show, Eq, Generic)
+    deriving FromJSON via BotSelectorModifier TlVoice
+    deriving anyclass PrettyShow
 
 newtype TlVideoNote =
    TlVideoNote
-      { _TVNt_file_id :: T.Text
+      { videonoteFileID :: T.Text
       }
-   deriving (Show, Eq, Generic)
-
-instance FromJSON TlVideoNote where
-   parseJSON =
-      genericParseJSON
-         defaultOptions {fieldLabelModifier = drop 6}
+    deriving stock (Show, Eq, Generic)
+    deriving FromJSON via BotSelectorModifier TlVideoNote
+    deriving anyclass PrettyShow
 
 data TlLocation =
    TlLocation
-      { _Toc_longitude :: Double
-      , _Toc_latitude :: Double
+      { locationLongitude :: Double
+      , locationLatitude :: Double
       }
-   deriving (Show, Eq, Generic)
-
-instance FromJSON TlLocation where
-   parseJSON =
-      genericParseJSON
-         defaultOptions {fieldLabelModifier = drop 6}
+    deriving stock (Show, Eq, Generic)
+    deriving FromJSON via BotSelectorModifier TlLocation
+    deriving anyclass PrettyShow
 
 data TlVenue =
    TlVenue
-      { _TVen_location :: TlLocation
-      , _TVen_title :: T.Text
-      , _TVen_address :: T.Text
+      { venueLocation :: TlLocation
+      , venueTitle :: T.Text
+      , venueAddress :: T.Text
       }
-   deriving (Show, Eq, Generic)
-
-instance FromJSON TlVenue where
-   parseJSON =
-      genericParseJSON
-         defaultOptions {fieldLabelModifier = drop 6}
+    deriving stock (Show, Eq, Generic)
+    deriving FromJSON via BotSelectorModifier TlVenue
+    deriving anyclass PrettyShow
 
 data TlContact =
    TlContact
-      { _TCon_phone_number :: T.Text
-      , _TCon_first_name :: T.Text
-      , _TCon_last_name :: Maybe T.Text
-      , _TCon_user_id :: Maybe Integer
-      , _TCon_vcard :: Maybe T.Text
+      { contactPhoneNumber :: T.Text
+      , contactFirstName :: T.Text
+      , contactLastName :: Maybe T.Text
+      , contactUserID :: Maybe Integer
+      , contactVcard :: Maybe T.Text
       }
-   deriving (Show, Eq, Generic)
-
-instance FromJSON TlContact where
-   parseJSON =
-      genericParseJSON
-         defaultOptions {fieldLabelModifier = drop 6}
+    deriving stock (Show, Eq, Generic)
+    deriving FromJSON via BotSelectorModifier TlContact
+    deriving anyclass PrettyShow
 
 data TlPollOption =
    TlPollOptions
-      { _TPollO_text :: T.Text
-      , _TPollO_voter_count :: Int
+      { polloptionText :: T.Text
+      , polloptionVoterCount :: Int
       }
-   deriving (Show, Eq, Generic)
-
-instance FromJSON TlPollOption where
-   parseJSON =
-      genericParseJSON
-         defaultOptions {fieldLabelModifier = drop 8}
+    deriving stock (Show, Eq, Generic)
+    deriving FromJSON via BotSelectorModifier TlPollOption
+    deriving anyclass PrettyShow
 
 data TlPoll =
    TlPoll
-      { _TPoll_id :: T.Text
-      , _TPoll_question :: T.Text
-      , _TPoll_options :: [TlPollOption]
-      , _TPoll_total_voter_count :: Int
+      { pollID :: T.Text
+      , pollQuestion :: T.Text
+      , pollOptions :: [TlPollOption]
+      , pollTotalVoterCount :: Int
       }
-   deriving (Show, Eq, Generic)
-
-instance FromJSON TlPoll where
-   parseJSON =
-      genericParseJSON
-         defaultOptions {fieldLabelModifier = drop 7}
+    deriving stock (Show, Eq, Generic)
+    deriving FromJSON via BotSelectorModifier TlPoll
+    deriving anyclass PrettyShow
 
 data TlDice =
    TlDice
-      { _TD_emoji :: T.Text
-      , _TD_value :: Int
+      { diceEmoji :: T.Text
+      , diceValue :: Int
       }
-   deriving (Show, Eq, Generic)
+    deriving stock (Show, Eq, Generic)
+    deriving FromJSON via BotSelectorModifier TlDice
+    deriving anyclass PrettyShow
 
-instance FromJSON TlDice where
-   parseJSON =
-      genericParseJSON
-         defaultOptions {fieldLabelModifier = drop 4}
-
-instance PrettyShow TlAnimation
-
-instance PrettyShow TlAudio
-
-instance PrettyShow TlDocument
-
-instance PrettyShow TlPhotoSize
-
-instance PrettyShow TlSticker
-
-instance PrettyShow TlVideo
-
-instance PrettyShow TlVideoNote
-
-instance PrettyShow TlVoice
-
-instance PrettyShow TlContact
-
-instance PrettyShow TlDice
-
-instance PrettyShow TlPollOption
-
-instance PrettyShow TlPoll
-
-instance PrettyShow TlVenue
-
-instance PrettyShow TlLocation
