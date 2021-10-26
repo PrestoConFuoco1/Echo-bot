@@ -1,16 +1,16 @@
-{-# LANGUAGE RecordWildCards, DataKinds #-}
-
+{-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE DataKinds #-}
 module App.Handle.Vkontakte where
 
 import qualified App.Handle as D
 import qualified App.Logger as L
-import BotClass.ClassTypesVkInstance
+import BotClass.ClassTypesVkInstance ()
 import Data.IORef
 import qualified Data.Map as M
 import qualified HTTPRequests as H
 import qualified Types as Y
 import Vkontakte
-import Vkontakte.Initialize
+import Vkontakte.Initialize (VkInitData(..), parseInitResp)
 
 import qualified Control.Monad.Catch as C
    ( Handler(..)

@@ -1,9 +1,8 @@
 {-# LANGUAGE RankNTypes #-}
-
 module App.Handle where
 
 import qualified App.Logger as Logger
-import BotClass.ClassTypes
+import BotClass.ClassTypes (BotClassTypes (..))
 import Data.Maybe (fromMaybe)
 import qualified Data.Text as T (Text)
 import qualified HTTPRequests as H

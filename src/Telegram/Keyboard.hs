@@ -4,12 +4,12 @@
 module Telegram.Keyboard where
 
 import Data.Aeson (encode)
-import Data.Aeson.Types
+import Data.Aeson.Types (ToJSON (..), FromJSON (..))
 import qualified Data.Text as T (Text, pack)
 import qualified Data.Text.Encoding as E (decodeUtf8)
 import GHC.Generics (Generic)
 import qualified Data.ByteString.Lazy as BS (toStrict)
-import DerivingJSON
+import DerivingJSON (BotSelectorModifier (..))
 
 data TlInlineButton =
    TlInlineButton

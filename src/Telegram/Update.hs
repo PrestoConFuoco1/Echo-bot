@@ -4,13 +4,13 @@
 
 module Telegram.Update where
 
-import Data.Aeson.Types
+import Data.Aeson.Types (Value, ToJSON(..), FromJSON (..), (.:), withObject, parseEither)
 import Data.Foldable (asum)
 import qualified Data.Text as T (Text)
 import GHC.Generics (Generic)
-import GenericPretty
-import Telegram.Entity
-import DerivingJSON
+import GenericPretty (PrettyShow)
+import Telegram.Entity (TlMessage, TlCallback)
+import DerivingJSON (BotSelectorModifier (..))
 import qualified Types as Y
 
 data TlReply =

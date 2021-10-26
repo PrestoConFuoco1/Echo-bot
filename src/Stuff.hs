@@ -1,5 +1,6 @@
-{-# LANGUAGE OverloadedStrings, FlexibleInstances,
-  UndecidableInstances #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE UndecidableInstances #-}
 module Stuff where
 
 import qualified Data.Map as M (Map, findWithDefault)

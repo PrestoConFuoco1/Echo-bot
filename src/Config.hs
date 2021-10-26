@@ -7,9 +7,9 @@
 module Config where
 
 import qualified App.Logger as L
-import BotClass.ClassTypes
-import BotClass.ClassTypesTeleInstance
-import BotClass.ClassTypesVkInstance
+import BotClass.ClassTypes (BotClassTypes(..))
+import BotClass.ClassTypesTeleInstance ()
+import BotClass.ClassTypesVkInstance ()
 import qualified Data.Configurator as C
 import qualified Data.Configurator.Types as CT
 import qualified Data.Text as T (Text)

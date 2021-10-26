@@ -5,15 +5,15 @@ module Vkontakte.Send
 
 import qualified App.Logger as L
 import qualified Data.Aeson as Ae (decode)
-import Data.Aeson
-import Data.Aeson.Types
+import Data.Aeson (decode)
+import Data.Aeson.Types (parseJSON, parseEither)
 import qualified Data.ByteString.Lazy.Char8 as BSL
    ( ByteString
    )
 import qualified HTTPRequests as H
 import qualified Types as Y
-import Vkontakte.General
-import Vkontakte.Update
+import Vkontakte.General (vkTakesJSON)
+import Vkontakte.Update (VkReply, VkUpdateReplySuccess, VkUpdateReplyError, parseUpdatesResponse2)
 
 parseUpdatesResponse ::
       BSL.ByteString

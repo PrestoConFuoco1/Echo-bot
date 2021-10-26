@@ -1,12 +1,11 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DeriveAnyClass #-}
 {-# LANGUAGE DerivingStrategies #-}
-
 module Vkontakte.General where
 
 import qualified Data.Text as T (Text)
 import GHC.Generics (Generic)
-import GenericPretty
+import GenericPretty (PrettyShow)
 import HTTPRequests as H
 import System.Random (StdGen)
 

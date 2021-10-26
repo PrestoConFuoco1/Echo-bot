@@ -2,15 +2,15 @@
 module Execute where
 
 import qualified App.Handle as D
-import BotClass.Class
-import BotClass.ClassTypes
+import BotClass.Class (BotClass (..))
+import BotClass.ClassTypes (BotClassTypes (..))
 import Control.Monad (when)
 import qualified Control.Monad.Catch as C
 import qualified Data.Aeson as Ae
 import Data.Either (partitionEithers)
 import qualified Data.Text as T
 import qualified Exceptions as Ex
-import Execute.Logic
+import Execute.Logic (handleUpdate)
 import qualified GenericPretty as GP
 import qualified Stuff as S
 import qualified Types as Y

@@ -2,7 +2,7 @@ module Vkontakte.ForHandlers where
 
 import qualified Data.Text as T (Text)
 import System.Random (randomR)
-import Vkontakte.General
+import Vkontakte.General (VkStateMut (..))
 
 getRandomIDPure :: VkStateMut -> (VkStateMut, Integer)
 getRandomIDPure sm =

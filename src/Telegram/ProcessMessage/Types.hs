@@ -4,11 +4,11 @@
 
 module Telegram.ProcessMessage.Types where
 
-import Data.Aeson.Types
+import Data.Aeson.Types (FromJSON (..), ToJSON (..))
 import qualified Data.Text as T (Text)
 import GHC.Generics (Generic)
-import GenericPretty
-import DerivingJSON
+import GenericPretty (PrettyShow)
+import DerivingJSON (BotSelectorModifier (..))
 
 data TlSticker =
    TlSticker

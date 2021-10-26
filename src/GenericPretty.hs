@@ -4,12 +4,11 @@ module GenericPretty where
 
 import Data.Aeson (encode)
 import Data.Aeson.Types (Value)
-import Data.Char
 import qualified Data.Text as T (Text, pack, unpack)
 import Data.Text.Encoding as E (decodeUtf8)
 import qualified Data.ByteString.Lazy as BS (toStrict)
 import qualified Data.Time as Time
-import Data.Void
+import Data.Void (Void)
 import GHC.Generics
 
 enclose, encloseSq :: String -> String

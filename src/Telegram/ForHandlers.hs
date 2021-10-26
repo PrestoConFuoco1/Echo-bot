@@ -1,8 +1,8 @@
 module Telegram.ForHandlers where
 
 import qualified Data.Map as M
-import Telegram.General
-import Telegram.MediaGroup.Types
+import Telegram.General (TlStateMut (..))
+import Telegram.MediaGroup.Types (TlMediaGroupUnit, TlMediaGroupPair (..), TlMediaGroupIdentifier)
 
 getUpdateIDPure :: TlStateMut -> Integer
 getUpdateIDPure = stmUpdateID

@@ -1,4 +1,6 @@
-{-# LANGUAGE TypeFamilies, FlexibleContexts, DataKinds #-}
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE DataKinds #-}
 module BotClass.ClassTypes where
 
 import qualified Types as Y

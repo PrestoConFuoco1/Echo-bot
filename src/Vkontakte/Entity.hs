@@ -2,16 +2,15 @@
 {-# LANGUAGE DerivingVia #-}
 {-# LANGUAGE DeriveAnyClass #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
-
 module Vkontakte.Entity where
 
-import Data.Aeson.Types
+import qualified Data.Aeson.Types as AeT
 import qualified Data.Text as T (Text)
 import GHC.Generics (Generic)
-import GenericPretty
-import Vkontakte.Attachment
+import GenericPretty (PrettyShow)
+import Vkontakte.Attachment (VkAttachment)
 import Data.Function (on)
-import DerivingJSON
+import DerivingJSON (BotSelectorModifier (..))
 
 data VkMessage =
    VkMessage
@@ -23,8 +22,8 @@ data VkMessage =
     deriving stock (Eq, Show, Generic)
     deriving anyclass PrettyShow
 
-instance FromJSON VkMessage where
-    parseJSON val = fixText . unBotSelectorModifier <$> parseJSON val
+instance AeT.FromJSON VkMessage where
+    parseJSON val = fixText . unBotSelectorModifier <$> AeT.parseJSON val
      where
        fixText m =
           if messageText m == Just ""
@@ -38,7 +37,7 @@ newtype VkUser =
       { userID :: Integer
       }
     deriving stock (Show, Generic)
-    deriving newtype FromJSON
+    deriving newtype AeT.FromJSON
     deriving anyclass PrettyShow
    
 instance Eq VkUser where
@@ -54,12 +53,12 @@ data VkMyCallback =
       , mycallbackPayload :: VkPayload
       }
     deriving stock (Show, Eq, Generic)
-    deriving (FromJSON) via BotSelectorModifier VkMyCallback
+    deriving (AeT.FromJSON) via BotSelectorModifier VkMyCallback
 
 newtype VkPayload =
    VkPayload
       { payloadPayload :: T.Text
       }
     deriving stock (Show, Eq, Generic)
-    deriving (ToJSON, FromJSON) via BotSelectorModifier VkPayload
+    deriving (AeT.ToJSON, AeT.FromJSON) via BotSelectorModifier VkPayload
 

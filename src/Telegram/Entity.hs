@@ -1,21 +1,19 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DerivingVia #-}
 {-# LANGUAGE DeriveAnyClass #-}
-
 module Telegram.Entity where
 
-import Data.Aeson.Types
 import Data.Maybe (isJust)
 import qualified Data.Text as T (Text)
 import GHC.Generics
-import GenericPretty
+import GenericPretty (PrettyShow (..))
 import Telegram.ProcessMessage.Types
 import Data.Function (on)
 import qualified Stuff as S
 import Data.Char (isLower)
 import qualified Data.ByteString.Lazy as BSL
-import Data.Aeson
-import DerivingJSON
+import Data.Aeson (FromJSON (..), ToJSON (..))
+import DerivingJSON (BotSelectorModifier (..))
 
 chatIDfromMsg :: TlMessage -> Integer
 chatIDfromMsg = chatID . messageChat

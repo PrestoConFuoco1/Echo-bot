@@ -4,7 +4,8 @@
 module Vkontakte.Initialize where
 
 import Data.Aeson (decode)
-import Data.Aeson.Types
+import qualified Data.Aeson.Types as AeT
+import Data.Aeson.Types ((.:))
 import qualified Data.ByteString.Lazy as BSL (ByteString)
 import qualified Data.Text as T (Text)
 import GHC.Generics (Generic)
@@ -23,12 +24,12 @@ parseInitResp :: BSL.ByteString -> Either String VkInitData
 parseInitResp = eithParsed
   where
     parseInitRep =
-       withObject "object: key, server, ts" $ \o' -- Parser a
+       AeT.withObject "object: key, server, ts" $ \o' -- AeT.Parser a
         -> do
           o <- o' .: "response"
-          key <- o .: "key" :: Parser T.Text
-          server <- o .: "server" :: Parser T.Text
-          ts <- o .: "ts" :: Parser T.Text
+          key <- o .: "key" :: AeT.Parser T.Text
+          server <- o .: "server" :: AeT.Parser T.Text
+          ts <- o .: "ts" :: AeT.Parser T.Text
           pure
              VkInitData
                 { initKey = key
@@ -41,4 +42,4 @@ parseInitResp = eithParsed
           Right .
        decode
     eithParsed x =
-       initReplyToJSON x >>= parseEither parseInitRep
+       initReplyToJSON x >>= AeT.parseEither parseInitRep

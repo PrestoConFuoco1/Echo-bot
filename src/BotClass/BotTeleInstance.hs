@@ -1,5 +1,7 @@
-{-# LANGUAGE TypeFamilies, RecordWildCards, DataKinds, TypeApplications #-}
-
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE TypeApplications #-}
 module BotClass.BotTeleInstance where
 
 import qualified App.Handle as D

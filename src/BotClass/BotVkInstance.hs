@@ -1,11 +1,14 @@
-{-# LANGUAGE TypeFamilies, RecordWildCards, DataKinds, TypeApplications #-}
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE TypeApplications #-}
 
 module BotClass.BotVkInstance where
 
 import Data.Maybe (isNothing, fromMaybe)
 import qualified App.Handle as D
 import BotClass.Class
-import BotClass.ClassTypesVkInstance
+import BotClass.ClassTypesVkInstance ()
 import qualified Control.Monad.Catch as C
    ( MonadThrow
    , throwM

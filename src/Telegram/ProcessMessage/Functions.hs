@@ -6,7 +6,7 @@ import qualified Data.Text as T (Text)
 import qualified GenericPretty as GP
 import HTTPRequests as H
 import qualified Stuff as S (safeHead)
-import Telegram.Entity
+import Telegram.Entity (TlMessage (..), chatIDfromMsg)
 import Telegram.ProcessMessage.Types
 import Control.Monad ((>=>))
 

@@ -11,7 +11,7 @@ import qualified Data.ByteString.Lazy.Char8 as BSL
    )
 import qualified HTTPRequests as H
 import Telegram.General (tlTakesJSON)
-import Telegram.Update
+import Telegram.Update (TlReply, TlUpdateReplyError, TlUpdateReplySuccess, parseUpdatesResponse1)
 import qualified Types as Y
 
 parseUpdatesResponse ::

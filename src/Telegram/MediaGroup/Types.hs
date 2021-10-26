@@ -4,15 +4,15 @@
 {-# LANGUAGE RecordWildCards #-}
 module Telegram.MediaGroup.Types where
 
-import Data.Aeson.Types
+import Data.Aeson.Types (FromJSON (..), ToJSON (..), (.:), (.=), object)
 import Data.Foldable (asum)
 import qualified Data.Text as T
 import GHC.Generics
 import qualified GenericPretty as GP
 import qualified Stuff as S
-import Telegram.Entity
-import Telegram.ProcessMessage.Types
-import DerivingJSON
+import Telegram.Entity (TlMessage (..), TlUser (..), TlChat(..))
+import Telegram.ProcessMessage.Types (TlPhotoSize (..), videoFileID, documentFileID, audioFileID)
+import DerivingJSON (BotSelectorModifier (..))
 
 data TlMediaGroupIdentifier =
    TlMediaGroupIdentifier

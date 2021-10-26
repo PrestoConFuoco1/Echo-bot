@@ -3,7 +3,7 @@ module App.Handle.Telegram where
 
 import qualified App.Handle as D
 import qualified App.Logger as L
-import BotClass.ClassTypesTeleInstance
+import BotClass.ClassTypesTeleInstance ()
 import qualified Control.Monad.Catch as C
 import Data.IORef
 import qualified Data.Map as M

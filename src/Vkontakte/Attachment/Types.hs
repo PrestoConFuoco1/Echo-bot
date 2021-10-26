@@ -5,11 +5,12 @@
 module Vkontakte.Attachment.Types where
 
 import Control.Applicative ((<|>))
-import Data.Aeson.Types
+import qualified Data.Aeson.Types as AeT
+import Data.Aeson.Types ((.:), (.:?))
 import qualified Data.Text as T (Text)
 import GHC.Generics (Generic)
-import GenericPretty
-import DerivingJSON
+import GenericPretty (PrettyShow (..), consModifier, genericPrettyShow, defaultOptionsL)
+import DerivingJSON (BotSelectorModifier (..))
 
 data VkAttachment
    = VAPhoto VkPhoto
@@ -47,10 +48,10 @@ nullPartition :: VkAttsPartition
 nullPartition =
    VkAttsPartition [] [] [] [] [] [] [] [] [] [] [] []
 
-instance FromJSON VkAttachment where
+instance AeT.FromJSON VkAttachment where
    parseJSON =
-      withObject "Attachment object" $ \o -> do
-         attType <- o .: "type" :: Parser T.Text
+      AeT.withObject "Attachment object" $ \o -> do
+         attType <- o .: "type" :: AeT.Parser T.Text
          case attType of
             "photo" -> fmap VAPhoto $ o .: "photo"
             "video" -> fmap VAVideo $ o .: "video"
@@ -77,7 +78,7 @@ data VkPhoto =
       , photoAccessKey :: Maybe T.Text
       }
     deriving stock (Show, Eq, Generic)
-    deriving FromJSON via BotSelectorModifier VkPhoto
+    deriving AeT.FromJSON via BotSelectorModifier VkPhoto
     deriving anyclass PrettyShow
 
 ------------------------------------------
@@ -88,7 +89,7 @@ data VkVideo =
       , videoAccessKey :: Maybe T.Text
       }
     deriving stock (Show, Eq, Generic)
-    deriving FromJSON via BotSelectorModifier VkVideo
+    deriving AeT.FromJSON via BotSelectorModifier VkVideo
     deriving anyclass PrettyShow
 
 -----------------------------------------------
@@ -99,7 +100,7 @@ data VkAudio =
       , audioAccessKey :: Maybe T.Text
       }
     deriving stock (Show, Eq, Generic)
-    deriving FromJSON via BotSelectorModifier VkAudio
+    deriving AeT.FromJSON via BotSelectorModifier VkAudio
     deriving anyclass PrettyShow
 
 ----------------------------------------------
@@ -110,7 +111,7 @@ data VkDocument =
       , documentAccessKey :: Maybe T.Text
       }
     deriving stock (Show, Eq, Generic)
-    deriving FromJSON via BotSelectorModifier VkDocument
+    deriving AeT.FromJSON via BotSelectorModifier VkDocument
     deriving anyclass PrettyShow
 
 ----------------------------------------------
@@ -120,7 +121,7 @@ data VkLink =
       , linkTitle :: T.Text
       }
     deriving stock (Show, Eq, Generic)
-    deriving FromJSON via BotSelectorModifier VkLink
+    deriving AeT.FromJSON via BotSelectorModifier VkLink
     deriving anyclass PrettyShow
 
 ----------------------------------------------
@@ -131,7 +132,7 @@ data VkMarket =
       , marketAccessKey :: Maybe T.Text
       }
     deriving stock (Show, Eq, Generic)
-    deriving FromJSON via BotSelectorModifier VkMarket
+    deriving AeT.FromJSON via BotSelectorModifier VkMarket
     deriving anyclass PrettyShow
 
 ----------------------------------------------
@@ -142,7 +143,7 @@ data VkMarketAlbum =
       , _VMAl_access_key :: Maybe T.Text
       }
     deriving stock (Show, Eq, Generic)
-    deriving FromJSON via BotSelectorModifier VkMarketAlbum
+    deriving AeT.FromJSON via BotSelectorModifier VkMarketAlbum
     deriving anyclass PrettyShow
 
 ----------------------------------------------
@@ -155,9 +156,9 @@ data VkWall =
     deriving stock (Show, Eq, Generic)
     deriving anyclass PrettyShow
 
-instance FromJSON VkWall where
+instance AeT.FromJSON VkWall where
    parseJSON =
-      withObject "Vk wall record object" $ \o -> do
+      AeT.withObject "Vk wall record object" $ \o -> do
          iD <- o .: "id"
          accKey <- o .:? "access_key"
          ownerID <- o .: "owner_id" <|> o .: "to_id"
@@ -170,7 +171,7 @@ data VkWallReply =
       , wallreplyAccessKey :: Maybe T.Text
       }
     deriving stock (Show, Eq, Generic)
-    deriving FromJSON via BotSelectorModifier VkWallReply
+    deriving AeT.FromJSON via BotSelectorModifier VkWallReply
     deriving anyclass PrettyShow
 
 -----------------------------------------------
@@ -179,7 +180,7 @@ newtype VkSticker =
       { stickerStickerID :: Integer
       }
     deriving stock (Show, Eq, Generic)
-    deriving FromJSON via BotSelectorModifier VkSticker
+    deriving AeT.FromJSON via BotSelectorModifier VkSticker
     deriving anyclass PrettyShow
 
 -----------------------------------------------
@@ -188,14 +189,14 @@ newtype VkGift =
       { giftID :: Integer
       }
     deriving stock (Show, Eq, Generic)
-    deriving FromJSON via BotSelectorModifier VkGift
+    deriving AeT.FromJSON via BotSelectorModifier VkGift
     deriving anyclass PrettyShow
 
 
 data VkUnexpectedAtt =
    VkUnexpectedAtt
       { unexpattachmentType :: T.Text
-      , unexpattachmentVal :: Value
+      , unexpattachmentVal :: AeT.Value
       }
     deriving stock (Show, Eq, Generic)
     deriving anyclass PrettyShow

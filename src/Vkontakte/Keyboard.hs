@@ -3,11 +3,12 @@
 
 module Vkontakte.Keyboard where
 
-import Data.Aeson.Types
+import qualified Data.Aeson.Types as AeT
+import Data.Aeson.Types ((.=))
 import qualified Data.Text as T (Text, pack)
 import GHC.Generics (Generic)
-import Vkontakte.Entity
-import DerivingJSON
+import Vkontakte.Entity (VkPayload (..))
+import DerivingJSON (BotSelectorModifier (..))
 
 data VkKeyboard =
    VkKeyboard
@@ -15,7 +16,7 @@ data VkKeyboard =
       , keyboardButtons :: [[VkButton]]
       }
     deriving stock (Eq, Show, Generic)
-    deriving ToJSON via BotSelectorModifier VkKeyboard
+    deriving AeT.ToJSON via BotSelectorModifier VkKeyboard
 
 data VkButton =
    VkButton
@@ -23,22 +24,22 @@ data VkButton =
       , buttonAction :: VkButtonActions
       }
     deriving stock (Eq, Show, Generic)
-    deriving ToJSON via BotSelectorModifier VkButton
+    deriving AeT.ToJSON via BotSelectorModifier VkButton
 
 data VkButtonActions
    = VBACallback VkCallbackButton
    | VBAText VkTextButton
     deriving stock (Eq, Show)
 
-instance ToJSON VkButtonActions where
+instance AeT.ToJSON VkButtonActions where
    toJSON (VBACallback (VkCallbackButton l p)) =
-      object
+      AeT.object
          [ "type" .= ("callback" :: T.Text)
          , "label" .= l
          , "payload" .= p
          ]
    toJSON (VBAText (VkTextButton l p)) =
-      object
+      AeT.object
          [ "type" .= ("text" :: T.Text)
          , "label" .= l
          , "payload" .= p
@@ -50,7 +51,7 @@ data VkCallbackButton =
       , callbackbuttonPayload :: T.Text
       }
     deriving stock (Show, Eq, Generic)
-    deriving (ToJSON, FromJSON) via BotSelectorModifier VkCallbackButton
+    deriving (AeT.ToJSON, AeT.FromJSON) via BotSelectorModifier VkCallbackButton
 
 data VkTextButton =
    VkTextButton
@@ -58,7 +59,7 @@ data VkTextButton =
       , textbuttonPayload :: VkPayload
       }
     deriving stock (Show, Eq, Generic)
-    deriving ToJSON via BotSelectorModifier VkTextButton
+    deriving AeT.ToJSON via BotSelectorModifier VkTextButton
 
 repNumButtonVkTxt :: T.Text -> Int -> VkTextButton
 repNumButtonVkTxt cmd n =

@@ -8,7 +8,7 @@ import qualified Data.Map as M
 import qualified Data.Text as T (Text)
 import GHC.Generics (Generic)
 import GenericPretty as GP
-import Telegram.MediaGroup.Types
+import Telegram.MediaGroup.Types (TlMediaGroupIdentifier, TlMediaGroupUnit)
 
 tlTakesJSON :: Bool
 tlTakesJSON = True -- this is better

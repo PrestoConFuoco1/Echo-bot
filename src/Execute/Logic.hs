@@ -1,10 +1,10 @@
 {-# LANGUAGE AllowAmbiguousTypes, TypeApplications, ScopedTypeVariables #-}
 module Execute.Logic where
 
-import Data.Maybe
+import Data.Maybe (fromMaybe)
 import qualified App.Handle as D
-import BotClass.Class
-import BotClass.ClassTypes
+import BotClass.Class (BotClassUtility (..), BotClass (..))
+import BotClass.ClassTypes (BotClassTypes (..))
 import Control.Monad (replicateM)
 import Data.Either (partitionEithers)
 import Data.Foldable (asum)
