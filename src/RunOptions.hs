@@ -10,7 +10,7 @@ import Options.Applicative
 import Data.Maybe (fromMaybe)
 import qualified GenericPretty as P
 import qualified Data.Text as T
-import Types
+import qualified Types as Y
 
 data LoggerSettings =
     LogAll
@@ -26,7 +26,7 @@ toLoggerFilter (LogGreaterThan pri) = (>= pri)
 data RunOptions =
    RunOptions
       { confPath :: T.Text
-      , messenger :: Messenger
+      , messenger :: Y.Messenger
       , loggerSettings :: LoggerSettings
       , logPath :: T.Text
       , testConfig :: Bool
@@ -38,7 +38,7 @@ ghciRunOpts :: RunOptions
 ghciRunOpts =
    RunOptions
       { confPath = "src/bot.conf"
-      , messenger = Telegram
+      , messenger = Y.Telegram
       , loggerSettings = LogAll
       , logPath = "./log"
       , testConfig = False
@@ -56,7 +56,7 @@ getOpts = RunOptions
         <|> pure "./log")
     <*> switch (long "test-config" <> help "Test configuration")
 
-botHeader = "Echo-bot for Telegram and Vk"
+botHeader = "Echo-bot for Y.Telegram and Vk"
 --botDescription = ""
 
 getOptsIO :: IO RunOptions
@@ -65,11 +65,11 @@ getOptsIO = execParser $ info (getOpts <**> helper)
 --    <> progDesc botDescription
     <> header   botHeader )
 
-vkMessenger :: Parser Messenger
-vkMessenger = flag' Vkontakte (long "vk" <> help "Vk bot")
+vkMessenger :: Parser Y.Messenger
+vkMessenger = flag' Y.Vkontakte (long "vk" <> help "Vk bot")
 
-telegramMessenger :: Parser Messenger
-telegramMessenger = flag' Telegram (long "tl" <> long "telegram" <> help "Telegram bot")
+telegramMessenger :: Parser Y.Messenger
+telegramMessenger = flag' Y.Telegram (long "tl" <> long "telegram" <> help "Y.Telegram bot")
 
 getLoggerSettings :: L.Priority -> LoggerSettings
 getLoggerSettings = LogGreaterThan

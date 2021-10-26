@@ -1,7 +1,7 @@
 {-# LANGUAGE TypeFamilies, FlexibleContexts, DataKinds #-}
 module BotClass.ClassTypes where
 
-import Types
+import qualified Types as Y
 import qualified GenericPretty as GP
 
 class ( GP.PrettyShow (Rep s)
@@ -11,7 +11,7 @@ class ( GP.PrettyShow (Rep s)
       , GP.PrettyShow (Msg s)
       , GP.PrettyShow (Conf s)
       ) =>
-      BotClassTypes (s :: Messenger)
+      BotClassTypes (s :: Y.Messenger)
    where
    type Conf s :: *
    type StateC s :: *

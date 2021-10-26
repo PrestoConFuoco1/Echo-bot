@@ -11,13 +11,13 @@ import qualified Data.ByteString.Lazy.Char8 as BSL
    ( ByteString
    )
 import qualified HTTPRequests as H
-import Types
+import qualified Types as Y
 import Vkontakte.General
 import Vkontakte.Update
 
 parseUpdatesResponse ::
       BSL.ByteString
-   -> Either String (UpdateResponse VkUpdateReplySuccess VkUpdateReplyError)
+   -> Either String (Y.UpdateResponse VkUpdateReplySuccess VkUpdateReplyError)
 parseUpdatesResponse resp -- Either
  = do
    val <-
@@ -31,7 +31,7 @@ parseUpdatesResponse resp -- Either
 getUpdates ::
       L.Handle IO
    -> H.HTTPRequest
-   -> IO (Either String (UpdateResponse VkUpdateReplySuccess VkUpdateReplyError))
+   -> IO (Either String (Y.UpdateResponse VkUpdateReplySuccess VkUpdateReplyError))
 getUpdates logger request = do
    let takesJSON = True
    eithRespStr <- H.sendRequest logger takesJSON request -- Either String a

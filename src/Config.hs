@@ -11,7 +11,7 @@ import qualified Data.Text as T (Text)
 import qualified GenericPretty as GP
 import qualified Stuff as S (withEither)
 import Telegram (TlConfig(..))
-import Types
+import qualified Types as Y
 import Vkontakte (VkConfig(..))
 import qualified System.Exit as Q (ExitCode(..), exitWith, exitSuccess)
 import qualified System.IO.Error as E
@@ -31,7 +31,7 @@ loadConfig ::
       forall s. (BotConfigurable s)
    => L.Handle IO
    -> FilePath
-   -> IO (EnvironmentCommon, Conf s)
+   -> IO (Y.EnvironmentCommon, Conf s)
 loadConfig logger path = do
    conf <- C.load [CT.Required path]
    let genConf = C.subconfig "general" conf
@@ -54,27 +54,27 @@ loadConfig logger path = do
    pure (stGen, stSpec)
 
 loadGeneral ::
-      L.Handle IO -> CT.Config -> IO EnvironmentCommon
+      L.Handle IO -> CT.Config -> IO Y.EnvironmentCommon
 loadGeneral _ conf =
    CMC.handle
-      (const $ pure defStateGen :: CMC.SomeException -> IO EnvironmentCommon) $ do
-      let dg = defStateGen
+      (const $ pure Y.defStateGen :: CMC.SomeException -> IO Y.EnvironmentCommon) $ do
+      let dg = Y.defStateGen
           f x = C.lookupDefault (x dg) conf
-      confHelpMsg <- f helpMsg "help_message"
-      confRepQue <- f repQuestion "repeat_question"
-      confRepNum <- f repNum "default_repeat_num"
-      confTimeout <- f timeout "timeout"
-      confHelpCmd <- f helpCommand "help_command"
+      confHelpMsg <- f Y.helpMsg "help_message"
+      confRepQue <- f Y.repQuestion "repeat_question"
+      confRepNum <- f Y.repNum "default_repeat_num"
+      confTimeout <- f Y.timeout "timeout"
+      confHelpCmd <- f Y.helpCommand "help_command"
       confSetRepNumCmd <-
-         f setRepNumCommand "set_rep_num_command"
+         f Y.setRepNumCommand "set_rep_num_command"
       pure $
-         EnvironmentCommon {
-            helpMsg = confHelpMsg
-            , repQuestion = confRepQue
-            , repNum = confRepNum
-            , timeout = confTimeout
-            , helpCommand = confHelpCmd
-            , setRepNumCommand = confSetRepNumCmd
+         Y.EnvironmentCommon {
+            Y.helpMsg = confHelpMsg
+            , Y.repQuestion = confRepQue
+            , Y.repNum = confRepNum
+            , Y.timeout = confTimeout
+            , Y.helpCommand = confHelpCmd
+            , Y.setRepNumCommand = confSetRepNumCmd
             }
 
 class (BotClassTypes s) =>
@@ -84,17 +84,17 @@ class (BotClassTypes s) =>
          L.Handle IO -> CT.Config -> IO (Conf s)
    messagerName :: T.Text
 
-instance BotConfigurable 'Telegram where
+instance BotConfigurable 'Y.Telegram where
    loadSpecial logger conf =
       let teleConf = C.subconfig "telegram" conf
        in loadTeleConfig logger teleConf
-   messagerName = "Telegram"
+   messagerName = "Y.Telegram"
 
-instance BotConfigurable 'Vkontakte where
+instance BotConfigurable 'Y.Vkontakte where
    loadSpecial logger conf =
       let vkConf = C.subconfig "vkontakte" conf
        in loadVkConfig logger vkConf
-   messagerName = "Vkontakte"
+   messagerName = "Y.Vkontakte"
 
 tryGetConfig ::
       (BotClassTypes s)

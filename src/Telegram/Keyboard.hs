@@ -1,6 +1,5 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DerivingVia #-}
-{-# LANGUAGE DeriveAnyClass #-}
 
 module Telegram.Keyboard where
 

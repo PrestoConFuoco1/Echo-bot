@@ -11,7 +11,7 @@ import GHC.Generics (Generic)
 import GenericPretty
 import Telegram.Entity
 import DerivingJSON
-import Types
+import qualified Types as Y
 
 data TlReply =
    TlReply
@@ -41,22 +41,22 @@ data TlUpdateReplyError =
 
 parseUpdatesResponse1 ::
       Value
-   -> Either String (UpdateResponse TlUpdateReplySuccess TlUpdateReplyError)
+   -> Either String (Y.UpdateResponse TlUpdateReplySuccess TlUpdateReplyError)
 parseUpdatesResponse1 =
    parseEither $
-   withObject "Telegram updates object" $ \o -> do
+   withObject "Y.Telegram updates object" $ \o -> do
       ok <- o .: "ok"
       if ok
          then do
             res <- o .: "result"
             pure $
-               UpdateResponse $
+               Y.UpdateResponse $
                TlUpdateReplySuccess {replysuccessResult = res}
          else do
             errCode <- o .: "error_code"
             description <- o .: "description"
             pure $
-               UpdateError $
+               Y.UpdateError $
                TlUpdateReplyError
                   { replyerrorErrorCode = errCode
                   , replyerrorDescription = description

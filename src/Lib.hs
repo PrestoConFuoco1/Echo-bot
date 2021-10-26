@@ -9,28 +9,28 @@ import qualified App.Handle.Vkontakte as V
 import qualified App.Logger as L
 import BotClass.BotTeleInstance ()
 import BotClass.BotVkInstance ()
-import BotClass.ClassTypes
-import BotClass.ClassTypesTeleInstance
-import BotClass.ClassTypesVkInstance
-import Config
+import BotClass.ClassTypes (BotClassTypes(..))
+import BotClass.ClassTypesTeleInstance ()
+import BotClass.ClassTypesVkInstance ()
+import Config (BotConfigurable(..), loadConfig, configHandlers)
 import Control.Monad (when)
 import qualified Control.Monad.Catch as C
 import qualified Data.Configurator.Types as CT
    ( ConfigError(..)
    )
 import qualified Data.Text as T (pack, unpack)
-import Execute
+import Execute (execute)
 import qualified Stuff as S (withMaybe)
 import System.Environment (getArgs)
 import qualified System.Exit as Q (ExitCode(..), exitWith, exitSuccess)
 import System.IO (hPutStrLn, stderr)
-import Telegram
-import Types
-import Vkontakte
-import RunOptions
+import Telegram (TlConfig)
+import qualified Types as Y
+import Vkontakte (VkConfig)
+import RunOptions (RunOptions(..), getOptsIO, ghciRunOpts, toLoggerFilter)
 import qualified GenericPretty as GP
 
-ghciMain :: Messenger -> IO () -- for ghci
+ghciMain :: Y.Messenger -> IO () -- for ghci
 ghciMain m =
    runWithOpts
       (ghciRunOpts {messenger = m})
@@ -45,14 +45,14 @@ main = do
 runWithOpts :: RunOptions -> IO ()
 runWithOpts opts =
    case messenger opts of
-      Telegram -> runBotWithOpts @Telegram opts telegramAction
-      Vkontakte -> runBotWithOpts @Vkontakte opts vkAction
+      Y.Telegram -> runBotWithOpts @Y.Telegram opts telegramAction
+      Y.Vkontakte -> runBotWithOpts @Y.Vkontakte opts vkAction
 
 
 runBotWithOpts ::
       forall s. (BotConfigurable s)
    => RunOptions
-   -> (L.Handle IO -> EnvironmentCommon -> Conf s -> IO ())
+   -> (L.Handle IO -> Y.EnvironmentCommon -> Conf s -> IO ())
    -> IO ()
 runBotWithOpts opts todo = do
    let configLogger =
@@ -75,7 +75,7 @@ runBotWithOpts opts todo = do
 
 
 telegramAction ::
-      L.Handle IO -> EnvironmentCommon -> TlConfig -> IO ()
+      L.Handle IO -> Y.EnvironmentCommon -> TlConfig -> IO ()
 telegramAction logger gen tlConf = do
    let tlConfig = T.Config gen tlConf
    resources <- T.initResources logger tlConfig
@@ -86,11 +86,11 @@ telegramAction logger gen tlConf = do
          (`T.resourcesToHandle` logger)
          D.log
          T.tlHandlers
-         (execute @Telegram)
+         (execute @Y.Telegram)
    pure ()
 
 vkAction ::
-      L.Handle IO -> EnvironmentCommon -> VkConfig -> IO ()
+      L.Handle IO -> Y.EnvironmentCommon -> VkConfig -> IO ()
 vkAction logger gen vkConf = do
    let vkConfig = V.Config gen vkConf
    resources <- V.initResources logger vkConfig
@@ -101,7 +101,7 @@ vkAction logger gen vkConf = do
          (`V.resourcesToHandle` logger)
          D.log
          V.vkHandlers
-         (execute @Vkontakte)
+         (execute @Y.Vkontakte)
    pure ()
 
 forever :: a -> (a -> IO a) -> IO a

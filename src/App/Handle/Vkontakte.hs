@@ -8,7 +8,7 @@ import BotClass.ClassTypesVkInstance
 import Data.IORef
 import qualified Data.Map as M
 import qualified HTTPRequests as H
-import Types
+import qualified Types as Y
 import Vkontakte
 import Vkontakte.Initialize
 
@@ -30,13 +30,13 @@ import qualified Vkontakte.Send as G
 
 data Config =
    Config
-      { configCommonEnv :: EnvironmentCommon
+      { configCommonEnv :: Y.EnvironmentCommon
       , configVkontakte :: VkConfig
       }
 
 data Resources =
    Resources
-      { commonEnv :: EnvironmentCommon
+      { commonEnv :: Y.EnvironmentCommon
       , constState :: VkStateConst
       , mutState :: IORef VkStateMut
       , usersMap :: IORef (M.Map VkUser Int)
@@ -56,7 +56,7 @@ initResources h (Config common vkConf) = do
          }
 
 resourcesToHandle ::
-      Resources -> L.Handle IO -> D.Handle 'Vkontakte IO
+      Resources -> L.Handle IO -> D.Handle 'Y.Vkontakte IO
 resourcesToHandle resources logger =
    D.Handle
       { D.log = logger

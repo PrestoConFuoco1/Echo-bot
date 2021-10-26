@@ -12,17 +12,17 @@ import qualified System.Exit as Q (ExitCode(..), exitWith)
 import Telegram
 import qualified Telegram.Exceptions as TlEx
 import qualified Telegram.Send as G
-import Types
+import qualified Types as Y
 
 data Config =
    Config
-      { configCommonEnv :: EnvironmentCommon
+      { configCommonEnv :: Y.EnvironmentCommon
       , configTelegram :: TlConfig
       }
 
 data Resources =
    Resources
-      { commonEnv :: EnvironmentCommon
+      { commonEnv :: Y.EnvironmentCommon
       , constState :: TlStateConst
       , mutState :: IORef TlStateMut
       , usersMap :: IORef (M.Map TlUser Int)
@@ -47,7 +47,7 @@ initResources _ (Config common tlConf) = do
          }
 
 resourcesToHandle ::
-      Resources -> L.Handle IO -> D.Handle 'Telegram IO
+      Resources -> L.Handle IO -> D.Handle 'Y.Telegram IO
 resourcesToHandle resources logger =
    D.Handle
       { D.log = logger

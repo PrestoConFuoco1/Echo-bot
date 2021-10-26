@@ -8,19 +8,19 @@ import Data.Maybe (fromMaybe)
 import qualified Data.Text as T (Text)
 import qualified HTTPRequests as H
 import Prelude hiding (log)
-import Types
+import qualified Types as Y
 
 data Handle s m =
    Handle
       { log :: Logger.Handle m
-      , commonEnv :: EnvironmentCommon
+      , commonEnv :: Y.EnvironmentCommon
       , insertUser :: (BotClassTypes s) =>
                          User s -> Int -> m ()
       , getUser :: (BotClassTypes s) =>
                       User s -> m (Maybe Int)
       , getConstState :: (BotClassTypes s) =>
                             StateC s
-      , getUpdates :: H.HTTPRequest -> m (Either String (UpdateResponse (RepSucc s) (RepErr s)))
+      , getUpdates :: H.HTTPRequest -> m (Either String (Y.UpdateResponse (RepSucc s) (RepErr s)))
       , sendEcho :: H.HTTPRequest -> m (Either String (Rep s))
       , sendHelp :: H.HTTPRequest -> m (Either String (Rep s))
       , sendKeyboard :: H.HTTPRequest -> m (Either String (Rep s))

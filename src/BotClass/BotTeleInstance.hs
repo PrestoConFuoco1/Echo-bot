@@ -21,9 +21,9 @@ import qualified GenericPretty as GP
 import HTTPRequests as H
 import qualified Stuff as S
 import Telegram
-import Types
+import qualified Types as Y
 
-instance BotClassUtility 'Telegram where
+instance BotClassUtility 'Y.Telegram where
    getResult = Just . replysuccessResult
    getMsg TlUpdate {..} =
       case updateEvent of
@@ -43,11 +43,11 @@ instance BotClassUtility 'Telegram where
    getCallbackChat c =
       messageChat <$> callbackMessage c
 
-instance BotClass 'Telegram
+instance BotClass 'Y.Telegram
                          where
    takesJSON = tlTakesJSON
    getUpdatesRequest h = do
-      let tout = timeout $ D.commonEnv h
+      let tout = Y.timeout $ D.commonEnv h
           url = stcUrl $ D.getConstState h
           req uid =
              H.Req
@@ -67,7 +67,7 @@ instance BotClass 'Telegram
    parseUpdatesValueList rep = do
       res <-
          maybe (Left "Couldn't parse update list") Right $
-         getResult @Telegram rep
+         getResult @Y.Telegram rep
       AeT.parseEither AeT.parseJSON res
    parseUpdate = AeT.parseEither AeT.parseJSON
    repNumKeyboard lst cmd = [unit "reply_markup" obj]
@@ -76,7 +76,7 @@ instance BotClass 'Telegram
    sendTextMsg _ Nothing _ _ =
       pure $
       Left
-         "Telegram: no chat supplied, unable to send messages to users"
+         "Y.Telegram: no chat supplied, unable to send messages to users"
    sendTextMsg h (Just c) _ text =
       let url = stcUrl $ D.getConstState h
        in pure $
@@ -101,7 +101,7 @@ instance BotClass 'Telegram
 
 processMessage1 ::
       (Monad m)
-   => D.Handle 'Telegram m
+   => D.Handle 'Y.Telegram m
    -> TlMessage
    -> m (Maybe (m H.HTTPRequest))
 processMessage1 h m =
@@ -122,7 +122,7 @@ processMessage1 h m =
            eithMethodParams
 
 processMediaGroup ::
-      (Monad m) => D.Handle 'Telegram m -> TlMessage -> m ()
+      (Monad m) => D.Handle 'Y.Telegram m -> TlMessage -> m ()
 processMediaGroup h m =
    let funcName = "processMediaGroup: "
        chat = messageChat m
@@ -150,7 +150,7 @@ processMediaGroup h m =
 
 sendMediaGroup ::
       (Monad m)
-   => D.Handle 'Telegram m
+   => D.Handle 'Y.Telegram m
    -> TlMediaGroupPair
    -> m ()
 sendMediaGroup h (TlMediaGroupPair ident items) = do

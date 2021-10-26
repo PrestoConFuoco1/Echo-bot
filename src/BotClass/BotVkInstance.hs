@@ -21,10 +21,10 @@ import qualified Exceptions as Ex
 import GenericPretty
 import HTTPRequests as H
 import qualified Stuff as S (emptyToNothing, withMaybe)
-import Types (timeout, Messenger(Vkontakte))
+import qualified Types as Y (timeout, Messenger(Vkontakte))
 import Vkontakte
 
-instance BotClassUtility 'Vkontakte where
+instance BotClassUtility 'Y.Vkontakte where
    getResult = Just . replysuccessUpdates
    getMsg VkUpdate {..} =
       case updateObject of
@@ -44,7 +44,7 @@ instance BotClassUtility 'Vkontakte where
       Just . payloadPayload . mycallbackPayload
    getCallbackChat = const Nothing
 
-instance BotClass 'Vkontakte
+instance BotClass 'Y.Vkontakte
                           where
    takesJSON = vkTakesJSON
    getUpdatesRequest = getUpdatesRequest1
@@ -53,7 +53,7 @@ instance BotClass 'Vkontakte
    parseUpdatesValueList rep = do
       res <-
          maybe (Left "Couldn't parse update list") Right $
-         getResult @Vkontakte rep
+         getResult @Y.Vkontakte rep
       AeT.parseEither AeT.parseJSON res
    parseUpdate = AeT.parseEither AeT.parseJSON
    sendTextMsg = sendTextMsg1
@@ -62,12 +62,12 @@ instance BotClass 'Vkontakte
    epilogue = epilogue1
 
 getUpdatesRequest1 ::
-      (Monad m) => D.Handle 'Vkontakte m -> m H.HTTPRequest
+      (Monad m) => D.Handle 'Y.Vkontakte m -> m H.HTTPRequest
 getUpdatesRequest1 h
  = do
    curTS <- getTimestamp (D.specH h)
    let constState = D.getConstState h
-       timeout' = timeout $ D.commonEnv h
+       timeout' = Y.timeout $ D.commonEnv h
        fullUrl = vkServer constState
        pars =
           [ unit "act" ("a_check" :: T.Text)
@@ -92,7 +92,7 @@ errorMsg3 =
 
 handleFailedUpdatesRequest1 ::
       (C.MonadThrow m)
-   => D.Handle 'Vkontakte m
+   => D.Handle 'Y.Vkontakte m
    -> VkUpdateReplyError
    -> m ()
 handleFailedUpdatesRequest1 h e@(VkUpdateReplyError {..}) =
@@ -127,7 +127,7 @@ handleFailedUpdatesRequest1 h e@(VkUpdateReplyError {..}) =
 
 sendTextMsg1 ::
       (Monad m)
-   => D.Handle 'Vkontakte m
+   => D.Handle 'Y.Vkontakte m
    -> Maybe VkChat
    -> Maybe VkUser
    -> T.Text
@@ -157,7 +157,7 @@ repNumKeyboard1 lst cmd = [unit "keyboard" obj]
 
 epilogue1 ::
       (Monad m)
-   => D.Handle 'Vkontakte m
+   => D.Handle 'Y.Vkontakte m
    -> [VkUpdate]
    -> VkUpdateReplySuccess
    -> m ()
@@ -168,7 +168,7 @@ epilogue1 h _ rep =
 
 processMessage1 ::
       (Monad m)
-   => D.Handle 'Vkontakte m
+   => D.Handle 'Y.Vkontakte m
    -> VkMessage
    -> m (Maybe (m H.HTTPRequest))
 processMessage1 h m
@@ -210,7 +210,7 @@ processMessage1 h m
 
 processMessageVk ::
       (Monad m)
-   => D.Handle 'Vkontakte m
+   => D.Handle 'Y.Vkontakte m
    -> VkUser
    -> Maybe T.Text
    -> H.ParamsList

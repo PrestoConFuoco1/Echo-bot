@@ -12,11 +12,11 @@ import qualified Data.ByteString.Lazy.Char8 as BSL
 import qualified HTTPRequests as H
 import Telegram.General (tlTakesJSON)
 import Telegram.Update
-import Types
+import qualified Types as Y
 
 parseUpdatesResponse ::
       BSL.ByteString
-   -> Either String (UpdateResponse TlUpdateReplySuccess TlUpdateReplyError)
+   -> Either String (Y.UpdateResponse TlUpdateReplySuccess TlUpdateReplyError)
 parseUpdatesResponse resp -- Either
  = do
    val <-
@@ -30,7 +30,7 @@ parseUpdatesResponse resp -- Either
 getUpdates ::
       L.Handle IO
    -> H.HTTPRequest
-   -> IO (Either String (UpdateResponse TlUpdateReplySuccess TlUpdateReplyError))
+   -> IO (Either String (Y.UpdateResponse TlUpdateReplySuccess TlUpdateReplyError))
 getUpdates logger request = do
    let takesJSON = True
    eithRespStr <- H.sendRequest logger takesJSON request -- Either String a

@@ -1,4 +1,7 @@
-{-# LANGUAGE DeriveGeneric, FlexibleContexts, UndecidableInstances, DerivingStrategies, DerivingVia #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE DerivingVia #-}
+
 module DerivingJSON where
 
 

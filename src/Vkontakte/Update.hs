@@ -13,7 +13,7 @@ import qualified Data.Text.Encoding as E (encodeUtf8)
 import GHC.Generics
 import GenericPretty
 import qualified Stuff as S (showT)
-import Types
+import qualified Types as Y
 import Vkontakte.Entity
 import qualified Data.ByteString.Lazy as BS (fromStrict)
 
@@ -28,7 +28,7 @@ data VkReply =
 instance FromJSON VkReply where
    parseJSON x =
       ($ x) $
-      withObject "Vkontakte reply object" $ \o -> do
+      withObject "Y.Vkontakte reply object" $ \o -> do
          failed <- o .:? "failed"
          pure $ VkReply failed x
 
@@ -50,10 +50,10 @@ data VkUpdateReplyError =
 
 parseUpdatesResponse2 ::
       Value
-   -> Either String (UpdateResponse VkUpdateReplySuccess VkUpdateReplyError)
+   -> Either String (Y.UpdateResponse VkUpdateReplySuccess VkUpdateReplyError)
 parseUpdatesResponse2 =
    parseEither $
-   withObject "Vkontakte update object" $ \o -> do
+   withObject "Y.Vkontakte update object" $ \o -> do
       ts <-
          asum
             [ o .:? "ts"
@@ -72,7 +72,7 @@ parseUpdatesResponse2 =
                 VkUpdateReplyError
                    {replyerrorFailed = failed, replyerrorTs = ts}
       asum
-         [fmap UpdateResponse success, fmap UpdateError err]
+         [fmap Y.UpdateResponse success, fmap Y.UpdateError err]
 
 data VkUpdate =
    VkUpdate
