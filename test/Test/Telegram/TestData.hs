@@ -23,59 +23,59 @@ defaultMessageID = 0
 defaultDate = 0
 defaultText = Nothing
 defaultUser = TlUser {
-    _TUs_id = 0,
-    _TUs_is_bot = False,
-    _TUs_first_name = "firstname",
-    _TUs_last_name = Just "lastname",
-    _TUs_username = Just "username"
+    userID = 0,
+    userIsBot = False,
+    userFirstName = "firstname",
+    userLastName = Just "lastname",
+    userUsername = Just "username"
     }
 
 
 defaultChat = TlChat {
-    _TC_id = 0
+    chatID = 0
     }
 
 defaultMessage = TlMessage {
-    _TM_message_id = defaultMessageID,
-    _TM_from = Just defaultUser,
-    _TM_date = defaultDate,
-    _TM_chat = defaultChat,
-    _TM_text = defaultText,
-    _TM_media_group_id = Nothing,
-    _TM_animation = Nothing,
-    _TM_audio = Nothing,
-    _TM_document = Nothing,
-    _TM_photo = Nothing,
-    _TM_sticker = Nothing,
-    _TM_video = Nothing,
-    _TM_video_note = Nothing,
-    _TM_voice = Nothing,
-    _TM_caption = Nothing,
-    _TM_contact = Nothing,
-    _TM_dice = Nothing,
-    _TM_venue = Nothing,
-    _TM_location = Nothing,
-    _TM_poll = Nothing
+    messageMessageID = defaultMessageID,
+    messageFrom = Just defaultUser,
+    messageDate = defaultDate,
+    messageChat = defaultChat,
+    messageText = defaultText,
+    messageMediaGroupID = Nothing,
+    messageAnimation = Nothing,
+    messageAudio = Nothing,
+    messageDocument = Nothing,
+    messagePhoto = Nothing,
+    messageSticker = Nothing,
+    messageVideo = Nothing,
+    messageVideoNote = Nothing,
+    messageVoice = Nothing,
+    messageCaption = Nothing,
+    messageContact = Nothing,
+    messageDice = Nothing,
+    messageVenue = Nothing,
+    messageLocation = Nothing,
+    messagePoll = Nothing
     }
 
 successReply :: TlReply
 successReply = TlReply {
-    _TR_ok = True
-    , _TR_result = Just $ String "success"
-    , _TR_description = Nothing
-    , _TR_error_code = Nothing
+    replyOk = True
+    , replyResult = Just $ String "success"
+    , replyDescription = Nothing
+    , replyErrorCode = Nothing
     }
 
 
 
 sendHelpMessageMsg :: TlMessage
-sendHelpMessageMsg = defaultMessage { _TM_text = Just $ helpCommand defStateGen }
+sendHelpMessageMsg = defaultMessage { messageText = Just $ helpCommand defStateGen }
 
 buildUpdate :: TlEvent -> T.Text -> TlUpdate
 buildUpdate event msg = TlUpdate {
-    _TU_update_id = 0
-    , _TU_event = event
-    , _TU_value = String msg
+    updateUpdateID = 0
+    , updateEvent = event
+    , updateValue = String msg
     }
 
 sendHelpMessageUpd :: TlUpdate
@@ -84,7 +84,7 @@ sendHelpMessageUpd =
     in  buildUpdate event "help request update"
 
 sendKeyboardMessage :: TlMessage
-sendKeyboardMessage = defaultMessage { _TM_text = Just $ setRepNumCommand defStateGen }
+sendKeyboardMessage = defaultMessage { messageText = Just $ setRepNumCommand defStateGen }
 
 sendKeyboardMessageUpd = buildUpdate (TEMsg sendKeyboardMessage) "send repnum buttons request"
 
@@ -113,16 +113,16 @@ sendKeyboardMessageUpd = buildUpdate (TEMsg sendKeyboardMessage) "send repnum bu
 
 setRepNumCallback :: Int -> TlCallback
 setRepNumCallback int = TlCallback {
-    _TCB_id = "callback_id"
-    , _TCB_from = defaultUser
-    , _TCB_data = Just $ "set " <> S.showT int
-    , _TCB_message = Just sendKeyboardMessage
+    callbackID = "callback_id"
+    , callbackFrom = defaultUser
+    , callbackData = Just $ "set " <> S.showT int
+    , callbackMessage = Just sendKeyboardMessage
     }
 
 setRepNumUpdate :: Int -> TlUpdate
 setRepNumUpdate repnum = buildUpdate (TECallback $ setRepNumCallback repnum) "set repeat number update"
 
-simpleMessage = defaultMessage { _TM_text = Just "hello, this is yoba" }
+simpleMessage = defaultMessage { messageText = Just "hello, this is yoba" }
 
 simpleMessageUpdate :: TlUpdate
 simpleMessageUpdate = buildUpdate (TEMsg simpleMessage) "simple message to echo"
@@ -130,9 +130,9 @@ simpleMessageUpdate = buildUpdate (TEMsg simpleMessage) "simple message to echo"
 
 
 mediaGroupMessage = defaultMessage {
-    _TM_media_group_id = Just "media group id"
-    , _TM_audio = Just TlAudio {
-        _TAu_file_id = "file identifier"
+    messageMediaGroupID = Just "media group id"
+    , messageAudio = Just TlAudio {
+        audioFileID = "file identifier"
         }
     }
 
