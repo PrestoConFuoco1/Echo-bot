@@ -55,8 +55,8 @@ defineUpdateType h u =
 
 getCmd :: Y.EnvironmentCommon -> T.Text -> Maybe Y.Command
 getCmd e str
-   | str == Y.helpCommand e = Just Y.Help
-   | str == Y.setRepNumCommand e = Just Y.SetRepNum
+   | str == Y.getHelpCommand e = Just Y.Help
+   | str == Y.getSetRepNumCommand e = Just Y.SetRepNum
    | otherwise = Nothing
 
 handleCallback ::
@@ -145,7 +145,7 @@ sendHelp ::
 sendHelp h mChat mUser = do
    let funcName = "sendHelp: "
    eithReqFunc <-
-      sendTextMsg h mChat mUser (Y.helpMsg $ D.commonEnv h)
+      sendTextMsg h mChat mUser (Y.getHelpMessage $ D.commonEnv h)
    D.logDebug h $
       funcName <>
       "sending HTTP request to send help message"
@@ -172,7 +172,7 @@ sendRepNumButtons h mChat mUser = do
          h
          mChat
          mUser
-         (Y.repQuestion $ D.commonEnv h)
+         (Y.getRepeatQuestion $ D.commonEnv h)
    let eithReqFuncKeyboard =
           fmap (H.addParams inlKeyboardPars) eithReqFunc
        inlKeyboardPars =
@@ -248,7 +248,7 @@ sendNTimes ::
    -> m ()
 sendNTimes h maybeUser req = do
    let funcName = "sendNTimes: "
-       defaultRepNum = Y.repNum $ D.commonEnv h
+       defaultRepNum = Y.getDefaultRepNum $ D.commonEnv h
    repNraw <- D.findWithDefault h defaultRepNum maybeUser
    let repN = validateRepNum repNraw
    D.logDebug h $

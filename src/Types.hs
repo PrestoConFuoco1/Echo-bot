@@ -1,5 +1,26 @@
-{-# LANGUAGE DeriveGeneric, DeriveAnyClass #-}
-module Types where
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DeriveAnyClass #-}
+{-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE DerivingVia #-}
+module Types (
+    Messenger(..)
+    , EnvironmentCommon (..)
+    , EnvCommands (..)
+    , EnvMessages (..)
+    , defStateGen
+    
+    , getHelpMessage
+    , getRepeatQuestion
+    , getHelpCommand
+    , getSetRepNumCommand
+    , getDefaultRepNum
+    , getDefaultTimeout
+
+    , Command (..)
+    , Event (..)
+    , CallbQuery (..)
+    , UpdateResponse (..)
+) where
 
 import Data.Aeson.Types (Value)
 import qualified Data.Text as T (Text)
@@ -10,20 +31,17 @@ import qualified Stuff as S (Timeout)
 data Messenger
    = Vkontakte
    | Telegram
-    deriving (Show, Eq)
-instance GP.PrettyShow Messenger where
-    prettyShow = GP.LStr . show
+    deriving stock (Show, Eq)
+    deriving GP.PrettyShow via GP.Showable Messenger
 
 data EnvironmentCommon =
    EnvironmentCommon -- never changes
-      { helpMsg :: T.Text
-      , repQuestion :: T.Text
+      { envMessages :: EnvMessages
       , repNum :: Int
       , timeout :: S.Timeout
-      , helpCommand :: T.Text
-      , setRepNumCommand :: T.Text
+      , envCommands :: EnvCommands
       }
-   deriving (Show, Generic)
+    deriving stock (Show, Generic)
 
 instance GP.PrettyShow EnvironmentCommon where
    prettyShow =
@@ -31,20 +49,59 @@ instance GP.PrettyShow EnvironmentCommon where
          GP.defaultOptionsL
             {GP.consModifier = const "Common settings"}
 
-defStateGen :: EnvironmentCommon
-defStateGen =
-   EnvironmentCommon
-      { helpMsg =
+data EnvMessages = EnvMessages {
+    helpMsg :: T.Text
+    , repQuestion :: T.Text
+    }
+    deriving stock (Show, Generic)
+    deriving anyclass GP.PrettyShow
+
+data EnvCommands = EnvCommands {
+    helpCommand :: T.Text
+    , setRepNumCommand :: T.Text
+    }
+    deriving stock (Show, Generic)
+    deriving anyclass GP.PrettyShow
+
+defaultMessages = EnvMessages {
+    helpMsg =
            "Hello! Available commands:\n\
                 \-- /help - to get help\n\
                 \-- /set - to change current number of messages repeats"
-      , repQuestion =
+    , repQuestion =
            "How many times would you like to repeat every reply?"
-      , repNum = 1
-      , timeout = 25
-      , helpCommand = "/help"
-      , setRepNumCommand = "/set"
-      }
+    }
+defaultCommands = EnvCommands {
+    helpCommand = "/help"
+    , setRepNumCommand = "/set"
+    }
+
+defStateGen :: EnvironmentCommon
+defStateGen =
+   EnvironmentCommon {
+    envMessages = defaultMessages
+    , repNum = 1
+    , timeout = 25
+    , envCommands = defaultCommands
+    }
+
+getHelpMessage :: EnvironmentCommon -> T.Text
+getHelpMessage = helpMsg . envMessages
+
+getRepeatQuestion :: EnvironmentCommon -> T.Text
+getRepeatQuestion = repQuestion . envMessages
+
+getHelpCommand :: EnvironmentCommon -> T.Text
+getHelpCommand = helpCommand . envCommands
+
+getSetRepNumCommand :: EnvironmentCommon -> T.Text
+getSetRepNumCommand = setRepNumCommand . envCommands
+
+getDefaultTimeout :: EnvironmentCommon -> S.Timeout
+getDefaultTimeout = timeout
+
+getDefaultRepNum :: EnvironmentCommon -> Int
+getDefaultRepNum = repNum
 
 -------------------------------------------------------------------
 data Command

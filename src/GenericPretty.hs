@@ -122,6 +122,12 @@ genericPrettyShow ::
    -> LayoutValue
 genericPrettyShow opts = gprettyShow opts . from
 
+
+newtype Showable a = Showable a
+
+instance (Show a) => PrettyShow (Showable a) where
+    prettyShow (Showable x) = LStr $ show x
+
 newtype StrWrap =
    StrWrap
       { unStrWrap :: String

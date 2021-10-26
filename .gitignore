@@ -1,0 +1,10 @@
+.stack-work/
+.gitignore
+*.swp
+*.lock
+*~
+.vscode/
+.history/
+log
+src/log
+src/bot.conf

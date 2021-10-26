@@ -47,7 +47,7 @@ instance BotClass 'Y.Telegram
                          where
    takesJSON = tlTakesJSON
    getUpdatesRequest h = do
-      let tout = Y.timeout $ D.commonEnv h
+      let tout = Y.getDefaultTimeout $ D.commonEnv h
           url = stcUrl $ D.getConstState h
           req uid =
              H.Req

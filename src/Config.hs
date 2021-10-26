@@ -1,4 +1,9 @@
-{-# LANGUAGE BlockArguments, DataKinds, AllowAmbiguousTypes, TypeApplications, ScopedTypeVariables #-}
+{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE AllowAmbiguousTypes #-}
+{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+
 module Config where
 
 import qualified App.Logger as L
@@ -59,22 +64,28 @@ loadGeneral _ conf =
    CMC.handle
       (const $ pure Y.defStateGen :: CMC.SomeException -> IO Y.EnvironmentCommon) $ do
       let dg = Y.defStateGen
-          f x = C.lookupDefault (x dg) conf
-      confHelpMsg <- f Y.helpMsg "help_message"
-      confRepQue <- f Y.repQuestion "repeat_question"
-      confRepNum <- f Y.repNum "default_repeat_num"
-      confTimeout <- f Y.timeout "timeout"
-      confHelpCmd <- f Y.helpCommand "help_command"
+          withDefault x = C.lookupDefault (x dg) conf
+      confHelpMsg <- withDefault Y.getHelpMessage "help_message"
+      confRepQue <- withDefault Y.getRepeatQuestion "repeat_question"
+      confRepNum <- withDefault Y.repNum "default_repeat_num"
+      confTimeout <- withDefault Y.timeout "timeout"
+      confHelpCmd <- withDefault Y.getHelpCommand "help_command"
       confSetRepNumCmd <-
-         f Y.setRepNumCommand "set_rep_num_command"
-      pure $
-         Y.EnvironmentCommon {
+         withDefault Y.getSetRepNumCommand "set_rep_num_command"
+      let cmds = Y.EnvCommands {
+            Y.helpCommand = confHelpCmd
+            , Y.setRepNumCommand = confSetRepNumCmd
+          }
+          msgs = Y.EnvMessages {
             Y.helpMsg = confHelpMsg
             , Y.repQuestion = confRepQue
+          }
+      pure $
+         Y.EnvironmentCommon {
+            Y.envCommands = cmds
+            , Y.envMessages = msgs
             , Y.repNum = confRepNum
             , Y.timeout = confTimeout
-            , Y.helpCommand = confHelpCmd
-            , Y.setRepNumCommand = confSetRepNumCmd
             }
 
 class (BotClassTypes s) =>
