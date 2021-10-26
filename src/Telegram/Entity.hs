@@ -1,5 +1,6 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DerivingVia #-}
+{-# LANGUAGE DeriveAnyClass #-}
 
 module Telegram.Entity where
 
@@ -48,7 +49,7 @@ data TlMessage =
       }
     deriving stock (Show, Eq, Generic)
     deriving FromJSON via (BotSelectorModifier TlMessage)
-
+    deriving anyclass PrettyShow
 
 -----------------------------------------------------------
 newtype TlChat =
@@ -56,15 +57,12 @@ newtype TlChat =
       { chatID :: Integer
       }
     deriving stock (Show, Eq, Generic)
-    deriving FromJSON via (BotSelectorModifier TlChat)
+    deriving (FromJSON, ToJSON) via (BotSelectorModifier TlChat)
+    deriving anyclass PrettyShow
+
 
 instance Ord TlChat where
    compare = compare `on` chatID
-
-instance ToJSON TlChat where
-   toJSON =
-      genericToJSON
-         defaultOptions {fieldLabelModifier = drop 4}
 
 -----------------------------------------------------------
 data TlUser =
@@ -77,6 +75,8 @@ data TlUser =
       }
     deriving stock (Show, Generic)
     deriving (FromJSON, ToJSON) via BotSelectorModifier TlUser
+    deriving anyclass PrettyShow
+
 
 instance Eq TlUser where
    (==) = (==) `on` userID
@@ -93,14 +93,6 @@ data TlCallback =
       }
     deriving stock (Show, Eq, Generic)
     deriving FromJSON via BotSelectorModifier TlCallback
-
-instance PrettyShow TlUser
-
-instance PrettyShow TlChat
-
-instance PrettyShow TlMessage
-
-instance PrettyShow TlCallback
-
+    deriving anyclass PrettyShow
 
 

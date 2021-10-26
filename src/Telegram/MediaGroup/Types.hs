@@ -1,4 +1,7 @@
-{-# LANGUAGE DeriveGeneric, RecordWildCards #-}
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DeriveAnyClass #-}
+{-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE RecordWildCards #-}
 module Telegram.MediaGroup.Types where
 
 import Data.Aeson.Types
@@ -9,114 +12,108 @@ import qualified GenericPretty as GP
 import qualified Stuff as S
 import Telegram.Entity
 import Telegram.ProcessMessage.Types
+import DerivingJSON
 
 data TlMediaGroupIdentifier =
    TlMediaGroupIdentifier
-      { _TMGI_chat :: TlChat
-      , _TMGI_user :: Maybe TlUser
-      , _TMGI_mediaGroupID :: T.Text
+      { tmgidChat :: TlChat
+      , tmgidUser :: Maybe TlUser
+      , tmgidMediaGroupID :: T.Text
       }
-   deriving (Show, Eq, Ord, Generic)
-
-instance GP.PrettyShow TlMediaGroupIdentifier
+    deriving stock (Show, Eq, Ord, Generic)
+    deriving anyclass GP.PrettyShow
 
 data TlInputMediaPhoto =
    TlInputMediaPhoto
-      { _TIMP_caption :: Maybe T.Text
-      , _TIMP_media :: T.Text
+      { impCaption :: Maybe T.Text
+      , impMedia :: T.Text
       }
-   deriving (Show, Generic, Eq)
-
-instance GP.PrettyShow TlInputMediaPhoto
+    deriving stock (Show, Generic, Eq)
+    deriving anyclass GP.PrettyShow
 
 instance ToJSON TlInputMediaPhoto where
    toJSON ph =
       let captionParam =
              maybe [] (\x -> ["caption" .= x]) $
-             _TIMP_caption ph
+             impCaption ph
        in object $
           [ "type" .= ("photo" :: T.Text)
-          , "media" .= _TIMP_media ph
+          , "media" .= impMedia ph
           ] ++
           captionParam
 
 data TlInputMediaVideo =
    TlInputMediaVideo
-      { _TIMV_caption :: Maybe T.Text
-      , _TIMV_media :: T.Text
+      { imvCaption :: Maybe T.Text
+      , imvMedia :: T.Text
       }
-   deriving (Show, Generic, Eq)
-
-instance GP.PrettyShow TlInputMediaVideo
+    deriving stock (Show, Generic, Eq)
+    deriving anyclass GP.PrettyShow
 
 instance ToJSON TlInputMediaVideo where
    toJSON ph =
       let captionParam =
              maybe [] (\x -> ["caption" .= x]) $
-             _TIMV_caption ph
+             imvCaption ph
        in object $
           [ "type" .= ("video" :: T.Text)
-          , "media" .= _TIMV_media ph
+          , "media" .= imvMedia ph
           ] ++
           captionParam
 
 data TlInputMediaDocument =
    TlInputMediaDocument
-      { _TIMD_caption :: Maybe T.Text
-      , _TIMD_media :: T.Text
+      { imdCaption :: Maybe T.Text
+      , imdMedia :: T.Text
       }
-   deriving (Show, Generic, Eq)
-
-instance GP.PrettyShow TlInputMediaDocument
+    deriving stock (Show, Generic, Eq)
+    deriving anyclass GP.PrettyShow
 
 instance ToJSON TlInputMediaDocument where
    toJSON ph =
       let captionParam =
              maybe [] (\x -> ["caption" .= x]) $
-             _TIMD_caption ph
+             imdCaption ph
        in object $
           [ "type" .= ("document" :: T.Text)
-          , "media" .= _TIMD_media ph
+          , "media" .= imdMedia ph
           ] ++
           captionParam
 
 data TlInputMediaAudio =
    TlInputMediaAudio
-      { _TIMA_caption :: Maybe T.Text
-      , _TIMA_media :: T.Text
+      { imaudioCaption :: Maybe T.Text
+      , imaudioMedia :: T.Text
       }
-   deriving (Show, Generic, Eq)
-
-instance GP.PrettyShow TlInputMediaAudio
+    deriving stock (Show, Generic, Eq)
+    deriving anyclass GP.PrettyShow
 
 instance ToJSON TlInputMediaAudio where
    toJSON ph =
       let captionParam =
              maybe [] (\x -> ["caption" .= x]) $
-             _TIMA_caption ph
+             imaudioCaption ph
        in object $
           [ "type" .= ("audio" :: T.Text)
-          , "media" .= _TIMA_media ph
+          , "media" .= imaudioMedia ph
           ] ++
           captionParam
 
 data TlMediaGroupPair =
    TlMediaGroupPair
-      { _TMGP_identifier :: TlMediaGroupIdentifier
-      , _TMGP_items :: [TlMediaGroupUnit]
+      { mgpairIdentifier :: TlMediaGroupIdentifier
+      , mgpairItems :: [TlMediaGroupUnit]
       }
-   deriving (Show, Generic)
-
-instance GP.PrettyShow TlMediaGroupPair
+    deriving stock (Show, Generic)
+    deriving anyclass GP.PrettyShow
 
 data TlMediaGroupUnit
    = TlpvPhoto TlInputMediaPhoto
    | TlpvVideo TlInputMediaVideo
    | TlpvDocument TlInputMediaDocument
    | TlpvAudio TlInputMediaAudio
-   deriving (Show, Generic, Eq)
-
-instance GP.PrettyShow TlMediaGroupUnit
+    deriving stock (Show, Generic, Eq)
+    deriving anyclass GP.PrettyShow
 
 instance ToJSON TlMediaGroupUnit where
    toJSON (TlpvPhoto x) = toJSON x
@@ -126,13 +123,13 @@ instance ToJSON TlMediaGroupUnit where
 
 photoVideoCaption :: TlMediaGroupUnit -> Maybe T.Text
 photoVideoCaption (TlpvPhoto (TlInputMediaPhoto {..})) =
-   _TIMP_caption
+   impCaption
 photoVideoCaption (TlpvVideo (TlInputMediaVideo {..})) =
-   _TIMV_caption
+   imvCaption
 photoVideoCaption (TlpvDocument (TlInputMediaDocument {..})) =
-   _TIMD_caption
+   imdCaption
 photoVideoCaption (TlpvAudio (TlInputMediaAudio {..})) =
-   _TIMA_caption
+   imaudioCaption
 
 maybeMediaGroupUnit :: TlMessage -> Maybe TlMediaGroupUnit
 maybeMediaGroupUnit m =

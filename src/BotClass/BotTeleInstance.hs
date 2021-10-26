@@ -24,18 +24,18 @@ import Telegram
 import Types
 
 instance BotClassUtility 'Telegram where
-   getResult = Just . _TURS_result
+   getResult = Just . replysuccessResult
    getMsg TlUpdate {..} =
-      case _TU_event of
+      case updateEvent of
          TEMsg m -> Just m
          _ -> Nothing
-   getUpdateValue = _TU_value
+   getUpdateValue = updateValue
    getChat = Just . messageChat
    getUser = messageFrom
    getText = messageText
    getUserID = T.pack . show . userID
    getCallbackQuery TlUpdate {..} =
-      case _TU_event of
+      case updateEvent of
          TECallback cb -> Just cb
          _ -> Nothing
    getCallbackUser = callbackFrom
@@ -48,7 +48,7 @@ instance BotClass 'Telegram
    takesJSON = tlTakesJSON
    getUpdatesRequest h = do
       let tout = timeout $ D.commonEnv h
-          url = tlUrl $ D.getConstState h
+          url = stcUrl $ D.getConstState h
           req uid =
              H.Req
                 H.GET
@@ -56,7 +56,7 @@ instance BotClass 'Telegram
                 [unit "offset" uid, unit "timeout" tout]
       curUpdID <- getUpdateID (D.specH h)
       pure $ req curUpdID
-   isSuccess = _TR_ok
+   isSuccess = replyOk
    handleFailedUpdatesRequest h err = do
       let funcName = "tl_handleFailedUpdatesRequest: "
       D.logError h $ funcName <> "got telegram error"
@@ -78,7 +78,7 @@ instance BotClass 'Telegram
       Left
          "Telegram: no chat supplied, unable to send messages to users"
    sendTextMsg h (Just c) _ text =
-      let url = tlUrl $ D.getConstState h
+      let url = stcUrl $ D.getConstState h
        in pure $
           Right $
           buildHTTP
@@ -88,14 +88,14 @@ instance BotClass 'Telegram
    epilogue _ [] _ = pure ()
    epilogue h us _ = do
       let funcName = "tl_epilogue: "
-          newUpdateID = maximum (map _TU_update_id us) + 1
+          newUpdateID = maximum (map updateUpdateID us) + 1
       putUpdateID (D.specH h) newUpdateID
-      mediaGroups <- getMediaGroups (D.specH h)
+      stmMediaGroups <- getMediaGroups (D.specH h)
       D.logDebug h $
          funcName <>
          "ready to process some media groups, if any"
-      D.logDebug h $ GP.defaultPrettyT mediaGroups
-      mapM_ (sendMediaGroup h) mediaGroups
+      D.logDebug h $ GP.defaultPrettyT stmMediaGroups
+      mapM_ (sendMediaGroup h) stmMediaGroups
       purgeMediaGroups (D.specH h)
    processMessage = processMessage1
 
@@ -117,7 +117,7 @@ processMessage1 h m =
     funcName = "tl_processMessage: "
     sendMessage =
        let eithMethodParams = sendMessageTele m
-           url = tlUrl $ D.getConstState h
+           url = stcUrl $ D.getConstState h
         in pure . buildHTTP url <$>
            eithMethodParams
 
@@ -154,11 +154,11 @@ sendMediaGroup ::
    -> TlMediaGroupPair
    -> m ()
 sendMediaGroup h (TlMediaGroupPair ident items) = do
-   let chat = _TMGI_chat ident
-       mUser = _TMGI_user ident
+   let chat = tmgidChat ident
+       mUser = tmgidUser ident
        reversedItems = reverse items
        method = "sendMediaGroup"
-       url = tlUrl $ D.getConstState h
+       url = stcUrl $ D.getConstState h
        mCaption = S.safeHead items >>= photoVideoCaption
        pars =
           [ unit "chat_id" $ chatID chat

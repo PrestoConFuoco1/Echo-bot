@@ -1,4 +1,7 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DeriveAnyClass #-}
+{-# LANGUAGE DerivingStrategies #-}
+
 module Telegram.General where
 
 import qualified Data.Map as M
@@ -12,22 +15,24 @@ tlTakesJSON = True -- this is better
 
 data TlConfig =
    TlConf
-      { _TC_updID :: Integer
-      , _TC_url :: T.Text
+      { configUpdateID :: Integer
+      , configUrl :: T.Text
       }
-   deriving (Show, Generic)
-
-instance PrettyShow TlConfig
+    deriving stock (Show, Generic)
+    deriving anyclass PrettyShow
 
 newtype TlStateConst =
    TSC
-      { tlUrl :: T.Text
+      { stcUrl :: T.Text
       }
-   deriving (Show)
+    deriving stock (Show, Generic)
+    deriving anyclass PrettyShow
+
 
 data TlStateMut =
    TSM
-      { tlUpdateID :: Integer
-      , mediaGroups :: M.Map TlMediaGroupIdentifier [TlMediaGroupUnit]
+      { stmUpdateID :: Integer
+      , stmMediaGroups :: M.Map TlMediaGroupIdentifier [TlMediaGroupUnit]
       }
-   deriving (Show)
+    deriving stock (Show, Generic)
+

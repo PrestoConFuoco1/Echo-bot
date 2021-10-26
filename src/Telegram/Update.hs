@@ -1,4 +1,7 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DerivingVia #-}
+{-# LANGUAGE DeriveAnyClass #-}
+
 module Telegram.Update where
 
 import Data.Aeson.Types
@@ -7,39 +10,34 @@ import qualified Data.Text as T (Text)
 import GHC.Generics (Generic)
 import GenericPretty
 import Telegram.Entity
+import DerivingJSON
 import Types
 
 data TlReply =
    TlReply
-      { _TR_ok :: Bool
-      , _TR_result :: Maybe Value
-      , _TR_description :: Maybe T.Text
-      , _TR_error_code :: Maybe Integer
+      { replyOk :: Bool
+      , replyResult :: Maybe Value
+      , replyDescription :: Maybe T.Text
+      , replyErrorCode :: Maybe Integer
       }
-   deriving (Show, Eq, Generic)
-
-instance ToJSON TlReply where
-   toJSON =
-      genericToJSON
-         defaultOptions {fieldLabelModifier = drop 4}
-
-instance FromJSON TlReply where
-   parseJSON =
-      genericParseJSON
-         defaultOptions {fieldLabelModifier = drop 4}
+    deriving stock (Show, Eq, Generic)
+    deriving (ToJSON, FromJSON) via BotSelectorModifier TlReply
+    deriving anyclass PrettyShow
 
 newtype TlUpdateReplySuccess =
    TlUpdateReplySuccess
-      { _TURS_result :: Value
+      { replysuccessResult :: Value
       }
-   deriving (Show, Eq, Generic)
+    deriving stock (Show, Eq, Generic)
+    deriving anyclass PrettyShow
 
 data TlUpdateReplyError =
    TlUpdateReplyError
-      { _TURE_error_code :: Integer
-      , _TURE_description :: Maybe T.Text
+      { replyerrorErrorCode :: Integer
+      , replyerrorDescription :: Maybe T.Text
       }
-   deriving (Show, Eq, Generic)
+    deriving stock (Show, Eq, Generic)
+    deriving anyclass PrettyShow
 
 parseUpdatesResponse1 ::
       Value
@@ -53,30 +51,30 @@ parseUpdatesResponse1 =
             res <- o .: "result"
             pure $
                UpdateResponse $
-               TlUpdateReplySuccess {_TURS_result = res}
+               TlUpdateReplySuccess {replysuccessResult = res}
          else do
             errCode <- o .: "error_code"
             description <- o .: "description"
             pure $
                UpdateError $
                TlUpdateReplyError
-                  { _TURE_error_code = errCode
-                  , _TURE_description = description
+                  { replyerrorErrorCode = errCode
+                  , replyerrorDescription = description
                   }
 
 data TlUpdate =
    TlUpdate
-      { _TU_update_id :: Integer
-      , _TU_event :: TlEvent
-      , _TU_value :: Value
+      { updateUpdateID :: Integer
+      , updateEvent :: TlEvent
+      , updateValue :: Value
       }
-   deriving (Show, Eq)
+    deriving stock (Show, Eq, Generic)
 
 data TlEvent
    = TEMsg TlMessage
    | TECallback TlCallback
    | TEUnexpectedEvent
-   deriving (Show, Eq)
+    deriving stock (Show, Eq, Generic)
 
 instance FromJSON TlUpdate where
    parseJSON value =
@@ -91,8 +89,3 @@ instance FromJSON TlUpdate where
                ]
          pure $ TlUpdate uid ev value
 
-instance PrettyShow TlReply
-
-instance PrettyShow TlUpdateReplyError
-
-instance PrettyShow TlUpdateReplySuccess
