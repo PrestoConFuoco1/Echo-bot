@@ -99,17 +99,17 @@ getNewKey ::
       L.Handle IO -> VkConfig -> Resources -> IO Resources
 getNewKey logger config resources = do
    initData <- getLongPollServer logger config
-   pure $ modifyKey (_VID_key initData) resources
+   pure $ modifyKey (initKey initData) resources
 
 getNewKeyAndTs ::
       L.Handle IO -> VkConfig -> Resources -> IO Resources
 getNewKeyAndTs logger config resources = do
    initData <- getLongPollServer logger config
    sm <- readIORef (mutState resources)
-   let sm' = sm {vkTs = _VID_timestamp initData}
+   let sm' = sm {vkTs = initTimestamp initData}
    smRef' <- newIORef sm'
    let resources' = resources {mutState = smRef'}
-   pure $ modifyKey (_VID_key initData) resources'
+   pure $ modifyKey (initKey initData) resources'
 
 vkHandlers ::
       L.Handle IO
@@ -150,12 +150,12 @@ getLongPollServer ::
 getLongPollServer logger VkConf {..} = do
    let funcName = "vk_initialize: "
        pars =
-          H.unit "group_id" _VC_groupID :
-          defaultVkParams' _VC_accessToken _VC_apiV
+          H.unit "group_id" configGroupID :
+          defaultVkParams' configAccessToken configApiVersion
        initReq =
           H.Req
              H.GET
-             (_VC_vkUrl <> "groups.getLongPollServer")
+             (configUrl <> "groups.getLongPollServer")
              pars
        takesJson = True
    L.logDebug logger $
@@ -184,15 +184,15 @@ initialize logger conf@(VkConf {..}) = do
    initRndNum <- newStdGen
    pure
       ( VKSC
-           { vkKey = _VID_key initData
-           , vkServer = _VID_server initData
-           , vkUrl = _VC_vkUrl
-           , vkAccessToken = _VC_accessToken
-           , vkGroupID = _VC_groupID
-           , apiVersion = _VC_apiV
+           { vkKey = initKey initData
+           , vkServer = initServer initData
+           , vkUrl = configUrl
+           , vkAccessToken = configAccessToken
+           , vkGroupID = configGroupID
+           , apiVersion = configApiVersion
            }
       , VKSM
-           { vkTs = _VID_timestamp initData
+           { vkTs = initTimestamp initData
            , vkRndGen = initRndNum
            })
 

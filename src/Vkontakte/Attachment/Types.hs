@@ -1,4 +1,8 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DerivingVia #-}
+{-# LANGUAGE DeriveAnyClass #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+
 module Vkontakte.Attachment.Types where
 
 import Control.Applicative ((<|>))
@@ -6,6 +10,7 @@ import Data.Aeson.Types
 import qualified Data.Text as T (Text)
 import GHC.Generics (Generic)
 import GenericPretty
+import DerivingJSON
 
 data VkAttachment
    = VAPhoto VkPhoto
@@ -20,7 +25,7 @@ data VkAttachment
    | VASticker VkSticker
    | VAGift VkGift
    | VAUnexpectedAtt VkUnexpectedAtt
-   deriving (Show, Eq, Generic)
+    deriving stock (Show, Eq, Generic)
 
 data VkAttsPartition =
    VkAttsPartition
@@ -37,7 +42,7 @@ data VkAttsPartition =
       , pGifts :: [VkGift]
       , pUnexpected :: [VkUnexpectedAtt]
       }
-   deriving (Show)
+    deriving stock (Show)
 
 nullPartition :: VkAttsPartition
 nullPartition =
@@ -68,85 +73,67 @@ instance FromJSON VkAttachment where
 ------------------------------------------
 data VkPhoto =
    VkPhoto
-      { _VPh_owner_id :: Integer
-      , _VPh_id :: Integer
-      , _VPh_access_key :: Maybe T.Text
+      { photoOwnerID :: Integer
+      , photoID :: Integer
+      , photoAccessKey :: Maybe T.Text
       }
-   deriving (Show, Eq, Generic)
-
-instance FromJSON VkPhoto where
-   parseJSON =
-      genericParseJSON
-         defaultOptions {fieldLabelModifier = drop 5}
+    deriving stock (Show, Eq, Generic)
+    deriving FromJSON via BotSelectorModifier VkPhoto
+    deriving anyclass PrettyShow
 
 ------------------------------------------
 data VkVideo =
    VkVideo
-      { _VVd_owner_id :: Integer
-      , _VVd_id :: Integer
-      , _VVd_access_key :: Maybe T.Text
+      { videoOwnerID :: Integer
+      , videoID :: Integer
+      , videoAccessKey :: Maybe T.Text
       }
-   deriving (Show, Eq, Generic)
+    deriving stock (Show, Eq, Generic)
+    deriving FromJSON via BotSelectorModifier VkVideo
+    deriving anyclass PrettyShow
 
-instance FromJSON VkVideo where
-   parseJSON =
-      genericParseJSON
-         defaultOptions {fieldLabelModifier = drop 5}
-
----------------------------------------------
+-----------------------------------------------
 data VkAudio =
    VkAudio
-      { _VAu_owner_id :: Integer
-      , _VAu_id :: Integer
-      , _VAu_access_key :: Maybe T.Text
+      { audioOwnerID :: Integer
+      , audioID :: Integer
+      , audioAccessKey :: Maybe T.Text
       }
-   deriving (Show, Eq, Generic)
-
-instance FromJSON VkAudio where
-   parseJSON =
-      genericParseJSON
-         defaultOptions {fieldLabelModifier = drop 5}
+    deriving stock (Show, Eq, Generic)
+    deriving FromJSON via BotSelectorModifier VkAudio
+    deriving anyclass PrettyShow
 
 ----------------------------------------------
 data VkDocument =
    VkDocument
-      { _VDoc_owner_id :: Integer
-      , _VDoc_id :: Integer
-      , _VDoc_access_key :: Maybe T.Text
+      { documentOwnerID :: Integer
+      , documentID :: Integer
+      , documentAccessKey :: Maybe T.Text
       }
-   deriving (Show, Eq, Generic)
-
-instance FromJSON VkDocument where
-   parseJSON =
-      genericParseJSON
-         defaultOptions {fieldLabelModifier = drop 6}
+    deriving stock (Show, Eq, Generic)
+    deriving FromJSON via BotSelectorModifier VkDocument
+    deriving anyclass PrettyShow
 
 ----------------------------------------------
 data VkLink =
    VkLink -- how to send this?
-      { _VLnk_url :: T.Text
-      , _VLnk_title :: T.Text
+      { linkUrl :: T.Text
+      , linkTitle :: T.Text
       }
-   deriving (Show, Eq, Generic)
-
-instance FromJSON VkLink where
-   parseJSON =
-      genericParseJSON
-         defaultOptions {fieldLabelModifier = drop 6}
+    deriving stock (Show, Eq, Generic)
+    deriving FromJSON via BotSelectorModifier VkLink
+    deriving anyclass PrettyShow
 
 ----------------------------------------------
 data VkMarket =
    VkMarket
-      { _VMrk_owner_id :: Integer
-      , _VMrk_id :: Integer
-      , _VMrk_access_key :: Maybe T.Text
+      { marketOwnerID :: Integer
+      , marketID :: Integer
+      , marketAccessKey :: Maybe T.Text
       }
-   deriving (Show, Eq, Generic)
-
-instance FromJSON VkMarket where
-   parseJSON =
-      genericParseJSON
-         defaultOptions {fieldLabelModifier = drop 6}
+    deriving stock (Show, Eq, Generic)
+    deriving FromJSON via BotSelectorModifier VkMarket
+    deriving anyclass PrettyShow
 
 ----------------------------------------------
 data VkMarketAlbum =
@@ -155,21 +142,19 @@ data VkMarketAlbum =
       , _VMAl_id :: Integer
       , _VMAl_access_key :: Maybe T.Text
       }
-   deriving (Show, Eq, Generic)
-
-instance FromJSON VkMarketAlbum where
-   parseJSON =
-      genericParseJSON
-         defaultOptions {fieldLabelModifier = drop 6}
+    deriving stock (Show, Eq, Generic)
+    deriving FromJSON via BotSelectorModifier VkMarketAlbum
+    deriving anyclass PrettyShow
 
 ----------------------------------------------
 data VkWall =
    VkWall
-      { _VWl_owner_id :: Integer
-      , _VWl_id :: Integer
-      , _VWl_access_key :: Maybe T.Text
+      { wallOwnerID :: Integer
+      , wallID :: Integer
+      , wallAccessKey :: Maybe T.Text
       }
-   deriving (Show, Eq, Generic)
+    deriving stock (Show, Eq, Generic)
+    deriving anyclass PrettyShow
 
 instance FromJSON VkWall where
    parseJSON =
@@ -182,46 +167,39 @@ instance FromJSON VkWall where
 ----------------------------------------------
 data VkWallReply =
    VkWallReply -- how to send this?
-      { _VWR_id :: Integer
-      , _VWR_access_key :: Maybe T.Text
+      { wallreplyID :: Integer
+      , wallreplyAccessKey :: Maybe T.Text
       }
-   deriving (Show, Eq, Generic)
-
-instance FromJSON VkWallReply where
-   parseJSON =
-      genericParseJSON
-         defaultOptions {fieldLabelModifier = drop 5}
+    deriving stock (Show, Eq, Generic)
+    deriving FromJSON via BotSelectorModifier VkWallReply
+    deriving anyclass PrettyShow
 
 -----------------------------------------------
 newtype VkSticker =
    VkSticker
-      { _VSt_sticker_id :: Integer
+      { stickerStickerID :: Integer
       }
-   deriving (Show, Eq, Generic)
-
-instance FromJSON VkSticker where
-   parseJSON =
-      genericParseJSON
-         defaultOptions {fieldLabelModifier = drop 5}
+    deriving stock (Show, Eq, Generic)
+    deriving FromJSON via BotSelectorModifier VkSticker
+    deriving anyclass PrettyShow
 
 -----------------------------------------------
 newtype VkGift =
    VkGift -- how to send this?
-      { _VGft_id :: Integer
+      { giftID :: Integer
       }
-   deriving (Show, Eq, Generic)
+    deriving stock (Show, Eq, Generic)
+    deriving FromJSON via BotSelectorModifier VkGift
+    deriving anyclass PrettyShow
 
-instance FromJSON VkGift where
-   parseJSON =
-      genericParseJSON
-         defaultOptions {fieldLabelModifier = drop 6}
 
 data VkUnexpectedAtt =
    VkUnexpectedAtt
-      { _VUEA_type :: T.Text
-      , _VUEA_val :: Value
+      { unexpattachmentType :: T.Text
+      , unexpattachmentVal :: Value
       }
-   deriving (Show, Eq, Generic)
+    deriving stock (Show, Eq, Generic)
+    deriving anyclass PrettyShow
 
 -------------------------------------------------
 class VkAttMessageSendable a where
@@ -232,63 +210,40 @@ class VkAttMessageSendable a where
 
 instance VkAttMessageSendable VkPhoto where
    getType _ = "photo"
-   getOwnerID = _VPh_owner_id
-   getID = _VPh_id
-   getAccessKey = _VPh_access_key
+   getOwnerID = photoOwnerID
+   getID = photoID
+   getAccessKey = photoAccessKey
 
 instance VkAttMessageSendable VkVideo where
    getType _ = "video"
-   getOwnerID = _VVd_owner_id
-   getID = _VVd_id
-   getAccessKey = _VVd_access_key
+   getOwnerID = videoOwnerID
+   getID = videoID
+   getAccessKey = videoAccessKey
 
 instance VkAttMessageSendable VkAudio where
    getType _ = "audio"
-   getOwnerID = _VAu_owner_id
-   getID = _VAu_id
-   getAccessKey = _VAu_access_key
+   getOwnerID = audioOwnerID
+   getID = audioID
+   getAccessKey = audioAccessKey
 
 instance VkAttMessageSendable VkDocument where
    getType _ = "doc"
-   getOwnerID = _VDoc_owner_id
-   getID = _VDoc_id
-   getAccessKey = _VDoc_access_key
+   getOwnerID = documentOwnerID
+   getID = documentID
+   getAccessKey = documentAccessKey
 
 instance VkAttMessageSendable VkWall where
    getType _ = "wall"
-   getOwnerID = _VWl_owner_id
-   getID = _VWl_id
-   getAccessKey = _VWl_access_key
+   getOwnerID = wallOwnerID
+   getID = wallID
+   getAccessKey = wallAccessKey
 
 instance VkAttMessageSendable VkMarket where
    getType _ = "market"
-   getOwnerID = _VMrk_owner_id
-   getID = _VMrk_id
-   getAccessKey = _VMrk_access_key
+   getOwnerID = marketOwnerID
+   getID = marketID
+   getAccessKey = marketAccessKey
 
-instance PrettyShow VkPhoto
-
-instance PrettyShow VkVideo
-
-instance PrettyShow VkAudio
-
-instance PrettyShow VkDocument
-
-instance PrettyShow VkLink
-
-instance PrettyShow VkMarket
-
-instance PrettyShow VkMarketAlbum
-
-instance PrettyShow VkWall
-
-instance PrettyShow VkWallReply
-
-instance PrettyShow VkSticker
-
-instance PrettyShow VkGift
-
-instance PrettyShow VkUnexpectedAtt
 
 instance PrettyShow VkAttachment where
    prettyShow =

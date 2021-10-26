@@ -1,4 +1,6 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE DeriveAnyClass #-}
 module Vkontakte.Initialize where
 
 import Data.Aeson (decode)
@@ -10,13 +12,12 @@ import GenericPretty
 
 data VkInitData =
    VkInitData
-      { _VID_key :: T.Text
-      , _VID_server :: T.Text
-      , _VID_timestamp :: T.Text
+      { initKey :: T.Text
+      , initServer :: T.Text
+      , initTimestamp :: T.Text
       }
-   deriving (Show, Generic)
-
-instance PrettyShow VkInitData
+    deriving (Show, Generic)
+    deriving anyclass PrettyShow
 
 parseInitResp :: BSL.ByteString -> Either String VkInitData
 parseInitResp = eithParsed
@@ -30,9 +31,9 @@ parseInitResp = eithParsed
           ts <- o .: "ts" :: Parser T.Text
           pure
              VkInitData
-                { _VID_key = key
-                , _VID_server = server
-                , _VID_timestamp = ts
+                { initKey = key
+                , initServer = server
+                , initTimestamp = ts
                 }
     initReplyToJSON =
        maybe

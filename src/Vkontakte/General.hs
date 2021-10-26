@@ -1,4 +1,6 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DeriveAnyClass #-}
+{-# LANGUAGE DerivingStrategies #-}
 
 module Vkontakte.General where
 
@@ -21,23 +23,22 @@ vkTakesJSON = False
 
 data VkConfig =
    VkConf
-      { _VC_vkUrl :: T.Text
-      , _VC_accessToken :: T.Text
-      , _VC_groupID :: Integer
-      , _VC_apiV :: T.Text
+      { configUrl :: T.Text
+      , configAccessToken :: T.Text
+      , configGroupID :: Integer
+      , configApiVersion :: T.Text
       }
-   deriving (Show, Eq, Generic)
-
-instance PrettyShow VkConfig
+    deriving stock (Show, Eq, Generic)
+    deriving anyclass PrettyShow
 
 data VkConfigDefault =
    VkConfDef
-      { _VCD_vkUrl :: T.Text
-      , _VCD_apiV :: T.Text
+      { defaultconfUrl :: T.Text
+      , defaultconfApiVersion :: T.Text
       }
-   deriving (Show, Eq, Generic)
+    deriving stock (Show, Eq, Generic)
+    deriving anyclass PrettyShow
 
-instance PrettyShow VkConfigDefault
 
 defaultVkConfig :: VkConfigDefault
 defaultVkConfig =
@@ -52,11 +53,12 @@ data VkStateConst =
       , vkGroupID :: Integer
       , apiVersion :: T.Text
       }
-   deriving (Show, Eq)
+    deriving stock (Show, Eq, Generic)
+    deriving anyclass PrettyShow
 
 data VkStateMut =
    VKSM
       { vkTs :: T.Text -- timestamp
       , vkRndGen :: StdGen
       }
-   deriving (Show)
+    deriving stock (Show)

@@ -91,7 +91,7 @@ sendWallReply = unableToSend "wall reply"
 sendSticker :: [VkSticker] -> Either String H.ParamsUnit
 sendSticker [] = Left "No sticker found."
 sendSticker (x:_) =
-   Right $ unit "sticker_id" (_VSt_sticker_id x)
+   Right $ unit "sticker_id" (stickerStickerID x)
 
 sendMsgSendable :: [T.Text] -> Either String H.ParamsUnit
 sendMsgSendable [] = Left "Empty list of attachments."

@@ -1,4 +1,8 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DerivingVia #-}
+{-# LANGUAGE DeriveAnyClass #-}
+{-# LANGUAGE DerivingStrategies #-}
+
 module Vkontakte.Update where
 
 import Data.Aeson (decode)
@@ -15,10 +19,11 @@ import qualified Data.ByteString.Lazy as BS (fromStrict)
 
 data VkReply =
    VkReply
-      { _VR_failed :: Maybe Int
-      , _VR_val :: Value
+      { replyFailed :: Maybe Int
+      , replyVal :: Value
       }
-   deriving (Eq, Show, Generic)
+    deriving stock (Eq, Show, Generic)
+    deriving anyclass PrettyShow
 
 instance FromJSON VkReply where
    parseJSON x =
@@ -29,17 +34,19 @@ instance FromJSON VkReply where
 
 data VkUpdateReplySuccess =
    VkUpdateReplySuccess
-      { _VURS_updates :: Value
-      , _VURS_ts :: Maybe T.Text
+      { replysuccessUpdates :: Value
+      , replysuccessTs :: Maybe T.Text
       }
-   deriving (Show, Eq, Generic)
+    deriving stock (Show, Eq, Generic)
+    deriving anyclass PrettyShow
 
 data VkUpdateReplyError =
    VkUpdateReplyError
-      { _VURE_failed :: Int
-      , _VURE_ts :: Maybe T.Text
+      { replyerrorFailed :: Int
+      , replyerrorTs :: Maybe T.Text
       }
-   deriving (Show, Eq, Generic)
+    deriving stock (Show, Eq, Generic)
+    deriving anyclass PrettyShow
 
 parseUpdatesResponse2 ::
       Value
@@ -58,27 +65,27 @@ parseUpdatesResponse2 =
              updates <- o .: "updates"
              pure $
                 VkUpdateReplySuccess
-                   {_VURS_updates = updates, _VURS_ts = ts}
+                   {replysuccessUpdates = updates, replysuccessTs = ts}
           err = do
              failed <- o .: "failed"
              pure $
                 VkUpdateReplyError
-                   {_VURE_failed = failed, _VURE_ts = ts}
+                   {replyerrorFailed = failed, replyerrorTs = ts}
       asum
          [fmap UpdateResponse success, fmap UpdateError err]
 
 data VkUpdate =
    VkUpdate
-      { _VU_value :: Value
-      , _VU_object :: VkEvent
+      { updateValue :: Value
+      , updateObject :: VkEvent
       }
-   deriving (Eq, Show)
+    deriving stock (Eq, Show)
 
 data VkEvent
    = VEMsg VkMessage
    | VECallback VkMyCallback
    | VEUnexpectedEvent
-   deriving (Eq, Show)
+    deriving stock (Eq, Show)
 
 instance FromJSON VkUpdate where
    parseJSON value =
@@ -115,9 +122,3 @@ parseCallback =
       text <- msg .: "text"
       from_id <- msg .: "from_id"
       pure $ VkMyCallback from_id text payload
-
-instance PrettyShow VkReply
-
-instance PrettyShow VkUpdateReplyError
-
-instance PrettyShow VkUpdateReplySuccess

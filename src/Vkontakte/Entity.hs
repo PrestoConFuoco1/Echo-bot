@@ -1,4 +1,8 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DerivingVia #-}
+{-# LANGUAGE DeriveAnyClass #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+
 module Vkontakte.Entity where
 
 import Data.Aeson.Types
@@ -6,83 +10,56 @@ import qualified Data.Text as T (Text)
 import GHC.Generics (Generic)
 import GenericPretty
 import Vkontakte.Attachment
+import Data.Function (on)
+import DerivingJSON
 
 data VkMessage =
    VkMessage
-      { _VM_id :: Integer
-      , _VM_from_id :: VkUser
-      , _VM_text :: Maybe T.Text
-      , _VM_attachments :: [VkAttachment]
+      { messageID :: Integer
+      , messageFromID :: VkUser
+      , messageText :: Maybe T.Text
+      , messageAttachments :: [VkAttachment]
       }
-   deriving (Eq, Show, Generic)
+    deriving stock (Eq, Show, Generic)
+    deriving anyclass PrettyShow
 
 instance FromJSON VkMessage where
-   parseJSON =
-      fmap fixText .
-      genericParseJSON
-         defaultOptions {fieldLabelModifier = drop 4}
+    parseJSON val = fixText . unBotSelectorModifier <$> parseJSON val
      where
        fixText m =
-          if _VM_text m == Just ""
-             then m {_VM_text = Nothing}
+          if messageText m == Just ""
+             then m {messageText = Nothing}
              else m
 
 data VkChat = VkChat
 
 newtype VkUser =
    VkUser
-      { _VU_id :: Integer
+      { userID :: Integer
       }
-   deriving (Show, Generic)
-
-instance ToJSON VkUser where
-   toJSON =
-      genericToJSON
-         defaultOptions {fieldLabelModifier = drop 4}
-
-instance FromJSON VkUser where
-   parseJSON x = VkUser <$> parseJSON x
-
+    deriving stock (Show, Generic)
+    deriving newtype FromJSON
+    deriving anyclass PrettyShow
+   
 instance Eq VkUser where
-   (==) u1 u2 = (==) (_VU_id u1) (_VU_id u2)
+   (==) = (==) `on` userID
 
 instance Ord VkUser where
-   compare u1 u2 = compare (_VU_id u1) (_VU_id u2)
+   compare = compare `on` userID
 
 data VkMyCallback =
    VkMyCallback
-      { _VMC_from_id :: VkUser
-      , _VMC_text :: Maybe T.Text
-      , _VMC_payload :: VkPayload
+      { mycallbackFromID :: VkUser
+      , mycallbackText :: Maybe T.Text
+      , mycallbackPayload :: VkPayload
       }
-   deriving (Show, Eq, Generic)
-
-instance ToJSON VkMyCallback where
-   toJSON =
-      genericToJSON
-         defaultOptions {fieldLabelModifier = drop 5}
-
-instance FromJSON VkMyCallback where
-   parseJSON =
-      genericParseJSON
-         defaultOptions {fieldLabelModifier = drop 5}
+    deriving stock (Show, Eq, Generic)
+    deriving (FromJSON) via BotSelectorModifier VkMyCallback
 
 newtype VkPayload =
    VkPayload
-      { _VP_payload :: T.Text
+      { payloadPayload :: T.Text
       }
-   deriving (Show, Eq, Generic)
+    deriving stock (Show, Eq, Generic)
+    deriving (ToJSON, FromJSON) via BotSelectorModifier VkPayload
 
-instance ToJSON VkPayload where
-   toJSON =
-      genericToJSON
-         defaultOptions {fieldLabelModifier = drop 4}
-
-instance FromJSON VkPayload where
-   parseJSON =
-      genericParseJSON
-         defaultOptions {fieldLabelModifier = drop 4}
-
-instance PrettyShow VkUser
-
-instance PrettyShow VkMessage

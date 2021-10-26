@@ -36,6 +36,7 @@ library
       BotClass.ClassTypesTeleInstance
       BotClass.ClassTypesVkInstance
       Config
+      DerivingJSON
       Exceptions
       Execute
       Execute.Logic

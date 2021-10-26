@@ -25,23 +25,23 @@ import Types (timeout, Messenger(Vkontakte))
 import Vkontakte
 
 instance BotClassUtility 'Vkontakte where
-   getResult = Just . _VURS_updates
+   getResult = Just . replysuccessUpdates
    getMsg VkUpdate {..} =
-      case _VU_object of
+      case updateObject of
          VEMsg m -> Just m
          _ -> Nothing
-   getUpdateValue = _VU_value
+   getUpdateValue = updateValue
    getChat _ = Nothing
-   getUser m = Just $ _VM_from_id m
-   getText = _VM_text
-   getUserID = T.pack . show . _VU_id
+   getUser m = Just $ messageFromID m
+   getText = messageText
+   getUserID = T.pack . show . userID
    getCallbackQuery VkUpdate {..} =
-      case _VU_object of
+      case updateObject of
          VECallback c -> Just c
          _ -> Nothing
-   getCallbackUser = _VMC_from_id
+   getCallbackUser = mycallbackFromID
    getCallbackData =
-      Just . _VP_payload . _VMC_payload
+      Just . payloadPayload . mycallbackPayload
    getCallbackChat = const Nothing
 
 instance BotClass 'Vkontakte
@@ -78,7 +78,7 @@ getUpdatesRequest1 h
    pure $ H.Req H.GET fullUrl pars
 
 isSuccess1 :: VkReply -> Bool
-isSuccess1 = isNothing . _VR_failed
+isSuccess1 = isNothing . replyFailed
 
 errorMsg1, errorMsg2, errorMsg3 :: T.Text
 errorMsg1 =
@@ -98,12 +98,12 @@ handleFailedUpdatesRequest1 ::
 handleFailedUpdatesRequest1 h e@(VkUpdateReplyError {..}) =
    let funcName = "handleFailedUpdatesRequest: "
        key = vkKey $ D.getConstState h
-    in case _VURE_failed of
+    in case replyerrorFailed of
           x
              | x == 1 -> do
                 D.logError h errorMsg1
                 S.withMaybe
-                   _VURE_ts
+                   replyerrorTs
                    (D.logError h $ funcName <> "no ts found")
                    (\ts -> do
                        D.logInfo h $
@@ -143,7 +143,7 @@ sendTextMsg1 h _ (Just u) text = do
        sc = D.getConstState h
    randomID <- getRandomID (D.specH h)
    let pars =
-          [ unit "user_id" (_VU_id u)
+          [ unit "user_id" (userID u)
           , unit "message" text
           , unit "random_id" randomID
           ] ++
@@ -162,7 +162,7 @@ epilogue1 ::
    -> VkUpdateReplySuccess
    -> m ()
 epilogue1 h _ rep =
-   case _VURS_ts rep of
+   case replysuccessTs rep of
       Nothing -> pure ()
       Just x -> putTimestamp (D.specH h) x
 
@@ -204,9 +204,9 @@ processMessage1 h m
                         justPars))
   where
     funcName = "vk_processMessage: "
-    maybeText = S.emptyToNothing $ _VM_text m
-    atts = _VM_attachments m
-    user = _VM_from_id m
+    maybeText = S.emptyToNothing $ messageText m
+    atts = messageAttachments m
+    user = messageFromID m
 
 processMessageVk ::
       (Monad m)
@@ -220,7 +220,7 @@ processMessageVk h user maybeText attachmentsEtc = do
        method = "messages.send"
    randomID <- getRandomID (D.specH h)
    let pars =
-          [ unit "user_id" $ _VU_id user
+          [ unit "user_id" $ userID user
           , mUnit "message" maybeText
           , unit "random_id" randomID
           ] ++

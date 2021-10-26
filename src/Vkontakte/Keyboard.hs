@@ -1,39 +1,36 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE DeriveAnyClass #-}
+{-# LANGUAGE DerivingVia #-}
+
 module Vkontakte.Keyboard where
 
 import Data.Aeson.Types
 import qualified Data.Text as T (Text, pack)
 import GHC.Generics (Generic)
 import Vkontakte.Entity
+import DerivingJSON
 
 data VkKeyboard =
    VkKeyboard
-      { _VKB_inline :: Bool
-      , _VKB_buttons :: [[VkButton]]
+      { keyboardInline :: Bool
+      , keyboardButtons :: [[VkButton]]
       }
-   deriving (Eq, Show, Generic)
-
-instance ToJSON VkKeyboard where
-   toJSON =
-      genericToJSON
-         defaultOptions {fieldLabelModifier = drop 5}
+    deriving stock (Eq, Show, Generic)
+    deriving ToJSON via BotSelectorModifier VkKeyboard
 
 data VkButton =
    VkButton
-      { _VB_color :: T.Text
-      , _VB_action :: VkButtonActions
+      { buttonColor :: T.Text
+      , buttonAction :: VkButtonActions
       }
-   deriving (Eq, Show, Generic)
-
-instance ToJSON VkButton where
-   toJSON =
-      genericToJSON
-         defaultOptions {fieldLabelModifier = drop 4}
+    deriving stock (Eq, Show, Generic)
+    deriving ToJSON via BotSelectorModifier VkButton
 
 data VkButtonActions
    = VBACallback VkCallbackButton
    | VBAText VkTextButton
-   deriving (Eq, Show)
+    deriving stock (Eq, Show)
 
 instance ToJSON VkButtonActions where
    toJSON (VBACallback (VkCallbackButton l p)) =
@@ -51,32 +48,19 @@ instance ToJSON VkButtonActions where
 
 data VkCallbackButton =
    VkCallbackButton
-      { _VCB_label :: T.Text
-      , _VCB_payload :: T.Text
+      { callbackbuttonLabel :: T.Text
+      , callbackbuttonPayload :: T.Text
       }
-   deriving (Show, Eq, Generic)
-
-instance ToJSON VkCallbackButton where
-   toJSON =
-      genericToJSON
-         defaultOptions {fieldLabelModifier = drop 5}
-
-instance FromJSON VkCallbackButton where
-   parseJSON =
-      genericParseJSON
-         defaultOptions {fieldLabelModifier = drop 5}
+    deriving stock (Show, Eq, Generic)
+    deriving (ToJSON, FromJSON) via BotSelectorModifier VkCallbackButton
 
 data VkTextButton =
    VkTextButton
-      { _VTB_label :: T.Text
-      , _VTB_payload :: VkPayload
+      { textbuttonLabel :: T.Text
+      , textbuttonPayload :: VkPayload
       }
-   deriving (Show, Eq, Generic)
-
-instance ToJSON VkTextButton where
-   toJSON =
-      genericToJSON
-         defaultOptions {fieldLabelModifier = drop 5}
+    deriving stock (Show, Eq, Generic)
+    deriving ToJSON via BotSelectorModifier VkTextButton
 
 repNumButtonVkTxt :: T.Text -> Int -> VkTextButton
 repNumButtonVkTxt cmd n =
