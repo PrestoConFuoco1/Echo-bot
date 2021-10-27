@@ -29,8 +29,7 @@ library
       App.Handle.Telegram
       App.Handle.Vkontakte
       App.Logger
-      BotClass.BotTeleInstance
-      BotClass.BotVkInstance
+      BotClass
       BotClass.Class
       BotClass.ClassTypes
       BotClass.ClassTypesTeleInstance
@@ -40,6 +39,8 @@ library
       Exceptions
       Execute
       Execute.Logic
+      Execute.Telegram
+      Execute.Vkontakte
       GenericPretty
       HTTPRequests
       Lib

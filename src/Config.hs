@@ -3,20 +3,19 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE FlexibleContexts #-}
 
 module Config where
 
 import qualified App.Logger as L
-import BotClass.ClassTypes (BotClassTypes (..))
-import BotClass.ClassTypesTeleInstance ()
-import BotClass.ClassTypesVkInstance ()
 import qualified Control.Exception as E (IOException)
 import qualified Control.Monad.Catch as CMC
 import qualified Data.Configurator as C
 import qualified Data.Configurator.Types as CT
 import qualified Data.Text as T (Text)
 import qualified GenericPretty as GP
-import qualified Stuff as S (withEither)
+import qualified Stuff as S (withEither, Timeout)
 import qualified System.Exit as Q (ExitCode (..), exitSuccess, exitWith)
 import qualified System.IO.Error as E
   ( isAlreadyInUseError,
@@ -67,7 +66,8 @@ loadGeneral _ conf =
     (const $ pure Y.defStateGen :: CMC.SomeException -> IO Y.EnvironmentCommon)
     $ do
       let dg = Y.defStateGen
-          withDefault x = C.lookupDefault (x dg) conf
+          withDefault :: (CT.Configured a) => (Y.EnvironmentCommon -> a) -> CT.Name -> IO a
+          withDefault f = C.lookupDefault (f dg) conf
       confHelpMsg <- withDefault Y.getHelpMessage "help_message"
       confRepQue <- withDefault Y.getRepeatQuestion "repeat_question"
       confRepNum <- withDefault Y.repNum "default_repeat_num"
@@ -93,28 +93,30 @@ loadGeneral _ conf =
             Y.timeout = confTimeout
           }
 
-class
-  (BotClassTypes s) =>
-  BotConfigurable s
+class (GP.PrettyShow (Conf s)) =>
+  BotConfigurable (s :: Y.Messenger)
   where
+  type Conf s :: *
   loadSpecial ::
     L.LoggerHandler IO -> CT.Config -> IO (Conf s)
   messagerName :: T.Text
 
 instance BotConfigurable 'Y.Telegram where
+  type Conf 'Y.Telegram = TlConfig
   loadSpecial logger conf =
     let teleConf = C.subconfig "telegram" conf
      in loadTeleConfig logger teleConf
-  messagerName = "Y.Telegram"
+  messagerName = "Telegram"
 
 instance BotConfigurable 'Y.Vkontakte where
+  type Conf 'Y.Vkontakte = VkConfig
   loadSpecial logger conf =
     let vkConf = C.subconfig "vkontakte" conf
      in loadVkConfig logger vkConf
-  messagerName = "Y.Vkontakte"
+  messagerName = "Vkontakte"
 
 tryGetConfig ::
-  (BotClassTypes s) =>
+  (BotConfigurable s) =>
   L.LoggerHandler IO ->
   T.Text ->
   IO (Conf s) ->

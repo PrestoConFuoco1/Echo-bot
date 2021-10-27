@@ -13,8 +13,8 @@ import App.Handle as D
 import qualified App.Handle.Telegram as T
 import qualified App.Handle.Vkontakte as V
 import qualified App.Logger as L
-import BotClass.BotTeleInstance ()
-import BotClass.BotVkInstance ()
+import Execute.Telegram ()
+import Execute.Vkontakte ()
 import BotClass.ClassTypes (BotClassTypes (..))
 import BotClass.ClassTypesTeleInstance ()
 import BotClass.ClassTypesVkInstance ()

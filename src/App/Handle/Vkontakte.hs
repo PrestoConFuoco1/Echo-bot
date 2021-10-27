@@ -1,7 +1,20 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE DeriveAnyClass #-}
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DerivingStrategies #-}
+
 
 module App.Handle.Vkontakte where
+
+import Data.Aeson (decode)
+import Data.Aeson.Types ((.:))
+import qualified Data.Aeson.Types as AeT
+import qualified Data.ByteString.Lazy as BSL (ByteString)
+import qualified Data.Text as T (Text)
+import GHC.Generics (Generic)
+import GenericPretty
+
 
 import qualified App.Handle as D
 import qualified App.Logger as L
@@ -25,7 +38,6 @@ import System.Random (newStdGen)
 import qualified Types as Y
 import Vkontakte
 import qualified Vkontakte.Exceptions as VkEx
-import Vkontakte.Initialize (VkInitData (..), parseInitResp)
 import qualified Vkontakte.Send as G
 
 data Config = Config
@@ -209,3 +221,37 @@ initRequestParseFail logger s err = do
   L.logFatal logger $ "response: " <> T.pack (BSL.unpack s)
   L.logFatal logger $ T.pack err
   Q.exitWith $ Q.ExitFailure 1
+
+
+-----------------------------------------
+data VkInitData = VkInitData
+  { initKey :: T.Text,
+    initServer :: T.Text,
+    initTimestamp :: T.Text
+  }
+  deriving (Show, Generic)
+  deriving anyclass (PrettyShow)
+
+parseInitResp :: BSL.ByteString -> Either String VkInitData
+parseInitResp = eithParsed
+  where
+    parseInitRep =
+      AeT.withObject "object: key, server, ts" $ \o' -> -- AeT.Parser a
+        do
+          o <- o' .: "response"
+          key <- o .: "key" :: AeT.Parser T.Text
+          server <- o .: "server" :: AeT.Parser T.Text
+          ts <- o .: "ts" :: AeT.Parser T.Text
+          pure
+            VkInitData
+              { initKey = key,
+                initServer = server,
+                initTimestamp = ts
+              }
+    initReplyToJSON =
+      maybe
+        (Left "Couldn't parse getLongPollServer reply")
+        Right
+        . decode
+    eithParsed x =
+      initReplyToJSON x >>= AeT.parseEither parseInitRep

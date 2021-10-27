@@ -12,12 +12,10 @@ class
     Show (Rep s),
     GP.PrettyShow (RepSucc s),
     GP.PrettyShow (RepErr s),
-    GP.PrettyShow (Msg s),
-    GP.PrettyShow (Conf s)
+    GP.PrettyShow (Msg s)
   ) =>
   BotClassTypes (s :: Y.Messenger)
   where
-  type Conf s :: *
   type StateC s :: *
   type StateM s :: *
   type Rep s :: *

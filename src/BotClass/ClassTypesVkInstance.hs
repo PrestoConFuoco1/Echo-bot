@@ -8,7 +8,6 @@ import qualified Types as Y
 import Vkontakte
 
 instance BotClassTypes 'Y.Vkontakte where
-  type Conf 'Y.Vkontakte = VkConfig
   type StateC 'Y.Vkontakte = VkStateConst
   type StateM 'Y.Vkontakte = VkStateMut
   type Rep 'Y.Vkontakte = VkReply

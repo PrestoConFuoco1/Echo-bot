@@ -8,7 +8,6 @@ import Telegram
 import qualified Types as Y
 
 instance BotClassTypes 'Y.Telegram where
-  type Conf 'Y.Telegram = TlConfig -- don't care
   type StateC 'Y.Telegram = TlStateConst
   type StateM 'Y.Telegram = TlStateMut
   type Rep 'Y.Telegram = TlReply
