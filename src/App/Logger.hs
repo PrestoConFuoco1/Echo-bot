@@ -74,10 +74,10 @@ pathToHandle path = S.openFile path S.AppendMode
 initializationErrorHandler :: IOE.IOError -> IO a
 initializationErrorHandler e = do
    logFatal stdHandler "failed to initialize logger"
-   func e
+   logIOError e
    Q.exitWith (Q.ExitFailure 1)
   where
-    func err
+    logIOError err
        | IOE.isAlreadyInUseError err =
           logError stdHandler lockedmsg
        | IOE.isPermissionError err =

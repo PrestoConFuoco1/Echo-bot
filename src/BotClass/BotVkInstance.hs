@@ -117,10 +117,10 @@ handleFailedUpdatesRequest1 h e@(VkUpdateReplyError {..}) =
                 D.logError h $
                    funcName <>
                    "key was \"" <> key <> "\""
-                C.throwM KeyOutOfDate_GetNew
+                C.throwM KeyOutOfDateGetNew
              | x == 3 -> do
                 D.logError h $ funcName <> errorMsg3
-                C.throwM KeyAndTsLosed_GetNew
+                C.throwM KeyAndTsLosedGetNew
              | otherwise -> do
                 D.logFatal
                    h

@@ -8,7 +8,7 @@ import HTTPRequests as H
 import qualified Stuff as S (safeHead)
 import Telegram.Entity (TlMessage (..), chatIDfromMsg)
 import Telegram.ProcessMessage.Types
-import Control.Monad ((>=>))
+import Control.Monad ((>=>), guard)
 
 sendMessageTele ::
       TlMessage -> Either String (T.Text, H.ParamsList)
@@ -46,7 +46,7 @@ sendWithCaption ::
 sendWithCaption fromMsg getFileID method objName m = do
    let mCaption = messageCaption m
    obj <- fromMsg m
-   pure
+   Just
       ( method
       , [ unit "chat_id" $ chatIDfromMsg m
         , unit objName $ getFileID obj
@@ -56,7 +56,7 @@ sendWithCaption fromMsg getFileID method objName m = do
 sendTextTele :: TlMessage -> Maybe (T.Text, H.ParamsList)
 sendTextTele m = do
    text <- messageText m
-   pure
+   Just
       ( "sendMessage"
       , [unit "chat_id" $ chatIDfromMsg m, unit "text" text])
 
@@ -123,7 +123,7 @@ sendLocationTele ::
       TlMessage -> Maybe (T.Text, H.ParamsList)
 sendLocationTele m = do
    location <- messageLocation m
-   pure
+   Just
       ( "sendLocation"
       , [ unit "chat_id" $ chatIDfromMsg m
         , unit "latitude" $ locationLatitude location
@@ -133,7 +133,7 @@ sendLocationTele m = do
 sendVenueTele :: TlMessage -> Maybe (T.Text, H.ParamsList)
 sendVenueTele m = do
    venue <- messageVenue m
-   pure
+   Just
       ( "sendVenue"
       , [ unit "chat_id" $ chatIDfromMsg m
         , unit "latitude" $
@@ -147,7 +147,7 @@ sendVenueTele m = do
 sendContactTele :: TlMessage -> Maybe (T.Text, H.ParamsList)
 sendContactTele m = do
    contact <- messageContact m
-   pure
+   Just
       ( "sendContact"
       , [ unit "chat_id" $ chatIDfromMsg m
         , unit "phone_number" $ contactPhoneNumber contact
@@ -159,7 +159,7 @@ sendContactTele m = do
 sendPollTele :: TlMessage -> Maybe (T.Text, H.ParamsList)
 sendPollTele m = do
    poll <- messagePoll m
-   pure
+   Just
       ( "sendPoll"
       , [ unit "chat_id" $ chatIDfromMsg m
         , unit "question" $ pollQuestion poll
@@ -168,18 +168,16 @@ sendPollTele m = do
         ])
 
 sendDiceTele :: TlMessage -> Maybe (T.Text, H.ParamsList)
-sendDiceTele m
- = do
-   if messageText m == Just "/dice" || isJust (messageDice m)
-      then pure
-              ( "sendDice"
-              , [unit "chat_id" $ chatIDfromMsg m])
-      else Nothing
-
+sendDiceTele m = do
+    guard (messageText m == Just "/dice" || isJust (messageDice m))
+    Just
+        ( "sendDice"
+        , [unit "chat_id" $ chatIDfromMsg m])
+ 
 sendStickerTele :: TlMessage -> Maybe (T.Text, H.ParamsList)
 sendStickerTele m = do
    sticker <- messageSticker m
-   pure
+   Just
       ( "sendSticker"
       , [ unit "chat_id" $ chatIDfromMsg m
         , unit "sticker" $ stickerFileID sticker

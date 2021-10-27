@@ -84,9 +84,9 @@ vkErrorHandler ::
    -> Resources
    -> VkEx.VkException
    -> IO Resources
-vkErrorHandler logger conf resources VkEx.KeyOutOfDate_GetNew =
+vkErrorHandler logger conf resources VkEx.KeyOutOfDateGetNew =
    getNewKey logger conf resources
-vkErrorHandler logger conf resources VkEx.KeyAndTsLosed_GetNew =
+vkErrorHandler logger conf resources VkEx.KeyAndTsLosedGetNew =
    getNewKeyAndTs logger conf resources
 
 modifyKey :: T.Text -> Resources -> Resources
