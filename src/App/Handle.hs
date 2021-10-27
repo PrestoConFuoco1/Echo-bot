@@ -3,10 +3,10 @@
 module App.Handle where
 
 import qualified App.Logger as L
-import BotClass.ClassTypes (BotClassTypes (..))
+import BotTypesClass.ClassTypes (BotClassTypes (..))
 import Data.Maybe (fromMaybe)
 import qualified Data.Text as T (Text)
-import qualified HTTPRequests as H
+import qualified HTTPTypes as H
 import qualified Types as Y
 import Prelude hiding (log)
 

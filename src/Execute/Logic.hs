@@ -5,15 +5,15 @@
 module Execute.Logic where
 
 import qualified App.Handle as D
-import BotClass.Class (BotClass (..), BotClassUtility (..))
-import BotClass.ClassTypes (BotClassTypes (..))
+import BotClass (BotClass (..), BotClassUtility (..))
+import BotTypesClass.ClassTypes (BotClassTypes (..))
 import Control.Monad (replicateM)
 import Data.Either (partitionEithers)
 import Data.Foldable (asum)
 import Data.Maybe (fromMaybe)
 import qualified Data.Text as T
 import qualified GenericPretty as GP
-import qualified HTTPRequests as H
+import qualified HTTPTypes as H
 import qualified Stuff as S
 import Text.Read (readMaybe)
 import qualified Types as Y

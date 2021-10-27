@@ -7,7 +7,7 @@ module Vkontakte.General where
 import qualified Data.Text as T (Text)
 import GHC.Generics (Generic)
 import GenericPretty (PrettyShow)
-import HTTPRequests as H
+import HTTPTypes as H
 import System.Random (StdGen)
 
 defaultVkParams :: VkStateConst -> H.ParamsList

@@ -4,8 +4,8 @@
 module Execute where
 
 import qualified App.Handle as D
-import BotClass.Class (BotClass (..))
-import BotClass.ClassTypes (BotClassTypes (..))
+import BotClass (BotClass (..))
+import BotTypesClass.ClassTypes (BotClassTypes (..))
 import Control.Monad (when)
 import qualified Control.Monad.Catch as C
 import qualified Data.Aeson as Ae

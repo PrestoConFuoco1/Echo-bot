@@ -1,14 +1,14 @@
 {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE TypeFamilies #-}
 
-module BotClass.Class where
+module BotClass where
 
 import qualified App.Handle as D
-import BotClass.ClassTypes
+import BotTypesClass.ClassTypes
 import qualified Control.Monad.Catch as C
 import Data.Aeson (Value)
 import qualified Data.Text as T (Text)
-import qualified HTTPRequests as H
+import qualified HTTPTypes as H
 
 buildHTTP ::
   T.Text -> (T.Text, H.ParamsList) -> H.HTTPRequest

@@ -30,10 +30,9 @@ library
       App.Handle.Vkontakte
       App.Logger
       BotClass
-      BotClass.Class
-      BotClass.ClassTypes
-      BotClass.ClassTypesTeleInstance
-      BotClass.ClassTypesVkInstance
+      BotTypesClass.ClassTypes
+      BotTypesClass.ClassTypesTeleInstance
+      BotTypesClass.VkInstance
       Config
       DerivingJSON
       Exceptions
@@ -42,7 +41,8 @@ library
       Execute.Telegram
       Execute.Vkontakte
       GenericPretty
-      HTTPRequests
+      HTTPSend
+      HTTPTypes
       Lib
       RunOptions
       Stuff
@@ -67,7 +67,6 @@ library
       Vkontakte.Exceptions
       Vkontakte.ForHandlers
       Vkontakte.General
-      Vkontakte.Initialize
       Vkontakte.Keyboard
       Vkontakte.Send
       Vkontakte.Update

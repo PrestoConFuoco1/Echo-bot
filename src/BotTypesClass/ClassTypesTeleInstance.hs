@@ -1,9 +1,9 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeFamilies #-}
 
-module BotClass.ClassTypesTeleInstance where
+module BotTypesClass.ClassTypesTeleInstance where
 
-import BotClass.ClassTypes (BotClassTypes (..))
+import BotTypesClass.ClassTypes (BotClassTypes (..))
 import Telegram
 import qualified Types as Y
 

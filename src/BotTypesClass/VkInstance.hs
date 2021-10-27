@@ -1,9 +1,9 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeFamilies #-}
 
-module BotClass.ClassTypesVkInstance where
+module BotTypesClass.VkInstance where
 
-import BotClass.ClassTypes
+import BotTypesClass.ClassTypes
 import qualified Types as Y
 import Vkontakte
 

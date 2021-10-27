@@ -10,7 +10,8 @@ import Data.Aeson.Types as AeT
 import qualified Data.ByteString.Lazy.Char8 as BSL
   ( ByteString,
   )
-import qualified HTTPRequests as H
+import qualified HTTPTypes as H
+import qualified HTTPSend as H
 import Telegram.General (tlTakesJSON)
 import Telegram.Update (TlReply, TlUpdateReplyError, TlUpdateReplySuccess, parseUpdatesResponse1)
 import qualified Types as Y

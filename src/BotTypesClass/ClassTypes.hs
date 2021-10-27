@@ -2,7 +2,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE TypeFamilies #-}
 
-module BotClass.ClassTypes where
+module BotTypesClass.ClassTypes where
 
 import qualified GenericPretty as GP
 import qualified Types as Y

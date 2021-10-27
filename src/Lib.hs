@@ -15,9 +15,9 @@ import qualified App.Handle.Vkontakte as V
 import qualified App.Logger as L
 import Execute.Telegram ()
 import Execute.Vkontakte ()
-import BotClass.ClassTypes (BotClassTypes (..))
-import BotClass.ClassTypesTeleInstance ()
-import BotClass.ClassTypesVkInstance ()
+import BotTypesClass.ClassTypes (BotClassTypes (..))
+import BotTypesClass.ClassTypesTeleInstance ()
+import BotTypesClass.VkInstance ()
 import Config (BotConfigurable (..), configHandlers, loadConfig)
 import Control.Monad (when)
 import qualified Control.Monad.Catch as C

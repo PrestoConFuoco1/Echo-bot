@@ -18,7 +18,7 @@ import GenericPretty
 
 import qualified App.Handle as D
 import qualified App.Logger as L
-import BotClass.ClassTypesVkInstance ()
+import BotTypesClass.VkInstance ()
 import qualified Control.Monad.Catch as C
   ( Handler (..),
     SomeException,
@@ -32,7 +32,8 @@ import Data.IORef
 import qualified Data.Map as M
 import qualified Data.Text as T
 import GenericPretty as GP
-import qualified HTTPRequests as H
+import qualified HTTPSend as H
+import qualified HTTPTypes as H
 import qualified System.Exit as Q (ExitCode (..), exitWith)
 import System.Random (newStdGen)
 import qualified Types as Y
