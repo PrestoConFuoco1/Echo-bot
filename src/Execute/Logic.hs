@@ -17,7 +17,7 @@ import qualified Types as Y
 
 handleUpdate ::
       (BotClass s, Monad m)
-   => D.Handle s m
+   => D.BotHandler s m
    -> Upd s
    -> m ()
 handleUpdate h u = do
@@ -34,7 +34,7 @@ type EventT s
     = Y.Event (Chat s) (User s) (Msg s) (CallbackQuery s)
 
 defineUpdateType ::
-      forall s m. (BotClass s) => D.Handle s m -> Upd s -> Y.Event (Chat s) (User s) (Msg s) (CallbackQuery s)
+      forall s m. (BotClass s) => D.BotHandler s m -> Upd s -> Y.Event (Chat s) (User s) (Msg s) (CallbackQuery s)
 defineUpdateType h u =
    let mMsg = getMsg @s u
        mText = mMsg >>= getText @s
@@ -61,7 +61,7 @@ getCmd e str
 
 handleCallback ::
       forall s m. (BotClass s, Monad m)
-   => D.Handle s m
+   => D.BotHandler s m
    -> CallbackQuery s
    -> m ()
 handleCallback h callback =
@@ -99,7 +99,7 @@ defineCallbackType callback =
 
 handleSetRepNum ::
       forall s m. (BotClass s, Monad m)
-   => D.Handle s m
+   => D.BotHandler s m
    -> User s
    -> Maybe (Chat s)
    -> Int
@@ -126,7 +126,7 @@ handleSetRepNum h user mChat repnum = do
 
 handleCommand ::
       (BotClass s, Monad m)
-   => D.Handle s m
+   => D.BotHandler s m
    -> Y.Command
    -> Maybe (Chat s)
    -> Maybe (User s)
@@ -138,7 +138,7 @@ handleCommand h cmd mChat mUser =
 
 sendHelp ::
       (BotClass s, Monad m)
-   => D.Handle s m
+   => D.BotHandler s m
    -> Maybe (Chat s)
    -> Maybe (User s)
    -> m ()
@@ -161,7 +161,7 @@ maxRepNum = 5
 
 sendRepNumButtons ::
       forall s m. (BotClass s, Monad m)
-   => D.Handle s m
+   => D.BotHandler s m
    -> Maybe (Chat s)
    -> Maybe (User s)
    -> m ()
@@ -187,7 +187,7 @@ sendRepNumButtons h mChat mUser = do
 
 logEither ::
       (BotClass s, Monad m)
-   => D.Handle s m
+   => D.BotHandler s m
    -> (a -> m ())
    -> Either String a
    -> m ()
@@ -196,7 +196,7 @@ logEither h f = do
 
 sendFixedInfo ::
       (BotClass s, Monad m)
-   => D.Handle s m
+   => D.BotHandler s m
    -> (a -> m (Either String (Rep s)))
    -> a
    -> m ()
@@ -206,14 +206,14 @@ sendFixedInfo h send request = do
 
 logEitherResponse ::
       (BotClass s, Monad m)
-   => D.Handle s m
+   => D.BotHandler s m
    -> Either String (Rep s)
    -> m ()
 logEitherResponse h = logEither h (logResponse h)
 
 logResponse ::
       forall s m. (BotClass s, Monad m)
-   => D.Handle s m
+   => D.BotHandler s m
    -> Rep s
    -> m ()
 logResponse h resp =
@@ -227,7 +227,7 @@ logResponse h resp =
 
 handleMessage ::
       forall s m. (BotClass s, Monad m)
-   => D.Handle s m
+   => D.BotHandler s m
    -> Msg s
    -> m ()
 handleMessage h m = do
@@ -242,7 +242,7 @@ handleMessage h m = do
 
 sendNTimes ::
       (BotClass s, Monad m)
-   => D.Handle s m
+   => D.BotHandler s m
    -> Maybe (User s)
    -> m H.HTTPRequest
    -> m ()

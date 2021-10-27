@@ -34,11 +34,11 @@ class (BotClassUtility s) =>
    where
    takesJSON :: Bool
    getUpdatesRequest ::
-         (Monad m) => D.Handle s m -> m H.HTTPRequest
+         (Monad m) => D.BotHandler s m -> m H.HTTPRequest
    isSuccess :: Rep s -> Bool
    handleFailedUpdatesRequest ::
          (C.MonadThrow m)
-      => D.Handle s m
+      => D.BotHandler s m
       -> RepErr s
       -> m ()
    parseUpdatesValueList ::
@@ -46,7 +46,7 @@ class (BotClassUtility s) =>
    parseUpdate :: Value -> Either String (Upd s)
    sendTextMsg ::
          (Monad m)
-      => D.Handle s m
+      => D.BotHandler s m
       -> Maybe (Chat s)
       -> Maybe (User s)
       -> T.Text
@@ -54,12 +54,12 @@ class (BotClassUtility s) =>
    repNumKeyboard :: [Int] -> T.Text -> H.ParamsList
    processMessage ::
          (Monad m)
-      => D.Handle s m
+      => D.BotHandler s m
       -> Msg s
       -> m (Maybe (m H.HTTPRequest))
    epilogue ::
          (Monad m)
-      => D.Handle s m
+      => D.BotHandler s m
       -> [Upd s]
       -> RepSucc s
       -> m ()

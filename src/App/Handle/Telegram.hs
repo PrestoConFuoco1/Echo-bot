@@ -47,9 +47,9 @@ initResources _ (Config common tlConf) = do
          }
 
 resourcesToHandle ::
-      Resources -> L.LoggerHandler IO -> D.Handle 'Y.Telegram IO
+      Resources -> L.LoggerHandler IO -> D.BotHandler 'Y.Telegram IO
 resourcesToHandle resources logger =
-   D.Handle
+   D.BotHandler
       { D.log = logger
       , D.commonEnv = commonEnv resources
       , D.getConstState = constState resources

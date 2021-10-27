@@ -56,9 +56,9 @@ initResources h (Config common vkConf) = do
          }
 
 resourcesToHandle ::
-      Resources -> L.LoggerHandler IO -> D.Handle 'Y.Vkontakte IO
+      Resources -> L.LoggerHandler IO -> D.BotHandler 'Y.Vkontakte IO
 resourcesToHandle resources logger =
-   D.Handle
+   D.BotHandler
       { D.log = logger
       , D.commonEnv = commonEnv resources
       , D.getConstState = constState resources

@@ -65,7 +65,7 @@ instance BotClass 'Y.Vkontakte
    epilogue = epilogue1
 
 getUpdatesRequest1 ::
-      (Monad m) => D.Handle 'Y.Vkontakte m -> m H.HTTPRequest
+      (Monad m) => D.BotHandler 'Y.Vkontakte m -> m H.HTTPRequest
 getUpdatesRequest1 h
  = do
    curTS <- getTimestamp (D.specH h)
@@ -95,7 +95,7 @@ errorMsg3 =
 
 handleFailedUpdatesRequest1 ::
       (C.MonadThrow m)
-   => D.Handle 'Y.Vkontakte m
+   => D.BotHandler 'Y.Vkontakte m
    -> VkUpdateReplyError
    -> m ()
 handleFailedUpdatesRequest1 h e@(VkUpdateReplyError {..}) =
@@ -130,7 +130,7 @@ handleFailedUpdatesRequest1 h e@(VkUpdateReplyError {..}) =
 
 sendTextMsg1 ::
       (Monad m)
-   => D.Handle 'Y.Vkontakte m
+   => D.BotHandler 'Y.Vkontakte m
    -> Maybe VkChat
    -> Maybe VkUser
    -> T.Text
@@ -160,7 +160,7 @@ repNumKeyboard1 lst cmd = [unit "keyboard" obj]
 
 epilogue1 ::
       (Monad m)
-   => D.Handle 'Y.Vkontakte m
+   => D.BotHandler 'Y.Vkontakte m
    -> [VkUpdate]
    -> VkUpdateReplySuccess
    -> m ()
@@ -171,7 +171,7 @@ epilogue1 h _ rep =
 
 processMessage1 ::
       (Monad m)
-   => D.Handle 'Y.Vkontakte m
+   => D.BotHandler 'Y.Vkontakte m
    -> VkMessage
    -> m (Maybe (m H.HTTPRequest))
 processMessage1 h m
@@ -213,7 +213,7 @@ processMessage1 h m
 
 processMessageVk ::
       (Monad m)
-   => D.Handle 'Y.Vkontakte m
+   => D.BotHandler 'Y.Vkontakte m
    -> VkUser
    -> Maybe T.Text
    -> H.ParamsList

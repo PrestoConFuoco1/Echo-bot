@@ -17,7 +17,7 @@ import qualified Types as Y
 
 execute ::
       (BotClass s, C.MonadThrow m)
-   => D.Handle s m
+   => D.BotHandler s m
    -> m ()
 execute h= do
    let funcName = "execute: "
@@ -39,7 +39,7 @@ execute h= do
             handleUpdatesSuccess h resp
 
 updLstParseFail ::
-      (C.MonadThrow m) => D.Handle s m -> String -> m a
+      (C.MonadThrow m) => D.BotHandler s m -> String -> m a
 updLstParseFail h x = do
    let funcName = "updateListParseFail: "
    D.logError h .
@@ -51,7 +51,7 @@ updLstParseFail h x = do
 -- normal work is impossible if we are not able to parse update list
 logUpdatesErrors ::
       (BotClass s, C.MonadThrow m)
-   => D.Handle s m
+   => D.BotHandler s m
    -> [(Ae.Value, String)]
    -> [Upd s]
    -> m ()
@@ -68,7 +68,7 @@ logUpdatesErrors h errs upds = do
 -- we will try to parse them again and again resulting an infinite worthless loop
 handleUpdatesSuccess ::
       forall s m. (BotClass s, C.MonadThrow m)
-   => D.Handle s m
+   => D.BotHandler s m
    -> RepSucc s
    -> m ()
 handleUpdatesSuccess h resp = do
@@ -86,7 +86,7 @@ handleUpdatesSuccess h resp = do
 
 singleUpdateParseFail ::
       forall s m. (BotClass s, Monad m)
-   => D.Handle s m
+   => D.BotHandler s m
    -> (Ae.Value, String)
    -> m ()
 singleUpdateParseFail h (u, e) = do

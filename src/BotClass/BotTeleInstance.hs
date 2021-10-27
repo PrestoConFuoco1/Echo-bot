@@ -103,7 +103,7 @@ instance BotClass 'Y.Telegram
 
 processMessage1 ::
       (Monad m)
-   => D.Handle 'Y.Telegram m
+   => D.BotHandler 'Y.Telegram m
    -> TlMessage
    -> m (Maybe (m H.HTTPRequest))
 processMessage1 h m =
@@ -124,7 +124,7 @@ processMessage1 h m =
            eithMethodParams
 
 processMediaGroup ::
-      (Monad m) => D.Handle 'Y.Telegram m -> TlMessage -> m ()
+      (Monad m) => D.BotHandler 'Y.Telegram m -> TlMessage -> m ()
 processMediaGroup h m =
    let funcName = "processMediaGroup: "
        chat = messageChat m
@@ -152,7 +152,7 @@ processMediaGroup h m =
 
 sendMediaGroup ::
       (Monad m)
-   => D.Handle 'Y.Telegram m
+   => D.BotHandler 'Y.Telegram m
    -> TlMediaGroupPair
    -> m ()
 sendMediaGroup h (TlMediaGroupPair ident items) = do

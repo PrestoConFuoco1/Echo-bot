@@ -9,8 +9,8 @@ import qualified HTTPRequests as H
 import Prelude hiding (log)
 import qualified Types as Y
 
-data Handle s m =
-   Handle
+data BotHandler s m =
+   BotHandler
       { log :: L.LoggerHandler m
       , commonEnv :: Y.EnvironmentCommon
       , insertUser :: (BotClassTypes s) =>
@@ -30,7 +30,7 @@ data Handle s m =
 
 findWithDefault ::
       (BotClassTypes s, Monad m)
-   => Handle s m
+   => BotHandler s m
    -> Int
    -> Maybe (User s)
    -> m Int
@@ -40,7 +40,7 @@ findWithDefault h def mUser =
       Just user -> fromMaybe def <$> getUser h user
 
 logDebug, logInfo, logWarning, logError, logFatal ::
-      Handle s m -> T.Text -> m ()
+      BotHandler s m -> T.Text -> m ()
 logDebug h = L.logDebug (log h)
 
 logInfo h = L.logInfo (log h)
@@ -51,5 +51,5 @@ logError h = L.logError (log h)
 
 logFatal h = L.logFatal (log h)
 
-logEntry :: Handle s m -> L.LoggerEntry -> m ()
+logEntry :: BotHandler s m -> L.LoggerEntry -> m ()
 logEntry h (pri, msg) = L.log (log h) pri msg
