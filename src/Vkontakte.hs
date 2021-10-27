@@ -1,6 +1,7 @@
 module Vkontakte
-   ( module V
-   ) where
+  ( module V,
+  )
+where
 
 import Vkontakte.Attachment as V
 import Vkontakte.Entity as V

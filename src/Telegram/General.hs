@@ -1,5 +1,5 @@
-{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DeriveAnyClass #-}
+{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DerivingStrategies #-}
 
 module Telegram.General where
@@ -13,26 +13,21 @@ import Telegram.MediaGroup.Types (TlMediaGroupIdentifier, TlMediaGroupUnit)
 tlTakesJSON :: Bool
 tlTakesJSON = True -- this is better
 
-data TlConfig =
-   TlConf
-      { configUpdateID :: Integer
-      , configUrl :: T.Text
-      }
-    deriving stock (Show, Generic)
-    deriving anyclass PrettyShow
+data TlConfig = TlConf
+  { configUpdateID :: Integer,
+    configUrl :: T.Text
+  }
+  deriving stock (Show, Generic)
+  deriving anyclass (PrettyShow)
 
-newtype TlStateConst =
-   TSC
-      { stcUrl :: T.Text
-      }
-    deriving stock (Show, Generic)
-    deriving anyclass PrettyShow
+newtype TlStateConst = TSC
+  { stcUrl :: T.Text
+  }
+  deriving stock (Show, Generic)
+  deriving anyclass (PrettyShow)
 
-
-data TlStateMut =
-   TSM
-      { stmUpdateID :: Integer
-      , stmMediaGroups :: M.Map TlMediaGroupIdentifier [TlMediaGroupUnit]
-      }
-    deriving stock (Show, Generic)
-
+data TlStateMut = TSM
+  { stmUpdateID :: Integer,
+    stmMediaGroups :: M.Map TlMediaGroupIdentifier [TlMediaGroupUnit]
+  }
+  deriving stock (Show, Generic)

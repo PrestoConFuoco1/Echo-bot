@@ -10,47 +10,49 @@ import qualified Stuff as S
 import Vkontakte.Attachment.Types
 
 attsToParsVk ::
-      [VkAttachment]
-   -> Writer [L.LoggerEntry] (Maybe H.ParamsList)
+  [VkAttachment] ->
+  Writer [L.LoggerEntry] (Maybe H.ParamsList)
 attsToParsVk atts = do
-   let part = partitionVkAttachments atts
-       messageSendable =
-          map encodeVkAtt (pPhotos part) <>
-          map encodeVkAtt (pVideos part) <>
-          map encodeVkAtt (pAudios part) <>
-          map encodeVkAtt (pDocs part) <>
-          map encodeVkAtt (pWalls part) <>
-          map encodeVkAtt (pMarkets part)
-       maybePars = either (const Nothing) Just eithPars
-       eithPars =
-          asum
-             [ sendGift $ pGifts part
-             , sendLink $ pLinks part
-             , sendMarketAlbum $ pMarketAlbums part
-             , sendWallReply $ pWallReplies part
-             , sendSticker $ pStickers part
-             , sendMsgSendable messageSendable
-             ]
-       unexpList = pUnexpected part
-       maybeUnexpectedAttsMsg =
-          case unexpList of
-             [] -> Nothing
-             xs ->
-                Just $
-                "Found " <>
-                (T.pack . show . length $ xs) <>
-                " unexpected attachments."
-   S.withMaybe maybeUnexpectedAttsMsg (pure ()) $ \u -> do
-      tell . (: []) $ (L.Warning, u)
-      let f x = (L.Warning, GP.defaultPrettyT x)
-      tell $ map f unexpList
-   pure $ fmap (: []) maybePars
+  let part = partitionVkAttachments atts
+      messageSendable =
+        map encodeVkAtt (pPhotos part)
+          <> map encodeVkAtt (pVideos part)
+          <> map encodeVkAtt (pAudios part)
+          <> map encodeVkAtt (pDocs part)
+          <> map encodeVkAtt (pWalls part)
+          <> map encodeVkAtt (pMarkets part)
+      maybePars = either (const Nothing) Just eithPars
+      eithPars =
+        asum
+          [ sendGift $ pGifts part,
+            sendLink $ pLinks part,
+            sendMarketAlbum $ pMarketAlbums part,
+            sendWallReply $ pWallReplies part,
+            sendSticker $ pStickers part,
+            sendMsgSendable messageSendable
+          ]
+      unexpList = pUnexpected part
+      maybeUnexpectedAttsMsg =
+        case unexpList of
+          [] -> Nothing
+          xs ->
+            Just $
+              "Found "
+                <> (T.pack . show . length $ xs)
+                <> " unexpected attachments."
+  S.withMaybe maybeUnexpectedAttsMsg (pure ()) $ \u -> do
+    tell . (: []) $ (L.Warning, u)
+    let f x = (L.Warning, GP.defaultPrettyT x)
+    tell $ map f unexpList
+  pure $ fmap (: []) maybePars
 
 encodeVkAtt :: (VkAttMessageSendable a) => a -> T.Text
 encodeVkAtt x =
-   getType x <>
-   T.pack (show (getOwnerID x)) <>
-   "_" <> T.pack (show $ getID x) <> maybeAccessKey
+  getType x
+    <> T.pack (show (getOwnerID x))
+    <> "_"
+    <> T.pack (show $ getID x)
+    <> maybeAccessKey
   where
     maybeAccessKey = maybe "" ("_" <>) $ getAccessKey x
 
@@ -64,34 +66,34 @@ partitionVkAttachments = foldr f nullPartition
     f (VALink x) acc = acc {pLinks = x : pLinks acc}
     f (VAMarket x) acc = acc {pMarkets = x : pMarkets acc}
     f (VAMarketAlbum x) acc =
-       acc {pMarketAlbums = x : pMarketAlbums acc}
+      acc {pMarketAlbums = x : pMarketAlbums acc}
     f (VAWall x) acc = acc {pWalls = x : pWalls acc}
     f (VAWallReply x) acc =
-       acc {pWallReplies = x : pWallReplies acc}
+      acc {pWallReplies = x : pWallReplies acc}
     f (VASticker x) acc =
-       acc {pStickers = x : pStickers acc}
+      acc {pStickers = x : pStickers acc}
     f (VAGift x) acc = acc {pGifts = x : pGifts acc}
     f (VAUnexpectedAtt x) acc =
-       acc {pUnexpected = x : pUnexpected acc}
+      acc {pUnexpected = x : pUnexpected acc}
 
 unableToSend :: String -> [a] -> Either String b
 unableToSend obj [] = Left $ "No " ++ obj ++ "found."
 unableToSend obj _ = Left $ "Unable to send " ++ obj ++ "."
 
-sendGift, sendLink, sendMarketAlbum, sendWallReply ::
-      [a] -> Either String b
+sendGift,
+  sendLink,
+  sendMarketAlbum,
+  sendWallReply ::
+    [a] -> Either String b
 sendGift = unableToSend "gift"
-
 sendLink = unableToSend "link"
-
 sendMarketAlbum = unableToSend "market album"
-
 sendWallReply = unableToSend "wall reply"
 
 sendSticker :: [VkSticker] -> Either String H.ParamsUnit
 sendSticker [] = Left "No sticker found."
-sendSticker (x:_) =
-   Right $ unit "sticker_id" (stickerStickerID x)
+sendSticker (x : _) =
+  Right $ unit "sticker_id" (stickerStickerID x)
 
 sendMsgSendable :: [T.Text] -> Either String H.ParamsUnit
 sendMsgSendable [] = Left "Empty list of attachments."

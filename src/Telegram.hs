@@ -1,6 +1,7 @@
 module Telegram
-   ( module T
-   ) where
+  ( module T,
+  )
+where
 
 import Telegram.Entity as T
 import Telegram.Exceptions as T
