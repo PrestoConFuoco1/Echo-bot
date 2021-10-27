@@ -7,7 +7,7 @@ module Execute.Telegram where
 
 import qualified App.Handle as D
 import BotClass
-import BotTypesClass.ClassTypesTeleInstance
+import BotTypesClass.TelegramInstance
 import qualified Control.Monad.Catch as C (throwM)
 import qualified Data.Aeson.Types as AeT
   ( parseEither,

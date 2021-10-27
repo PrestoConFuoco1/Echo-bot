@@ -11,9 +11,8 @@ import Data.Aeson (decode)
 import Data.Aeson.Types ((.:))
 import qualified Data.Aeson.Types as AeT
 import qualified Data.ByteString.Lazy as BSL (ByteString)
-import qualified Data.Text as T (Text)
+import qualified Data.Text as T (Text, pack)
 import GHC.Generics (Generic)
-import GenericPretty
 
 
 import qualified App.Handle as D
@@ -30,7 +29,6 @@ import qualified Data.ByteString.Lazy.Char8 as BSL
   )
 import Data.IORef
 import qualified Data.Map as M
-import qualified Data.Text as T
 import GenericPretty as GP
 import qualified HTTPSend as H
 import qualified HTTPTypes as H

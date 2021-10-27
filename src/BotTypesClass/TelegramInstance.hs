@@ -1,7 +1,7 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeFamilies #-}
 
-module BotTypesClass.ClassTypesTeleInstance where
+module BotTypesClass.TelegramInstance where
 
 import BotTypesClass.ClassTypes (BotClassTypes (..))
 import Telegram

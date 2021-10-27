@@ -31,7 +31,7 @@ library
       App.Logger
       BotClass
       BotTypesClass.ClassTypes
-      BotTypesClass.ClassTypesTeleInstance
+      BotTypesClass.TelegramInstance
       BotTypesClass.VkInstance
       Config
       DerivingJSON
