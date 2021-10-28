@@ -1,4 +1,4 @@
-module Vkontakte.ForHandlers where
+module Vkontakte.HandlerPure where
 
 import qualified Data.Text as T (Text)
 import System.Random (randomR)

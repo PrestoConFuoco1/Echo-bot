@@ -1,4 +1,4 @@
-module Telegram.ForHandlers where
+module Telegram.HandlerPure where
 
 import qualified Data.Map as M
 import Telegram.General (TlStateMut (..))
