@@ -24,8 +24,8 @@ import qualified Control.Monad.Catch as C
     displayException,
   )
 import qualified Data.ByteString.Lazy.Char8 as BSL
-  ( ByteString,
-    unpack,
+  (
+    unpack
   )
 import Data.IORef
 import qualified Data.Map as M

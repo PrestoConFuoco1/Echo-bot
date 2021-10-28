@@ -3,14 +3,10 @@
 module RunOptions where
 
 import qualified App.Logger as L
-import Data.List (isPrefixOf)
-import Data.Maybe (fromMaybe)
 import qualified Data.Text as T
 import GHC.Generics
 import qualified GenericPretty as P
 import Options.Applicative
-import qualified Stuff as S (withMaybe)
-import Text.Read (readMaybe)
 import qualified Types as Y
 
 data LoggerSettings
@@ -60,6 +56,7 @@ getOpts =
         )
     <*> switch (long "test-config" <> help "Test configuration")
 
+botHeader :: String
 botHeader = "Echo-bot for Y.Telegram and Vk"
 
 --botDescription = ""

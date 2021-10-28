@@ -5,7 +5,7 @@
 module Execute.Logic where
 
 import qualified App.Handle as D
-import BotClass (BotClass (..), BotClassUtility (..))
+import Execute.BotClass (BotClass (..), BotClassUtility (..))
 import BotTypesClass.ClassTypes (BotClassTypes (..))
 import Control.Monad (replicateM)
 import Data.Either (partitionEithers)

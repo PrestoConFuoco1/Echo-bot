@@ -6,20 +6,17 @@ import HTTPTypes
 import qualified App.Logger as L
 import Control.Exception (Handler (..), catches)
 import qualified Data.Aeson as Ae
-  ( ToJSON (..),
+  (
     Value,
-    encode,
     object,
-    (.=),
+    (.=)
   )
-import qualified Data.ByteString.Lazy as BS (toStrict)
 import qualified Data.ByteString.Lazy.Char8 as BSL
   ( ByteString,
   )
 import Data.List (intercalate)
 import Data.Maybe (mapMaybe)
-import qualified Data.Text as T (Text, concat, unpack)
-import Data.Text.Encoding as E (decodeUtf8)
+import qualified Data.Text as T (unpack)
 import Network.HTTP.Base (urlEncode)
 import Network.HTTP.Simple
   ( HttpException (..),
@@ -29,7 +26,6 @@ import Network.HTTP.Simple
     parseRequest,
     setRequestBodyJSON,
   )
-import qualified Stuff as S
 
 
 

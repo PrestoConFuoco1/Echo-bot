@@ -4,7 +4,7 @@
 module Execute where
 
 import qualified App.Handle as D
-import BotClass (BotClass (..))
+import Execute.BotClass (BotClass (..))
 import BotTypesClass.ClassTypes (BotClassTypes (..))
 import Control.Monad (when)
 import qualified Control.Monad.Catch as C

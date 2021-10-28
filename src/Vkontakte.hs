@@ -9,5 +9,4 @@ import Vkontakte.Exceptions as V
 import Vkontakte.ForHandlers as V
 import Vkontakte.General as V
 import Vkontakte.Keyboard as V
-import Vkontakte.Send as V
 import Vkontakte.Update as V

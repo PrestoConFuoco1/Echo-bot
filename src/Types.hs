@@ -62,6 +62,7 @@ data EnvCommands = EnvCommands
   deriving stock (Show, Generic)
   deriving anyclass (GP.PrettyShow)
 
+defaultMessages :: EnvMessages
 defaultMessages =
   EnvMessages
     { helpMsg =
@@ -72,6 +73,7 @@ defaultMessages =
         "How many times would you like to repeat every reply?"
     }
 
+defaultCommands :: EnvCommands
 defaultCommands =
   EnvCommands
     { helpCommand = "/help",

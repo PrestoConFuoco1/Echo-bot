@@ -3,11 +3,8 @@
 
 module Telegram.Keyboard where
 
-import Data.Aeson (encode)
 import Data.Aeson.Types (FromJSON (..), ToJSON (..))
-import qualified Data.ByteString.Lazy as BS (toStrict)
 import qualified Data.Text as T (Text, pack)
-import qualified Data.Text.Encoding as E (decodeUtf8)
 import DerivingJSON (BotSelectorModifier (..))
 import GHC.Generics (Generic)
 

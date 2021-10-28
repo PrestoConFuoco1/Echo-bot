@@ -5,10 +5,9 @@
 
 module Telegram.MediaGroup.Types where
 
-import Data.Aeson.Types (FromJSON (..), ToJSON (..), object, (.:), (.=))
+import Data.Aeson.Types (ToJSON (..), object, (.=))
 import Data.Foldable (asum)
 import qualified Data.Text as T
-import DerivingJSON (BotSelectorModifier (..))
 import GHC.Generics
 import qualified GenericPretty as GP
 import qualified Stuff as S

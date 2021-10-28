@@ -6,7 +6,7 @@
 module Execute.Vkontakte where
 
 import qualified App.Handle as D
-import BotClass
+import Execute.BotClass
 import BotTypesClass.VkInstance ()
 import qualified Control.Monad.Catch as C
   ( MonadThrow,
@@ -55,7 +55,7 @@ instance BotClass 'Y.Vkontakte where
   parseUpdatesValueList rep = do
     res <-
       maybe (Left "Couldn't parse update list") Right $
-        getResult @Y.Vkontakte rep
+        getResult @'Y.Vkontakte rep
     AeT.parseEither AeT.parseJSON res
   parseUpdate = AeT.parseEither AeT.parseJSON
   sendTextMsg = sendTextMsg1

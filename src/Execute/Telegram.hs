@@ -6,18 +6,16 @@
 module Execute.Telegram where
 
 import qualified App.Handle as D
-import BotClass
-import BotTypesClass.TelegramInstance
+import Execute.BotClass
+import BotTypesClass.TelegramInstance ()
 import qualified Control.Monad.Catch as C (throwM)
 import qualified Data.Aeson.Types as AeT
   ( parseEither,
     parseJSON,
     toJSON,
   )
-import Data.Bifunctor (first)
 import Data.Foldable (asum)
 import qualified Data.Text as T (pack)
-import qualified Data.Text.Lazy as T (fromStrict)
 import qualified Exceptions as Ex
 import qualified Execute.Logic as E (sendNTimes)
 import qualified GenericPretty as GP
@@ -69,7 +67,7 @@ instance BotClass 'Y.Telegram where
   parseUpdatesValueList rep = do
     res <-
       maybe (Left "Couldn't parse update list") Right $
-        getResult @Y.Telegram rep
+        getResult @'Y.Telegram rep
     AeT.parseEither AeT.parseJSON res
   parseUpdate = AeT.parseEither AeT.parseJSON
   repNumKeyboard lst cmd = [unit "reply_markup" obj]

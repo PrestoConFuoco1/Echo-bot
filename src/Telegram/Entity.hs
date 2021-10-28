@@ -5,15 +5,12 @@
 module Telegram.Entity where
 
 import Data.Aeson (FromJSON (..), ToJSON (..))
-import qualified Data.ByteString.Lazy as BSL
-import Data.Char (isLower)
 import Data.Function (on)
 import Data.Maybe (isJust)
 import qualified Data.Text as T (Text)
 import DerivingJSON (BotSelectorModifier (..))
 import GHC.Generics
 import GenericPretty (PrettyShow (..))
-import qualified Stuff as S
 import Telegram.ProcessMessage.Types
 
 chatIDfromMsg :: TlMessage -> Integer

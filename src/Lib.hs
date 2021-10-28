@@ -15,23 +15,16 @@ import qualified App.Handle.Vkontakte as V
 import qualified App.Logger as L
 import Execute.Telegram ()
 import Execute.Vkontakte ()
-import BotTypesClass.ClassTypes (BotClassTypes (..))
 import BotTypesClass.TelegramInstance ()
 import BotTypesClass.VkInstance ()
 import Config (BotConfigurable (..), configHandlers, loadConfig)
 import Control.Monad (when)
 import qualified Control.Monad.Catch as C
-import qualified Data.Configurator.Types as CT
-  ( ConfigError (..),
-  )
 import qualified Data.Text as T (pack, unpack)
 import Execute (execute)
 import qualified GenericPretty as GP
 import RunOptions (RunOptions (..), getOptsIO, ghciRunOpts, toLoggerFilter)
-import qualified Stuff as S (withMaybe)
-import System.Environment (getArgs)
-import qualified System.Exit as Q (ExitCode (..), exitSuccess, exitWith)
-import System.IO (hPutStrLn, stderr)
+import qualified System.Exit as Q (exitSuccess)
 import Telegram (TlConfig)
 import qualified Types as Y
 import Vkontakte (VkConfig)
@@ -50,8 +43,8 @@ main = do
 runWithOpts :: RunOptions -> IO ()
 runWithOpts opts =
   case messenger opts of
-    Y.Telegram -> runBotWithOpts @Y.Telegram opts telegramAction
-    Y.Vkontakte -> runBotWithOpts @Y.Vkontakte opts vkAction
+    Y.Telegram -> runBotWithOpts @'Y.Telegram opts telegramAction
+    Y.Vkontakte -> runBotWithOpts @'Y.Vkontakte opts vkAction
 
 runBotWithOpts ::
   forall s.
@@ -89,7 +82,7 @@ telegramAction logger gen tlConf = do
         (`T.resourcesToHandle` logger)
         D.log
         T.tlHandlers
-        (execute @Y.Telegram)
+        (execute @'Y.Telegram)
   pure ()
 
 vkAction ::
@@ -104,7 +97,7 @@ vkAction logger gen vkConf = do
         (`V.resourcesToHandle` logger)
         D.log
         V.vkHandlers
-        (execute @Y.Vkontakte)
+        (execute @'Y.Vkontakte)
   pure ()
 
 forever :: a -> (a -> IO a) -> IO a

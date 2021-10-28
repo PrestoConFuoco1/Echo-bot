@@ -15,8 +15,8 @@ import qualified Data.Configurator as C
 import qualified Data.Configurator.Types as CT
 import qualified Data.Text as T (Text)
 import qualified GenericPretty as GP
-import qualified Stuff as S (withEither, Timeout)
-import qualified System.Exit as Q (ExitCode (..), exitSuccess, exitWith)
+import qualified Stuff as S (withEither)
+import qualified System.Exit as Q (ExitCode (..), exitWith)
 import qualified System.IO.Error as E
   ( isAlreadyInUseError,
     isDoesNotExistError,
