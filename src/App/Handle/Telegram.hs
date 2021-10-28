@@ -13,16 +13,17 @@ import qualified System.Exit as Q (ExitCode (..), exitWith)
 import Telegram
 import qualified Telegram.Exceptions as TlEx
 import qualified Telegram.Send as G
-import qualified Types as Y
 import qualified Messenger as M
+import Config.Types (TlConfig(..))
+import qualified Environment as Env
 
 data Config = Config
-  { configCommonEnv :: Y.EnvironmentCommon,
+  { configCommonEnv :: Env.EnvironmentCommon,
     configTelegram :: TlConfig
   }
 
 data Resources = Resources
-  { commonEnv :: Y.EnvironmentCommon,
+  { commonEnv :: Env.EnvironmentCommon,
     constState :: TlStateConst,
     mutState :: IORef TlStateMut,
     usersMap :: IORef (M.Map TlUser Int)
@@ -32,10 +33,10 @@ initResources :: L.LoggerHandler IO -> Config -> IO Resources
 initResources _ (Config common tlConf) = do
   let initStateTele =
         TSM
-          { stmUpdateID = configUpdateID tlConf,
+          { stmUpdateID = tlConfigUpdateID tlConf,
             stmMediaGroups = M.empty
           }
-      const_ = TSC {stcUrl = configUrl tlConf}
+      const_ = TSC {stcUrl = tlConfigUrl tlConf}
   mut <- newIORef initStateTele
   umap <- newIORef M.empty
   pure

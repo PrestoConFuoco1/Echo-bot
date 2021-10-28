@@ -15,7 +15,6 @@ import Execute.BotClass (BotClass (..))
 import Execute.Logic (handleUpdate)
 import qualified GenericPretty as GP
 import qualified Stuff as S
-import qualified Types as Y
 
 execute ::
   (BotClass s, C.MonadThrow m) =>
@@ -36,9 +35,9 @@ execute h = do
         <> "got and successfully parsed server reply:"
     D.logDebug h $ T.pack $ GP.defaultPretty resp'
     case resp' of
-      Y.UpdateError updErr ->
+      Left updErr ->
         handleFailedUpdatesRequest h updErr
-      Y.UpdateResponse resp ->
+      Right resp ->
         handleUpdatesSuccess h resp
 
 updLstParseFail ::

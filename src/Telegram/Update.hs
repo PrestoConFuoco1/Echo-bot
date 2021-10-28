@@ -11,7 +11,6 @@ import DerivingJSON (BotSelectorModifier (..))
 import GHC.Generics (Generic)
 import GenericPretty (PrettyShow)
 import Telegram.Types.Entity (TlCallback, TlMessage)
-import qualified Types as Y
 
 data TlReply = TlReply
   { replyOk :: Bool,
@@ -38,7 +37,7 @@ data TlUpdateReplyError = TlUpdateReplyError
 
 parseUpdatesResponse1 ::
   Value ->
-  Either String (Y.UpdateResponse TlUpdateReplySuccess TlUpdateReplyError)
+  Either String (Either TlUpdateReplyError TlUpdateReplySuccess)
 parseUpdatesResponse1 =
   parseEither $
     withObject "M.Telegram updates object" $ \o -> do
@@ -46,14 +45,12 @@ parseUpdatesResponse1 =
       if ok
         then do
           res <- o .: "result"
-          pure $
-            Y.UpdateResponse $
+          pure $ Right $
               TlUpdateReplySuccess {replysuccessResult = res}
         else do
           errCode <- o .: "error_code"
           description <- o .: "description"
-          pure $
-            Y.UpdateError $
+          pure $ Left $
               TlUpdateReplyError
                 { replyerrorErrorCode = errCode,
                   replyerrorDescription = description

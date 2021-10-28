@@ -5,7 +5,6 @@
 module BotTypesClass.ClassTypes where
 
 import qualified GenericPretty as GP
-import qualified Types as Y
 import qualified Messenger as M
 
 class

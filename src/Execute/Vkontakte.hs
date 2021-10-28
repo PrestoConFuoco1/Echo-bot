@@ -24,9 +24,9 @@ import Execute.BotClass
 import GenericPretty
 import HTTPTypes as H
 import qualified Stuff as S (emptyToNothing, withMaybe)
-import qualified Types as Y (timeout)
 import qualified Messenger as M
 import Vkontakte
+import qualified Environment as Env
 
 instance BotClassUtility 'M.Vkontakte where
   getResult = Just . replysuccessUpdates
@@ -70,7 +70,7 @@ getUpdatesRequest1 h =
   do
     curTS <- getTimestamp (D.specH h)
     let constState = D.getConstState h
-        timeout' = Y.timeout $ D.commonEnv h
+        timeout' = Env.timeout $ D.commonEnv h
         fullUrl = vkServer constState
         pars =
           [ unit "act" ("a_check" :: T.Text),

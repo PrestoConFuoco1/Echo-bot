@@ -32,13 +32,16 @@ library
       BotTypesClass.ClassTypes
       BotTypesClass.TelegramInstance
       BotTypesClass.VkInstance
-      Config
+      Config.Load
+      Config.Types
       DerivingJSON
+      Environment
       Exceptions
       Execute
       Execute.BotClass
       Execute.Logic
       Execute.Telegram
+      Execute.Types
       Execute.Vkontakte
       GenericPretty
       HTTPSend
@@ -58,7 +61,6 @@ library
       Telegram.Types.MediaGroup
       Telegram.Types.ProcessMessage
       Telegram.Update
-      Types
       Vkontakte
       Vkontakte.Attachment
       Vkontakte.Attachment.Functions

@@ -25,10 +25,9 @@ import Execute.Vkontakte ()
 import qualified GenericPretty as GP
 import RunOptions (RunOptions (..), getOptsIO, ghciRunOpts, toLoggerFilter)
 import qualified System.Exit as Q (exitSuccess)
-import Telegram (TlConfig)
-import qualified Types as Y
 import qualified Messenger as M
-import Vkontakte (VkConfig)
+import Config.Types (VkConfig(..), TlConfig(..))
+import qualified Environment as Env
 
 ghciMain :: M.Messenger -> IO () -- for ghci
 ghciMain m =
@@ -51,7 +50,7 @@ runBotWithOpts ::
   forall s.
   (BotConfigurable s) =>
   RunOptions ->
-  (L.LoggerHandler IO -> Y.EnvironmentCommon -> Conf s -> IO ()) ->
+  (L.LoggerHandler IO -> Env.EnvironmentCommon -> Conf s -> IO ()) ->
   IO ()
 runBotWithOpts opts todo = do
   let configLogger =
@@ -72,7 +71,7 @@ runBotWithOpts opts todo = do
     todo logger gen conf `C.catch` defaultHandler logger
 
 telegramAction ::
-  L.LoggerHandler IO -> Y.EnvironmentCommon -> TlConfig -> IO ()
+  L.LoggerHandler IO -> Env.EnvironmentCommon -> TlConfig -> IO ()
 telegramAction logger gen tlConf = do
   let tlConfig = T.Config gen tlConf
   resources <- T.initResources logger tlConfig
@@ -87,7 +86,7 @@ telegramAction logger gen tlConf = do
   pure ()
 
 vkAction ::
-  L.LoggerHandler IO -> Y.EnvironmentCommon -> VkConfig -> IO ()
+  L.LoggerHandler IO -> Env.EnvironmentCommon -> VkConfig -> IO ()
 vkAction logger gen vkConf = do
   let vkConfig = V.Config gen vkConf
   resources <- V.initResources logger vkConfig

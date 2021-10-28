@@ -16,7 +16,8 @@ import qualified GenericPretty as GP
 import qualified HTTPTypes as H
 import qualified Stuff as S
 import Text.Read (readMaybe)
-import qualified Types as Y
+import qualified Execute.Types as ET
+import qualified Environment as Env
 
 handleUpdate ::
   (BotClass s, Monad m) =>
@@ -25,19 +26,19 @@ handleUpdate ::
   m ()
 handleUpdate h u = do
   case defineUpdateType h u of
-    Y.ECommand cmd mChat mUser ->
+    ET.ECommand cmd mChat mUser ->
       handleCommand h cmd mChat mUser
-    Y.EMessage m -> handleMessage h m
-    Y.ECallback callback -> handleCallback h callback
-    Y.EError err -> do
+    ET.EMessage m -> handleMessage h m
+    ET.ECallback callback -> handleCallback h callback
+    ET.EError err -> do
       D.logError h "handleUpdate: unexpected update type"
       D.logError h $ GP.defaultPrettyT err
 
 type EventT s =
-  Y.Event (Chat s) (User s) (Msg s) (CallbackQuery s)
+  ET.Event (Chat s) (User s) (Msg s) (CallbackQuery s)
 
 defineUpdateType ::
-  forall s m. (BotClass s) => D.BotHandler s m -> Upd s -> Y.Event (Chat s) (User s) (Msg s) (CallbackQuery s)
+  forall s m. (BotClass s) => D.BotHandler s m -> Upd s -> ET.Event (Chat s) (User s) (Msg s) (CallbackQuery s)
 defineUpdateType h u =
   let mMsg = getMsg @s u
       mText = mMsg >>= getText @s
@@ -48,17 +49,17 @@ defineUpdateType h u =
           >>= getCmd (D.commonEnv h)
       mCallback = getCallbackQuery @s u
       unexpectedValue = getUpdateValue @s u
-   in fromMaybe (Y.EError unexpectedValue) $
+   in fromMaybe (ET.EError unexpectedValue) $
         asum
-          [ Y.ECallback <$> mCallback,
-            Y.ECommand <$> mCmd <*> Just mChat <*> Just mUser,
-            Y.EMessage <$> mMsg
+          [ ET.ECallback <$> mCallback,
+            ET.ECommand <$> mCmd <*> Just mChat <*> Just mUser,
+            ET.EMessage <$> mMsg
           ]
 
-getCmd :: Y.EnvironmentCommon -> T.Text -> Maybe Y.Command
+getCmd :: Env.EnvironmentCommon -> T.Text -> Maybe ET.Command
 getCmd e str
-  | str == Y.getHelpCommand e = Just Y.Help
-  | str == Y.getSetRepNumCommand e = Just Y.SetRepNum
+  | str == Env.getHelpCommand e = Just ET.Help
+  | str == Env.getSetRepNumCommand e = Just ET.SetRepNum
   | otherwise = Nothing
 
 handleCallback ::
@@ -69,16 +70,16 @@ handleCallback ::
   m ()
 handleCallback h callback =
   case defineCallbackType @s callback of
-    Y.CSetRepNum user mChat n ->
+    ET.CSetRepNum user mChat n ->
       handleSetRepNum @s h user mChat n
-    Y.CError err ->
+    ET.CError err ->
       D.logError h $ "handleCallback: " <> T.pack err
 
 defineCallbackType ::
   forall s.
   (BotClass s) =>
   CallbackQuery s ->
-  Y.CallbQuery (User s) (Chat s)
+  ET.CallbQuery (User s) (Chat s)
 defineCallbackType callback =
   let user = getCallbackUser @s callback
       mData = getCallbackData @s callback
@@ -100,8 +101,8 @@ defineCallbackType callback =
               Right
               (readMaybe $ T.unpack num :: Maybe Int)
           _ -> Left "Unknown callback query"
-   in either Y.CError id $
-        asum [Y.CSetRepNum user mChat <$> eithSetN]
+   in either ET.CError id $
+        asum [ET.CSetRepNum user mChat <$> eithSetN]
 
 handleSetRepNum ::
   forall s m.
@@ -137,14 +138,14 @@ handleSetRepNum h user mChat repnum = do
 handleCommand ::
   (BotClass s, Monad m) =>
   D.BotHandler s m ->
-  Y.Command ->
+  ET.Command ->
   Maybe (Chat s) ->
   Maybe (User s) ->
   m ()
 handleCommand h cmd mChat mUser =
   case cmd of
-    Y.Help -> sendHelp h mChat mUser
-    Y.SetRepNum -> sendRepNumButtons h mChat mUser
+    ET.Help -> sendHelp h mChat mUser
+    ET.SetRepNum -> sendRepNumButtons h mChat mUser
 
 sendHelp ::
   (BotClass s, Monad m) =>
@@ -155,7 +156,7 @@ sendHelp ::
 sendHelp h mChat mUser = do
   let funcName = "sendHelp: "
   eithReqFunc <-
-    sendTextMsg h mChat mUser (Y.getHelpMessage $ D.commonEnv h)
+    sendTextMsg h mChat mUser (Env.getHelpMessage $ D.commonEnv h)
   D.logDebug h $
     funcName
       <> "sending HTTP request to send help message"
@@ -182,7 +183,7 @@ sendRepNumButtons h mChat mUser = do
       h
       mChat
       mUser
-      (Y.getRepeatQuestion $ D.commonEnv h)
+      (Env.getRepeatQuestion $ D.commonEnv h)
   let eithReqFuncKeyboard =
         fmap (H.addParams inlKeyboardPars) eithReqFunc
       inlKeyboardPars =
@@ -263,7 +264,7 @@ sendNTimes ::
   m ()
 sendNTimes h maybeUser req = do
   let funcName = "sendNTimes: "
-      defaultRepNum = Y.getDefaultRepNum $ D.commonEnv h
+      defaultRepNum = Env.getDefaultRepNum $ D.commonEnv h
   repNraw <- D.findWithDefault h defaultRepNum maybeUser
   let repN = validateRepNum repNraw
   D.logDebug h $

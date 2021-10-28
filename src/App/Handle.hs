@@ -7,12 +7,12 @@ import BotTypesClass.ClassTypes (BotClassTypes (..))
 import Data.Maybe (fromMaybe)
 import qualified Data.Text as T (Text)
 import qualified HTTPTypes as H
-import qualified Types as Y
 import Prelude hiding (log)
+import qualified Environment as Env
 
 data BotHandler s m = BotHandler
   { log :: L.LoggerHandler m,
-    commonEnv :: Y.EnvironmentCommon,
+    commonEnv :: Env.EnvironmentCommon,
     insertUser ::
       (BotClassTypes s) =>
       User s ->
@@ -25,7 +25,7 @@ data BotHandler s m = BotHandler
     getConstState ::
       (BotClassTypes s) =>
       StateC s,
-    getUpdates :: H.HTTPRequest -> m (Either String (Y.UpdateResponse (RepSucc s) (RepErr s))),
+    getUpdates :: H.HTTPRequest -> m (Either String (Either (RepErr s) (RepSucc s))),
     sendEcho :: H.HTTPRequest -> m (Either String (Rep s)),
     sendHelp :: H.HTTPRequest -> m (Either String (Rep s)),
     sendKeyboard :: H.HTTPRequest -> m (Either String (Rep s)),

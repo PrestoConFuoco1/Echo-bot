@@ -13,13 +13,6 @@ import Telegram.Types.MediaGroup (TlMediaGroupIdentifier, TlMediaGroupUnit)
 tlTakesJSON :: Bool
 tlTakesJSON = True -- this is better
 
-data TlConfig = TlConf
-  { configUpdateID :: Integer,
-    configUrl :: T.Text
-  }
-  deriving stock (Show, Generic)
-  deriving anyclass (PrettyShow)
-
 newtype TlStateConst = TSC
   { stcUrl :: T.Text
   }

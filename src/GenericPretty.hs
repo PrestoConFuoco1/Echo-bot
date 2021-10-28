@@ -163,6 +163,8 @@ instance (PrettyShow a) => PrettyShow (Maybe a) where
   prettyShow (Just x) = prettyShow x
   prettyShow Nothing = LEmpty
 
+instance (PrettyShow a, PrettyShow b) => PrettyShow (Either a b)
+
 instance (PrettyShow a) => PrettyShow [a] where
   prettyShow [] = LEmpty
   prettyShow xs =

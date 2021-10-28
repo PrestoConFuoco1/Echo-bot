@@ -14,7 +14,6 @@ import qualified Data.Text.Encoding as E (encodeUtf8)
 import GHC.Generics
 import GenericPretty
 import qualified Stuff as S (showT)
-import qualified Types as Y
 import Vkontakte.Entity
 
 data VkReply = VkReply
@@ -47,7 +46,7 @@ data VkUpdateReplyError = VkUpdateReplyError
 
 parseUpdatesResponse2 ::
   AeT.Value ->
-  Either String (Y.UpdateResponse VkUpdateReplySuccess VkUpdateReplyError)
+  Either String (Either VkUpdateReplyError VkUpdateReplySuccess)
 parseUpdatesResponse2 =
   AeT.parseEither $
     AeT.withObject "M.Vkontakte update object" $ \o -> do
@@ -73,7 +72,7 @@ parseUpdatesResponse2 =
                   replyerrorTs = ts
                 }
       asum
-        [fmap Y.UpdateResponse success, fmap Y.UpdateError err]
+        [fmap Right success, fmap Left err]
 
 data VkUpdate = VkUpdate
   { updateValue :: AeT.Value,

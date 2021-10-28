@@ -22,8 +22,8 @@ import qualified GenericPretty as GP
 import HTTPTypes as H
 import qualified Stuff as S
 import Telegram
-import qualified Types as Y
 import qualified Messenger as M
+import qualified Environment as Env
 
 instance BotClassUtility 'M.Telegram where
   getResult = Just . replysuccessResult
@@ -48,7 +48,7 @@ instance BotClassUtility 'M.Telegram where
 instance BotClass 'M.Telegram where
   takesJSON = tlTakesJSON
   getUpdatesRequest h = do
-    let tout = Y.getDefaultTimeout $ D.commonEnv h
+    let tout = Env.getDefaultTimeout $ D.commonEnv h
         url = stcUrl $ D.getConstState h
         req uid =
           H.Req

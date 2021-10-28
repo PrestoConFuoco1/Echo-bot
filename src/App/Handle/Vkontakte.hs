@@ -30,19 +30,20 @@ import qualified HTTPSend as H
 import qualified HTTPTypes as H
 import qualified System.Exit as Q (ExitCode (..), exitWith)
 import System.Random (newStdGen)
-import qualified Types as Y
 import qualified Messenger as M
 import Vkontakte
 import qualified Vkontakte.Exceptions as VkEx
 import qualified Vkontakte.Send as G
+import Config.Types (VkConfig(..))
+import qualified Environment as Env
 
 data Config = Config
-  { configCommonEnv :: Y.EnvironmentCommon,
+  { configCommonEnv :: Env.EnvironmentCommon,
     configVkontakte :: VkConfig
   }
 
 data Resources = Resources
-  { commonEnv :: Y.EnvironmentCommon,
+  { commonEnv :: Env.EnvironmentCommon,
     constState :: VkStateConst,
     mutState :: IORef VkStateMut,
     usersMap :: IORef (M.Map VkUser Int)
@@ -157,12 +158,12 @@ getLongPollServer ::
 getLongPollServer logger VkConf {..} = do
   let funcName = "vk_initialize: "
       pars =
-        H.unit "group_id" configGroupID :
-        defaultVkParams' configAccessToken configApiVersion
+        H.unit "group_id" vkConfigGroupID :
+        defaultVkParams' vkConfigAccessToken vkConfigApiVersion
       initReq =
         H.Req
           H.GET
-          (configUrl <> "groups.getLongPollServer")
+          (vkConfigUrl <> "groups.getLongPollServer")
           pars
       takesJson = True
   L.logDebug logger $
@@ -193,10 +194,10 @@ initialize logger conf@(VkConf {..}) = do
     ( VKSC
         { vkKey = initKey initData,
           vkServer = initServer initData,
-          vkUrl = configUrl,
-          vkAccessToken = configAccessToken,
-          vkGroupID = configGroupID,
-          apiVersion = configApiVersion
+          vkUrl = vkConfigUrl,
+          vkAccessToken = vkConfigAccessToken,
+          vkGroupID = vkConfigGroupID,
+          apiVersion = vkConfigApiVersion
         },
       VKSM
         { vkTs = initTimestamp initData,

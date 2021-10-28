@@ -21,26 +21,6 @@ defaultVkParams' accTok apiV =
 vkTakesJSON :: Bool
 vkTakesJSON = False
 
-data VkConfig = VkConf
-  { configUrl :: T.Text,
-    configAccessToken :: T.Text,
-    configGroupID :: Integer,
-    configApiVersion :: T.Text
-  }
-  deriving stock (Show, Eq, Generic)
-  deriving anyclass (PrettyShow)
-
-data VkConfigDefault = VkConfDef
-  { defaultconfUrl :: T.Text,
-    defaultconfApiVersion :: T.Text
-  }
-  deriving stock (Show, Eq, Generic)
-  deriving anyclass (PrettyShow)
-
-defaultVkConfig :: VkConfigDefault
-defaultVkConfig =
-  VkConfDef "https://api.vk.com/method/" "5.124"
-
 data VkStateConst = VKSC
   { vkKey :: T.Text,
     vkServer :: T.Text,

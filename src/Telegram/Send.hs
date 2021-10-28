@@ -14,11 +14,10 @@ import qualified HTTPSend as H
 import qualified HTTPTypes as H
 import Telegram.General (tlTakesJSON)
 import Telegram.Update (TlReply, TlUpdateReplyError, TlUpdateReplySuccess, parseUpdatesResponse1)
-import qualified Types as Y
 
 parseUpdatesResponse ::
   BSL.ByteString ->
-  Either String (Y.UpdateResponse TlUpdateReplySuccess TlUpdateReplyError)
+  Either String (Either TlUpdateReplyError TlUpdateReplySuccess)
 parseUpdatesResponse resp -- Either
   =
   do
@@ -34,7 +33,7 @@ parseUpdatesResponse resp -- Either
 getUpdates ::
   L.LoggerHandler IO ->
   H.HTTPRequest ->
-  IO (Either String (Y.UpdateResponse TlUpdateReplySuccess TlUpdateReplyError))
+  IO (Either String (Either TlUpdateReplyError TlUpdateReplySuccess))
 getUpdates logger request = do
   let takesJSON = True
   eithRespStr <- H.sendRequest logger takesJSON request -- Either String a
