@@ -10,3 +10,4 @@ import Vkontakte.General as V
 import Vkontakte.HandlerPure as V
 import Vkontakte.Keyboard as V
 import Vkontakte.Update as V
+import Vkontakte.Send as V

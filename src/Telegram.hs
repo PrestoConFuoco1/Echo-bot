@@ -11,3 +11,4 @@ import Telegram.ProcessMessage as T
 import Telegram.Types.Entity as T
 import Telegram.Types.MediaGroup as T
 import Telegram.Update as T
+import Telegram.Send as T
