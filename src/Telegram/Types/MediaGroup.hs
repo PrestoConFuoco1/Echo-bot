@@ -3,7 +3,7 @@
 {-# LANGUAGE DerivingStrategies #-}
 {-# LANGUAGE RecordWildCards #-}
 
-module Telegram.MediaGroup.Types where
+module Telegram.Types.MediaGroup where
 
 import Data.Aeson.Types (ToJSON (..), object, (.=))
 import Data.Foldable (asum)
@@ -11,8 +11,8 @@ import qualified Data.Text as T
 import GHC.Generics
 import qualified GenericPretty as GP
 import qualified Stuff as S
-import Telegram.Entity (TlChat (..), TlMessage (..), TlUser (..))
-import Telegram.ProcessMessage.Types (TlPhotoSize (..), audioFileID, documentFileID, videoFileID)
+import Telegram.Types.Entity (TlChat (..), TlMessage (..), TlUser (..))
+import Telegram.Types.ProcessMessage (TlPhotoSize (..), audioFileID, documentFileID, videoFileID)
 
 data TlMediaGroupIdentifier = TlMediaGroupIdentifier
   { tmgidChat :: TlChat,

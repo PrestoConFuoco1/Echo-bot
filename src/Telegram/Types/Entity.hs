@@ -2,7 +2,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DerivingVia #-}
 
-module Telegram.Entity where
+module Telegram.Types.Entity where
 
 import Data.Aeson (FromJSON (..), ToJSON (..))
 import Data.Function (on)
@@ -11,7 +11,7 @@ import qualified Data.Text as T (Text)
 import DerivingJSON (BotSelectorModifier (..))
 import GHC.Generics
 import GenericPretty (PrettyShow (..))
-import Telegram.ProcessMessage.Types
+import Telegram.Types.ProcessMessage
 
 chatIDfromMsg :: TlMessage -> Integer
 chatIDfromMsg = chatID . messageChat

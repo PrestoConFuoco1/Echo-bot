@@ -29,7 +29,6 @@ library
       App.Handle.Telegram
       App.Handle.Vkontakte
       App.Logger
-      BotClass
       BotTypesClass.ClassTypes
       BotTypesClass.TelegramInstance
       BotTypesClass.VkInstance
@@ -37,6 +36,7 @@ library
       DerivingJSON
       Exceptions
       Execute
+      Execute.BotClass
       Execute.Logic
       Execute.Telegram
       Execute.Vkontakte
@@ -47,16 +47,15 @@ library
       RunOptions
       Stuff
       Telegram
-      Telegram.Entity
       Telegram.Exceptions
       Telegram.ForHandlers
       Telegram.General
       Telegram.Keyboard
-      Telegram.MediaGroup.Types
       Telegram.ProcessMessage
-      Telegram.ProcessMessage.Functions
-      Telegram.ProcessMessage.Types
       Telegram.Send
+      Telegram.Types.Entity
+      Telegram.Types.MediaGroup
+      Telegram.Types.ProcessMessage
       Telegram.Update
       Types
       Vkontakte

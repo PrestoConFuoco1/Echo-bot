@@ -2,7 +2,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DerivingVia #-}
 
-module Telegram.ProcessMessage.Types where
+module Telegram.Types.ProcessMessage where
 
 import Data.Aeson.Types (FromJSON (..), ToJSON (..))
 import qualified Data.Text as T (Text)

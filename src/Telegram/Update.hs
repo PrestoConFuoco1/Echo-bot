@@ -10,7 +10,7 @@ import qualified Data.Text as T (Text)
 import DerivingJSON (BotSelectorModifier (..))
 import GHC.Generics (Generic)
 import GenericPretty (PrettyShow)
-import Telegram.Entity (TlCallback, TlMessage)
+import Telegram.Types.Entity (TlCallback, TlMessage)
 import qualified Types as Y
 
 data TlReply = TlReply
