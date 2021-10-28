@@ -11,8 +11,8 @@ import Data.Aeson.Types (parseEither, parseJSON)
 import qualified Data.ByteString.Lazy.Char8 as BSL
   ( ByteString,
   )
-import qualified HTTPTypes as H
 import qualified HTTPSend as H
+import qualified HTTPTypes as H
 import qualified Types as Y
 import Vkontakte.General (vkTakesJSON)
 import Vkontakte.Update (VkReply, VkUpdateReplyError, VkUpdateReplySuccess, parseUpdatesResponse2)

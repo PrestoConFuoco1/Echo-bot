@@ -13,8 +13,6 @@ import App.Handle as D
 import qualified App.Handle.Telegram as T
 import qualified App.Handle.Vkontakte as V
 import qualified App.Logger as L
-import Execute.Telegram ()
-import Execute.Vkontakte ()
 import BotTypesClass.TelegramInstance ()
 import BotTypesClass.VkInstance ()
 import Config (BotConfigurable (..), configHandlers, loadConfig)
@@ -22,6 +20,8 @@ import Control.Monad (when)
 import qualified Control.Monad.Catch as C
 import qualified Data.Text as T (pack, unpack)
 import Execute (execute)
+import Execute.Telegram ()
+import Execute.Vkontakte ()
 import qualified GenericPretty as GP
 import RunOptions (RunOptions (..), getOptsIO, ghciRunOpts, toLoggerFilter)
 import qualified System.Exit as Q (exitSuccess)

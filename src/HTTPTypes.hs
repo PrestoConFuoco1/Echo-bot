@@ -10,14 +10,14 @@ module HTTPTypes
     showTReq,
     parValToString,
     addParams,
-    addParamsUnit
+    addParamsUnit,
   )
 where
 
 import qualified Data.Aeson as Ae
   ( ToJSON (..),
     Value,
-    encode
+    encode,
   )
 import qualified Data.ByteString.Lazy as BS (toStrict)
 import qualified Data.Text as T (Text, concat, unpack)
@@ -110,7 +110,6 @@ unit field value = (field, Just $ toParVal value)
 mUnit :: (ToParVal a) => T.Text -> Maybe a -> ParamsUnit
 mUnit field mValue = (field, fmap toParVal mValue)
 
-
 ------------------------------------------------------
 
 addParams :: ParamsList -> HTTPRequest -> HTTPRequest
@@ -119,5 +118,3 @@ addParams params req = req {pars = params ++ pars req}
 addParamsUnit :: ParamsUnit -> HTTPRequest -> HTTPRequest
 addParamsUnit paramsUnit req =
   req {pars = paramsUnit : pars req}
-
-

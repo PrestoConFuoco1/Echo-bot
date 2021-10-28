@@ -6,7 +6,6 @@
 module Execute.Vkontakte where
 
 import qualified App.Handle as D
-import Execute.BotClass
 import BotTypesClass.VkInstance ()
 import qualified Control.Monad.Catch as C
   ( MonadThrow,
@@ -21,6 +20,7 @@ import Data.Aeson.Types as AeT
 import Data.Maybe (fromMaybe, isNothing)
 import qualified Data.Text as T (Text, pack)
 import qualified Exceptions as Ex
+import Execute.BotClass
 import GenericPretty
 import HTTPTypes as H
 import qualified Stuff as S (emptyToNothing, withMaybe)

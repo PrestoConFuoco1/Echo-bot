@@ -1,19 +1,10 @@
 {-# LANGUAGE DataKinds #-}
-{-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE DeriveAnyClass #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DerivingStrategies #-}
-
+{-# LANGUAGE RecordWildCards #-}
 
 module App.Handle.Vkontakte where
-
-import Data.Aeson (decode)
-import Data.Aeson.Types ((.:))
-import qualified Data.Aeson.Types as AeT
-import qualified Data.ByteString.Lazy as BSL (ByteString)
-import qualified Data.Text as T (Text, pack)
-import GHC.Generics (Generic)
-
 
 import qualified App.Handle as D
 import qualified App.Logger as L
@@ -23,12 +14,17 @@ import qualified Control.Monad.Catch as C
     SomeException,
     displayException,
   )
+import Data.Aeson (decode)
+import Data.Aeson.Types ((.:))
+import qualified Data.Aeson.Types as AeT
+import qualified Data.ByteString.Lazy as BSL (ByteString)
 import qualified Data.ByteString.Lazy.Char8 as BSL
-  (
-    unpack
+  ( unpack,
   )
 import Data.IORef
 import qualified Data.Map as M
+import qualified Data.Text as T (Text, pack)
+import GHC.Generics (Generic)
 import GenericPretty as GP
 import qualified HTTPSend as H
 import qualified HTTPTypes as H
@@ -220,7 +216,6 @@ initRequestParseFail logger s err = do
   L.logFatal logger $ "response: " <> T.pack (BSL.unpack s)
   L.logFatal logger $ T.pack err
   Q.exitWith $ Q.ExitFailure 1
-
 
 -----------------------------------------
 data VkInitData = VkInitData

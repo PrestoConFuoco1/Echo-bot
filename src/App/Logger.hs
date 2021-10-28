@@ -137,8 +137,9 @@ selfSufficientLogger ::
 selfSufficientLogger resourcesRef predicate pri s = do
   resources <- readIORef resourcesRef
   let action = do
-        T.hPutStrLn (flHandle resources) (logString pri s)
-        T.hPutStrLn S.stderr (logString pri s)
+        let handle = flHandle resources
+        T.hPutStrLn handle (logString pri s)
+        when (handle /= S.stderr) $ T.hPutStrLn S.stderr (logString pri s)
       errHandler e = do
         resources' <- loggerHandler resources e
         writeIORef resourcesRef resources'

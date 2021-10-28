@@ -6,7 +6,6 @@
 module Execute.Telegram where
 
 import qualified App.Handle as D
-import Execute.BotClass
 import BotTypesClass.TelegramInstance ()
 import qualified Control.Monad.Catch as C (throwM)
 import qualified Data.Aeson.Types as AeT
@@ -17,6 +16,7 @@ import qualified Data.Aeson.Types as AeT
 import Data.Foldable (asum)
 import qualified Data.Text as T (pack)
 import qualified Exceptions as Ex
+import Execute.BotClass
 import qualified Execute.Logic as E (sendNTimes)
 import qualified GenericPretty as GP
 import HTTPTypes as H

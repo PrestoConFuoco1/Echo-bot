@@ -1,15 +1,14 @@
 module HTTPSend
-(   sendRequest
-) where
- 
-import HTTPTypes
+  ( sendRequest,
+  )
+where
+
 import qualified App.Logger as L
 import Control.Exception (Handler (..), catches)
 import qualified Data.Aeson as Ae
-  (
-    Value,
+  ( Value,
     object,
-    (.=)
+    (.=),
   )
 import qualified Data.ByteString.Lazy.Char8 as BSL
   ( ByteString,
@@ -17,6 +16,7 @@ import qualified Data.ByteString.Lazy.Char8 as BSL
 import Data.List (intercalate)
 import Data.Maybe (mapMaybe)
 import qualified Data.Text as T (unpack)
+import HTTPTypes
 import Network.HTTP.Base (urlEncode)
 import Network.HTTP.Simple
   ( HttpException (..),
@@ -27,14 +27,11 @@ import Network.HTTP.Simple
     setRequestBodyJSON,
   )
 
-
-
 handleHTTPError :: HttpException -> IO (Either String a)
 handleHTTPError (HttpExceptionRequest _ content) =
   pure . Left . show $ content
 handleHTTPError (InvalidUrlException _ _) =
   pure $ Left "invalid URL"
-
 
 sendRequest ::
   L.LoggerHandler IO ->
@@ -91,5 +88,3 @@ makeParamsValue lst =
   let lst' = mapMaybe f lst
       f (s, x) = fmap (s Ae..=) x
    in Ae.object lst'
-
-

@@ -4,7 +4,6 @@
 module Execute where
 
 import qualified App.Handle as D
-import Execute.BotClass (BotClass (..))
 import BotTypesClass.ClassTypes (BotClassTypes (..))
 import Control.Monad (when)
 import qualified Control.Monad.Catch as C
@@ -12,6 +11,7 @@ import qualified Data.Aeson as Ae
 import Data.Either (partitionEithers)
 import qualified Data.Text as T
 import qualified Exceptions as Ex
+import Execute.BotClass (BotClass (..))
 import Execute.Logic (handleUpdate)
 import qualified GenericPretty as GP
 import qualified Stuff as S

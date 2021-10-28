@@ -1,10 +1,10 @@
 {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE FlexibleContexts #-}
 
 module Config where
 
@@ -93,7 +93,8 @@ loadGeneral _ conf =
             Y.timeout = confTimeout
           }
 
-class (GP.PrettyShow (Conf s)) =>
+class
+  (GP.PrettyShow (Conf s)) =>
   BotConfigurable (s :: Y.Messenger)
   where
   type Conf s :: *
