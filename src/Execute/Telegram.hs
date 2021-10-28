@@ -23,8 +23,9 @@ import HTTPTypes as H
 import qualified Stuff as S
 import Telegram
 import qualified Types as Y
+import qualified Messenger as M
 
-instance BotClassUtility 'Y.Telegram where
+instance BotClassUtility 'M.Telegram where
   getResult = Just . replysuccessResult
   getMsg TlUpdate {..} =
     case updateEvent of
@@ -44,7 +45,7 @@ instance BotClassUtility 'Y.Telegram where
   getCallbackChat c =
     messageChat <$> callbackMessage c
 
-instance BotClass 'Y.Telegram where
+instance BotClass 'M.Telegram where
   takesJSON = tlTakesJSON
   getUpdatesRequest h = do
     let tout = Y.getDefaultTimeout $ D.commonEnv h
@@ -67,7 +68,7 @@ instance BotClass 'Y.Telegram where
   parseUpdatesValueList rep = do
     res <-
       maybe (Left "Couldn't parse update list") Right $
-        getResult @'Y.Telegram rep
+        getResult @'M.Telegram rep
     AeT.parseEither AeT.parseJSON res
   parseUpdate = AeT.parseEither AeT.parseJSON
   repNumKeyboard lst cmd = [unit "reply_markup" obj]
@@ -76,7 +77,7 @@ instance BotClass 'Y.Telegram where
   sendTextMsg _ Nothing _ _ =
     pure $
       Left
-        "Y.Telegram: no chat supplied, unable to send messages to users"
+        "M.Telegram: no chat supplied, unable to send messages to users"
   sendTextMsg h (Just c) _ text =
     let url = stcUrl $ D.getConstState h
      in pure $
@@ -102,7 +103,7 @@ instance BotClass 'Y.Telegram where
 
 processMessage1 ::
   (Monad m) =>
-  D.BotHandler 'Y.Telegram m ->
+  D.BotHandler 'M.Telegram m ->
   TlMessage ->
   m (Maybe (m H.HTTPRequest))
 processMessage1 h m =
@@ -125,7 +126,7 @@ processMessage1 h m =
             <$> eithMethodParams
 
 processMediaGroup ::
-  (Monad m) => D.BotHandler 'Y.Telegram m -> TlMessage -> m ()
+  (Monad m) => D.BotHandler 'M.Telegram m -> TlMessage -> m ()
 processMediaGroup h m =
   let funcName = "processMediaGroup: "
       chat = messageChat m
@@ -153,7 +154,7 @@ processMediaGroup h m =
 
 sendMediaGroup ::
   (Monad m) =>
-  D.BotHandler 'Y.Telegram m ->
+  D.BotHandler 'M.Telegram m ->
   TlMediaGroupPair ->
   m ()
 sendMediaGroup h (TlMediaGroupPair ident items) = do

@@ -5,17 +5,17 @@ module BotTypesClass.TelegramInstance where
 
 import BotTypesClass.ClassTypes (BotClassTypes (..))
 import Telegram
-import qualified Types as Y
+import qualified Messenger as M
 
-instance BotClassTypes 'Y.Telegram where
-  type StateC 'Y.Telegram = TlStateConst
-  type StateM 'Y.Telegram = TlStateMut
-  type Rep 'Y.Telegram = TlReply
-  type RepErr 'Y.Telegram = TlUpdateReplyError
-  type RepSucc 'Y.Telegram = TlUpdateReplySuccess
-  type Upd 'Y.Telegram = TlUpdate
-  type Msg 'Y.Telegram = TlMessage
-  type Chat 'Y.Telegram = TlChat
-  type User 'Y.Telegram = TlUser
-  type CallbackQuery 'Y.Telegram = TlCallback
-  type Hndl 'Y.Telegram = TlHandler
+instance BotClassTypes 'M.Telegram where
+  type StateC 'M.Telegram = TlStateConst
+  type StateM 'M.Telegram = TlStateMut
+  type Rep 'M.Telegram = TlReply
+  type RepErr 'M.Telegram = TlUpdateReplyError
+  type RepSucc 'M.Telegram = TlUpdateReplySuccess
+  type Upd 'M.Telegram = TlUpdate
+  type Msg 'M.Telegram = TlMessage
+  type Chat 'M.Telegram = TlChat
+  type User 'M.Telegram = TlUser
+  type CallbackQuery 'M.Telegram = TlCallback
+  type Hndl 'M.Telegram = TlHandler

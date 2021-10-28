@@ -31,6 +31,7 @@ import qualified HTTPTypes as H
 import qualified System.Exit as Q (ExitCode (..), exitWith)
 import System.Random (newStdGen)
 import qualified Types as Y
+import qualified Messenger as M
 import Vkontakte
 import qualified Vkontakte.Exceptions as VkEx
 import qualified Vkontakte.Send as G
@@ -61,7 +62,7 @@ initResources h (Config common vkConf) = do
       }
 
 resourcesToHandle ::
-  Resources -> L.LoggerHandler IO -> D.BotHandler 'Y.Vkontakte IO
+  Resources -> L.LoggerHandler IO -> D.BotHandler 'M.Vkontakte IO
 resourcesToHandle resources logger =
   D.BotHandler
     { D.log = logger,

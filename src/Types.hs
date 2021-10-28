@@ -3,7 +3,7 @@
 {-# LANGUAGE DerivingVia #-}
 
 module Types
-  ( Messenger (..),
+  (
     EnvironmentCommon (..),
     EnvCommands (..),
     EnvMessages (..),
@@ -21,17 +21,12 @@ module Types
   )
 where
 
+import qualified Messenger as M
 import Data.Aeson.Types (Value)
 import qualified Data.Text as T (Text)
 import GHC.Generics
 import qualified GenericPretty as GP
 import qualified Stuff as S (Timeout)
-
-data Messenger
-  = Vkontakte
-  | Telegram
-  deriving stock (Show, Eq)
-  deriving (GP.PrettyShow) via GP.Showable Messenger
 
 data EnvironmentCommon = EnvironmentCommon -- never changes
   { envMessages :: EnvMessages,

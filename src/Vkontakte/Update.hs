@@ -27,7 +27,7 @@ data VkReply = VkReply
 instance AeT.FromJSON VkReply where
   parseJSON x =
     ($ x) $
-      AeT.withObject "Y.Vkontakte reply object" $ \o -> do
+      AeT.withObject "M.Vkontakte reply object" $ \o -> do
         failed <- o .:? "failed"
         pure $ VkReply failed x
 
@@ -50,7 +50,7 @@ parseUpdatesResponse2 ::
   Either String (Y.UpdateResponse VkUpdateReplySuccess VkUpdateReplyError)
 parseUpdatesResponse2 =
   AeT.parseEither $
-    AeT.withObject "Y.Vkontakte update object" $ \o -> do
+    AeT.withObject "M.Vkontakte update object" $ \o -> do
       ts <-
         asum
           [ o .:? "ts",

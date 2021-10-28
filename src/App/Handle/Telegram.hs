@@ -14,6 +14,7 @@ import Telegram
 import qualified Telegram.Exceptions as TlEx
 import qualified Telegram.Send as G
 import qualified Types as Y
+import qualified Messenger as M
 
 data Config = Config
   { configCommonEnv :: Y.EnvironmentCommon,
@@ -46,7 +47,7 @@ initResources _ (Config common tlConf) = do
       }
 
 resourcesToHandle ::
-  Resources -> L.LoggerHandler IO -> D.BotHandler 'Y.Telegram IO
+  Resources -> L.LoggerHandler IO -> D.BotHandler 'M.Telegram IO
 resourcesToHandle resources logger =
   D.BotHandler
     { D.log = logger,

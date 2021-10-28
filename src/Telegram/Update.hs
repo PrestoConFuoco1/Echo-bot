@@ -41,7 +41,7 @@ parseUpdatesResponse1 ::
   Either String (Y.UpdateResponse TlUpdateReplySuccess TlUpdateReplyError)
 parseUpdatesResponse1 =
   parseEither $
-    withObject "Y.Telegram updates object" $ \o -> do
+    withObject "M.Telegram updates object" $ \o -> do
       ok <- o .: "ok"
       if ok
         then do
