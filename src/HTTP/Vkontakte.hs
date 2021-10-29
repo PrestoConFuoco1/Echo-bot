@@ -1,4 +1,4 @@
-module Vkontakte.Send
+module HTTP.Vkontakte
   ( getUpdates,
     sendThis,
   )
@@ -11,9 +11,9 @@ import Data.Aeson.Types (parseEither, parseJSON)
 import qualified Data.ByteString.Lazy.Char8 as BSL
   ( ByteString,
   )
-import qualified HTTPSend as H
-import qualified HTTPTypes as H
-import Vkontakte.General (vkTakesJSON)
+import qualified HTTP.Send as H
+import qualified HTTP.Types as H
+import Vkontakte (vkTakesJSON)
 import Vkontakte.Update (VkReply, VkUpdateReplyError, VkUpdateReplySuccess, parseUpdatesResponse2)
 
 parseUpdatesResponse ::

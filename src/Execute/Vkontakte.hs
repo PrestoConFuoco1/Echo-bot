@@ -23,7 +23,7 @@ import qualified Data.Text as T (Text, pack)
 import qualified Exceptions as Ex
 import Execute.BotClass
 import GenericPretty
-import HTTPTypes as H
+import HTTP.Types as H
 import qualified Stuff as S (emptyToNothing, withMaybe)
 import qualified Messenger as M
 import Vkontakte

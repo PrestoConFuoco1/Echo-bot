@@ -8,7 +8,7 @@ import qualified App.Logger as L
 import BotTypesClass.ClassTypes (BotClassTypes (..))
 import Data.Maybe (fromMaybe)
 import qualified Data.Text as T (Text)
-import qualified HTTPTypes as H
+import qualified HTTP.Types as H
 import Prelude hiding (log)
 import qualified Environment as Env
 import qualified Messenger as M

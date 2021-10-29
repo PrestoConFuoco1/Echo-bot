@@ -1,4 +1,4 @@
-module Telegram.Send
+module HTTP.Telegram
   ( getUpdates,
     sendThis,
   )
@@ -10,9 +10,9 @@ import Data.Aeson.Types as AeT
 import qualified Data.ByteString.Lazy.Char8 as BSL
   ( ByteString,
   )
-import qualified HTTPSend as H
-import qualified HTTPTypes as H
-import Telegram.General (tlTakesJSON)
+import qualified HTTP.Send as H
+import qualified HTTP.Types as H
+import Telegram (tlTakesJSON)
 import Telegram.Update (TlReply, TlUpdateReplyError, TlUpdateReplySuccess, parseUpdatesResponse1)
 
 parseUpdatesResponse ::

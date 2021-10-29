@@ -8,7 +8,7 @@ import BotTypesClass.ClassTypes
 import qualified Control.Monad.Catch as C
 import Data.Aeson (Value)
 import qualified Data.Text as T (Text)
-import qualified HTTPTypes as H
+import qualified HTTP.Types as H
 
 buildHTTP ::
   T.Text -> (T.Text, H.ParamsList) -> H.HTTPRequest

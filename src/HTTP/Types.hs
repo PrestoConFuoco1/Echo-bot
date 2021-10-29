@@ -1,4 +1,4 @@
-module HTTPTypes
+module HTTP.Types
   ( ParamsList,
     ParamsUnit,
     HTTPMethod (..),

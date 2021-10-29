@@ -5,7 +5,7 @@ import Control.Monad.Writer (Writer, tell)
 import Data.Foldable (asum)
 import qualified Data.Text as T (Text, intercalate, pack)
 import qualified GenericPretty as GP
-import HTTPTypes as H
+import HTTP.Types as H
 import qualified Stuff as S
 import Vkontakte.Attachment.Types
 

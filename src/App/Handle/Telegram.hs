@@ -16,7 +16,7 @@ import qualified Data.Text as T (pack)
 import qualified System.Exit as Q (ExitCode (..), exitWith)
 import Telegram
 import qualified Telegram.Exceptions as TlEx
-import qualified Telegram.Send as G
+import qualified HTTP.Telegram as G
 import qualified Messenger as M
 import Config.Types (TlConfig(..))
 import qualified Environment as Env

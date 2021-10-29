@@ -20,7 +20,7 @@ import qualified Exceptions as Ex
 import Execute.BotClass
 import qualified Execute.Logic as E (sendNTimes)
 import qualified GenericPretty as GP
-import HTTPTypes as H
+import HTTP.Types as H
 import qualified Stuff as S
 import Telegram
 import qualified Messenger as M

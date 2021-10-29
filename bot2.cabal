@@ -46,18 +46,18 @@ library
       Execute.Types
       Execute.Vkontakte
       GenericPretty
-      HTTPSend
-      HTTPTypes
+      HTTP.Send
+      HTTP.Telegram
+      HTTP.Types
+      HTTP.Vkontakte
       Lib
       Messenger
       RunOptions
       Stuff
       Telegram
       Telegram.Exceptions
-      Telegram.General
       Telegram.Keyboard
       Telegram.ProcessMessage
-      Telegram.Send
       Telegram.Types.Entity
       Telegram.Types.MediaGroup
       Telegram.Types.ProcessMessage
@@ -68,9 +68,7 @@ library
       Vkontakte.Attachment.Types
       Vkontakte.Entity
       Vkontakte.Exceptions
-      Vkontakte.General
       Vkontakte.Keyboard
-      Vkontakte.Send
       Vkontakte.Update
   other-modules:
       Paths_bot2

@@ -1,4 +1,4 @@
-module HTTPSend
+module HTTP.Send
   ( sendRequest,
   )
 where
@@ -16,7 +16,7 @@ import qualified Data.ByteString.Lazy.Char8 as BSL
 import Data.List (intercalate)
 import Data.Maybe (mapMaybe)
 import qualified Data.Text as T (unpack)
-import HTTPTypes
+import HTTP.Types
 import Network.HTTP.Base (urlEncode)
 import Network.HTTP.Simple
   ( HttpException (..),

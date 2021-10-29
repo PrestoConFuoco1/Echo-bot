@@ -5,7 +5,7 @@ import Data.Foldable (asum)
 import Data.Maybe (isJust)
 import qualified Data.Text as T (Text)
 import qualified GenericPretty as GP
-import HTTPTypes as H
+import HTTP.Types as H
 import qualified Stuff as S (safeHead)
 import Telegram.Types.Entity (TlMessage (..), chatIDfromMsg)
 import Telegram.Types.ProcessMessage

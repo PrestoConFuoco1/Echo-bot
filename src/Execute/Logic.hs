@@ -13,7 +13,7 @@ import Data.Maybe (fromMaybe)
 import qualified Data.Text as T
 import Execute.BotClass (BotClass (..), BotClassUtility (..))
 import qualified GenericPretty as GP
-import qualified HTTPTypes as H
+import qualified HTTP.Types as H
 import qualified Stuff as S
 import Text.Read (readMaybe)
 import qualified Execute.Types as ET

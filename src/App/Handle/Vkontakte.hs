@@ -30,14 +30,14 @@ import qualified Data.Map as M
 import qualified Data.Text as T (Text, pack)
 import GHC.Generics (Generic)
 import GenericPretty as GP
-import qualified HTTPSend as H
-import qualified HTTPTypes as H
+import qualified HTTP.Send as H
+import qualified HTTP.Types as H
 import qualified System.Exit as Q (ExitCode (..), exitWith)
 import System.Random (newStdGen)
 import qualified Messenger as M
 import Vkontakte
 import qualified Vkontakte.Exceptions as VkEx
-import qualified Vkontakte.Send as G
+import qualified HTTP.Vkontakte as G
 import Config.Types (VkConfig(..))
 import qualified Environment as Env
 import App.Handle.Internal.Vkontakte
