@@ -2,7 +2,7 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeApplications #-}
 
-module Execute.Logic (handleUpdate, sendNTimes) where
+module Execute.Logic (handleUpdate, sendNTimes, validateRepNum) where
 
 import qualified App.Handle as D
 import BotTypesClass.ClassTypes (BotClassTypes (..))
@@ -11,20 +11,20 @@ import Data.Either (partitionEithers)
 import Data.Foldable (asum)
 import Data.Maybe (fromMaybe)
 import qualified Data.Text as T
+import qualified Environment as Env
 import Execute.BotClass (BotClass (..), BotClassUtility (..))
+import qualified Execute.Types as ET
 import qualified GenericPretty as GP
 import qualified HTTP.Types as H
 import qualified Stuff as S
 import Text.Read (readMaybe)
-import qualified Execute.Types as ET
-import qualified Environment as Env
 
 handleUpdate ::
   (BotClass s, Monad m) =>
   D.BotHandler s m ->
   Upd s ->
   m ()
-handleUpdate h u = do
+handleUpdate h u =
   case defineUpdateType h u of
     ET.ECommand cmd mChat mUser ->
       handleCommand h cmd mChat mUser
@@ -33,9 +33,6 @@ handleUpdate h u = do
     ET.EError err -> do
       D.logError h "handleUpdate: unexpected update type"
       D.logError h $ GP.defaultPrettyT err
-
-type EventT s =
-  ET.Event (Chat s) (User s) (Msg s) (CallbackQuery s)
 
 defineUpdateType ::
   forall s m. (BotClass s) => D.BotHandler s m -> Upd s -> ET.Event (Chat s) (User s) (Msg s) (CallbackQuery s)
@@ -56,7 +53,7 @@ defineUpdateType h u =
             ET.EMessage <$> mMsg
           ]
 
-getCmd :: Env.EnvironmentCommon -> T.Text -> Maybe ET.Command
+getCmd :: Env.Environment -> T.Text -> Maybe ET.Command
 getCmd e str
   | str == Env.getHelpCommand e = Just ET.Help
   | str == Env.getSetRepNumCommand e = Just ET.SetRepNum
@@ -202,7 +199,7 @@ logEither ::
   (a -> m ()) ->
   Either String a ->
   m ()
-logEither h f = do
+logEither h f =
   either (D.logError h . T.pack) f
 
 sendFixedInfo ::

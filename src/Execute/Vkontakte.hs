@@ -20,14 +20,14 @@ import Data.Aeson.Types as AeT
   )
 import Data.Maybe (fromMaybe, isNothing)
 import qualified Data.Text as T (Text, pack)
+import qualified Environment as Env
 import qualified Exceptions as Ex
 import Execute.BotClass
 import GenericPretty
 import HTTP.Types as H
-import qualified Stuff as S (emptyToNothing, withMaybe)
 import qualified Messenger as M
+import qualified Stuff as S (emptyToNothing, withMaybe)
 import Vkontakte
-import qualified Environment as Env
 
 instance BotClassUtility 'M.Vkontakte where
   getResult = Just . replysuccessUpdates
@@ -51,23 +51,23 @@ instance BotClassUtility 'M.Vkontakte where
 
 instance BotClass 'M.Vkontakte where
   takesJSON = vkTakesJSON
-  getUpdatesRequest = getUpdatesRequest1
-  isSuccess = isSuccess1
-  handleFailedUpdatesRequest = handleFailedUpdatesRequest1
+  getUpdatesRequest = getUpdatesRequestVk
+  isSuccess = isSuccessVk
+  handleFailedUpdatesRequest = handleFailedUpdatesRequestVk
   parseUpdatesValueList rep = do
     res <-
       maybe (Left "Couldn't parse update list") Right $
         getResult @'M.Vkontakte rep
     AeT.parseEither AeT.parseJSON res
   parseUpdate = AeT.parseEither AeT.parseJSON
-  sendTextMsg = sendTextMsg1
-  repNumKeyboard = repNumKeyboard1
-  processMessage = processMessage1
-  epilogue = epilogue1
+  sendTextMsg = sendTextMsgVk
+  repNumKeyboard = repNumKeyboardVk
+  processMessage = processMessageVk
+  epilogue = epilogueVk
 
-getUpdatesRequest1 ::
+getUpdatesRequestVk ::
   (Monad m) => D.BotHandler 'M.Vkontakte m -> m H.HTTPRequest
-getUpdatesRequest1 h =
+getUpdatesRequestVk h =
   do
     curTS <- HV.getTimestamp (D.specH h)
     let constState = D.getConstState h
@@ -81,8 +81,8 @@ getUpdatesRequest1 h =
           ]
     pure $ H.Req H.GET fullUrl pars
 
-isSuccess1 :: VkReply -> Bool
-isSuccess1 = isNothing . replyFailed
+isSuccessVk :: VkReply -> Bool
+isSuccessVk = isNothing . replyFailed
 
 errorMsg1, errorMsg2, errorMsg3 :: T.Text
 errorMsg1 =
@@ -92,12 +92,12 @@ errorMsg2 =
 errorMsg3 =
   "information (key, ts) is losed, needed to obtain it with getLongPollServer"
 
-handleFailedUpdatesRequest1 ::
+handleFailedUpdatesRequestVk ::
   (C.MonadThrow m) =>
   D.BotHandler 'M.Vkontakte m ->
   VkUpdateReplyError ->
   m ()
-handleFailedUpdatesRequest1 h e@(VkUpdateReplyError {..}) =
+handleFailedUpdatesRequestVk h e@(VkUpdateReplyError {..}) =
   let funcName = "handleFailedUpdatesRequest: "
       key = HV.vkKey $ D.getConstState h
    in case replyerrorFailed of
@@ -130,20 +130,20 @@ handleFailedUpdatesRequest1 h e@(VkUpdateReplyError {..}) =
             D.logFatal h $ defaultPrettyT e
             C.throwM Ex.UnableToHandleError
 
-sendTextMsg1 ::
+sendTextMsgVk ::
   (Monad m) =>
   D.BotHandler 'M.Vkontakte m ->
   Maybe VkChat ->
   Maybe VkUser ->
   T.Text ->
   m (Either String H.HTTPRequest)
-sendTextMsg1 _ _ _ "" =
+sendTextMsgVk _ _ _ "" =
   pure $ Left "Unable to send empty message."
-sendTextMsg1 _ _ Nothing _ =
+sendTextMsgVk _ _ Nothing _ =
   pure $
     Left
       "VK: no user supplied, unable to send messages to chats."
-sendTextMsg1 h _ (Just u) text = do
+sendTextMsgVk h _ (Just u) text = do
   let method = "messages.send"
       sc = D.getConstState h
   randomID <- HV.getRandomID (D.specH h)
@@ -155,28 +155,28 @@ sendTextMsg1 h _ (Just u) text = do
           ++ HV.defaultVkParams sc
   pure $ Right $ buildHTTP (HV.vkUrl sc) (method, pars)
 
-repNumKeyboard1 :: [Int] -> T.Text -> H.ParamsList
-repNumKeyboard1 lst cmd = [unit "keyboard" obj]
+repNumKeyboardVk :: [Int] -> T.Text -> H.ParamsList
+repNumKeyboardVk lst cmd = [unit "keyboard" obj]
   where
     obj = toJSON $ repNumKeyboardVkTxt cmd lst
 
-epilogue1 ::
+epilogueVk ::
   (Monad m) =>
   D.BotHandler 'M.Vkontakte m ->
   [VkUpdate] ->
   VkUpdateReplySuccess ->
   m ()
-epilogue1 h _ rep =
+epilogueVk h _ rep =
   case replysuccessTs rep of
     Nothing -> pure ()
     Just x -> HV.putTimestamp (D.specH h) x
 
-processMessage1 ::
+processMessageVk ::
   (Monad m) =>
   D.BotHandler 'M.Vkontakte m ->
   VkMessage ->
   m (Maybe (m H.HTTPRequest))
-processMessage1 h m
+processMessageVk h m
   | null atts && isNothing maybeText = do
     D.logError h $
       funcName <> "Unable to send empty message."
@@ -200,14 +200,14 @@ processMessage1 h m
           )
           ( pure
               . Just
-              . processMessageVk h user maybeText
+              . processMessageVk1 h user maybeText
           )
       )
       ( \_ ->
           let justPars = fromMaybe [] maybePars
            in pure $
                 Just
-                  ( processMessageVk
+                  ( processMessageVk1
                       h
                       user
                       maybeText
@@ -220,14 +220,14 @@ processMessage1 h m
     atts = messageAttachments m
     user = messageFromID m
 
-processMessageVk ::
+processMessageVk1 ::
   (Monad m) =>
   D.BotHandler 'M.Vkontakte m ->
   VkUser ->
   Maybe T.Text ->
   H.ParamsList ->
   m H.HTTPRequest
-processMessageVk h user maybeText attachmentsEtc = do
+processMessageVk1 h user maybeText attachmentsEtc = do
   let sc = D.getConstState h
       method = "messages.send"
   randomID <- HV.getRandomID (D.specH h)

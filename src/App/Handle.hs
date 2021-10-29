@@ -1,30 +1,37 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE DataKinds #-}
 
-module App.Handle (BotHandler(..), HasBotHandler(..),
-logDebug, logError, logFatal, logWarning, logInfo, logEntry,
-findWithDefault
-) where
+module App.Handle
+  ( BotHandler (..),
+    HasBotHandler (..),
+    logDebug,
+    logError,
+    logFatal,
+    logWarning,
+    logInfo,
+    logEntry,
+    findWithDefault,
+  )
+where
 
 import qualified App.Logger as L
 import BotTypesClass.ClassTypes (BotClassTypes (..))
 import Data.Maybe (fromMaybe)
 import qualified Data.Text as T (Text)
-import qualified HTTP.Types as H
-import Prelude hiding (log)
 import qualified Environment as Env
+import qualified HTTP.Types as H
 import qualified Messenger as M
+import Prelude hiding (log)
 
 class HasBotHandler (s :: M.Messenger) where
-    type StateC s :: *
-    type StateM s :: *
-    type Hndl s :: (* -> *) -> *
-
+  type StateC s :: *
+  type StateM s :: *
+  type Hndl s :: (* -> *) -> *
 
 data BotHandler s m = BotHandler
   { log :: L.LoggerHandler m,
-    commonEnv :: Env.EnvironmentCommon,
+    commonEnv :: Env.Environment,
     insertUser ::
       (BotClassTypes s) =>
       User s ->

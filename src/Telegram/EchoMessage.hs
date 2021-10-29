@@ -1,5 +1,7 @@
-module Telegram.ProcessMessage (sendMessageTele
-) where
+module Telegram.EchoMessage
+  ( echoMessageTele,
+  )
+where
 
 import Control.Monad (guard, (>=>))
 import Data.Foldable (asum)
@@ -11,9 +13,9 @@ import qualified Stuff as S (safeHead)
 import Telegram.Types.Entity (TlMessage (..), chatIDfromMsg)
 import Telegram.Types.ProcessMessage
 
-sendMessageTele ::
+echoMessageTele ::
   TlMessage -> Either String (T.Text, H.ParamsList)
-sendMessageTele m =
+echoMessageTele m =
   maybe
     ( Left $
         "Failed to handle message." ++ GP.defaultPretty m

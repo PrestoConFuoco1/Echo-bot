@@ -5,13 +5,22 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TypeFamilies #-}
 
-module App.Handle.Vkontakte (
-    VkHandler(..), defaultVkParams, VkStateConst (..), initResources, resourcesToHandle, vkErrorHandlers, Resources (..)
-) where
+module App.Handle.Vkontakte
+  ( VkHandler (..),
+    defaultVkParams,
+    VkStateConst (..),
+    initResources,
+    resourcesToHandle,
+    vkErrorHandlers,
+    Resources (..),
+  )
+where
 
 import qualified App.Handle as D
 import qualified App.Logger as L
 import BotTypesClass.VkInstance ()
+import Config.Types (VkConfig (..))
+import Control.Monad ((>=>))
 import qualified Control.Monad.Catch as C (Handler (..))
 import Data.Aeson (decode)
 import Data.Aeson.Types ((.:))
@@ -23,35 +32,26 @@ import qualified Data.ByteString.Lazy.Char8 as BSL
 import Data.IORef
 import qualified Data.Map as M
 import qualified Data.Text as T (Text, pack)
+import qualified Environment as Env
 import GHC.Generics (Generic)
 import GenericPretty as GP
 import qualified HTTP.Send as HS
 import qualified HTTP.Types as HT
-import qualified System.Exit as Q (ExitCode (..), exitWith)
-import System.Random (newStdGen)
-import qualified Messenger as M
-import Vkontakte (VkUser(..), defaultVkParams')
-import qualified Vkontakte.Exceptions as VkEx
 import qualified HTTP.Vkontakte as HV
-import Config.Types (VkConfig(..))
-import qualified Environment as Env
-import System.Random (randomR, StdGen)
-
-
+import qualified Messenger as M
+import qualified System.Exit as Q (ExitCode (..), exitWith)
+import System.Random (StdGen, newStdGen, randomR)
+import Vkontakte (VkUser (..), defaultVkParams')
+import qualified Vkontakte.Exceptions as VkEx
 
 ---------- types -----------------------
 instance D.HasBotHandler 'M.Vkontakte where
-    type StateC 'M.Vkontakte = VkStateConst
-    type StateM 'M.Vkontakte = VkStateMut
-    type Hndl 'M.Vkontakte = VkHandler
-{-
-data Config = Config
-  { configCommonEnv :: Env.EnvironmentCommon,
-    configVkontakte :: VkConfig
-  }
--}
+  type StateC 'M.Vkontakte = VkStateConst
+  type StateM 'M.Vkontakte = VkStateMut
+  type Hndl 'M.Vkontakte = VkHandler
+
 data Resources = Resources
-  { commonEnv :: Env.EnvironmentCommon,
+  { commonEnv :: Env.Environment,
     constState :: VkStateConst,
     mutState :: IORef VkStateMut,
     usersMap :: IORef (M.Map VkUser Int)
@@ -81,7 +81,7 @@ data VkStateMut = VKSM
   deriving stock (Show)
 
 ------------------------- IO -------------------------------
-initResources :: L.LoggerHandler IO -> Env.EnvironmentCommon -> VkConfig -> IO Resources
+initResources :: L.LoggerHandler IO -> Env.Environment -> VkConfig -> IO Resources
 initResources h common vkConf = do
   (sc, sm) <- initialize h vkConf
   umap <- newIORef M.empty
@@ -214,8 +214,8 @@ initialize logger conf@(VkConf {..}) = do
   initRndNum <- newStdGen
   pure
     ( VKSC
-        --{ vkKey = initKey initData,
-        { vkKey = "hahahah",
+        { vkKey = initKey initData,
+          --{ vkKey = "hahahah", -- check error handling
           vkServer = initServer initData,
           vkUrl = vkConfigUrl,
           vkAccessToken = vkConfigAccessToken,
@@ -251,30 +251,30 @@ data VkInitData = VkInitData
   deriving (Show, Generic)
   deriving anyclass (PrettyShow)
 
+instance AeT.FromJSON VkInitData where
+  parseJSON =
+    AeT.withObject "object: key, server, ts" $ \o' -> -- AeT.Parser a
+      do
+        o <- o' .: "response"
+        key <- o .: "key" :: AeT.Parser T.Text
+        server <- o .: "server" :: AeT.Parser T.Text
+        ts <- o .: "ts" :: AeT.Parser T.Text
+        pure
+          VkInitData
+            { initKey = key,
+              initServer = server,
+              initTimestamp = ts
+            }
+
 parseInitResp :: BSL.ByteString -> Either String VkInitData
-parseInitResp = eithParsed
+parseInitResp =
+  initReplyToJSON >=> AeT.parseEither AeT.parseJSON
   where
-    parseInitRep =
-      AeT.withObject "object: key, server, ts" $ \o' -> -- AeT.Parser a
-        do
-          o <- o' .: "response"
-          key <- o .: "key" :: AeT.Parser T.Text
-          server <- o .: "server" :: AeT.Parser T.Text
-          ts <- o .: "ts" :: AeT.Parser T.Text
-          pure
-            VkInitData
-              { initKey = key,
-                initServer = server,
-                initTimestamp = ts
-              }
     initReplyToJSON =
       maybe
         (Left "Couldn't parse getLongPollServer reply")
         Right
         . decode
-    eithParsed x =
-      initReplyToJSON x >>= AeT.parseEither parseInitRep
-
 
 ----------------- stuff -------------------------------
 defaultVkParams :: VkStateConst -> HT.ParamsList
@@ -294,6 +294,3 @@ putTimestampPure newTs sm = sm {vkTs = newTs}
 
 getTimestampPure :: VkStateMut -> T.Text
 getTimestampPure = vkTs
-
-
-

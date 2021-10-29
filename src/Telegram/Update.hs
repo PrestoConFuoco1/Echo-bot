@@ -2,8 +2,15 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DerivingVia #-}
 
-module Telegram.Update (TlReply(..), TlUpdateReplyError(..), TlUpdateReplySuccess(..), TlUpdate (..), TlEvent(..), parseUpdatesResponse1
-) where
+module Telegram.Update
+  ( TlReply (..),
+    TlUpdateReplyError (..),
+    TlUpdateReplySuccess (..),
+    TlUpdate (..),
+    TlEvent (..),
+    parseUpdatesResponse1,
+  )
+where
 
 import Data.Aeson.Types (FromJSON (..), ToJSON (..), Value, parseEither, withObject, (.:))
 import Data.Foldable (asum)
@@ -46,12 +53,14 @@ parseUpdatesResponse1 =
       if ok
         then do
           res <- o .: "result"
-          pure $ Right $
+          pure $
+            Right $
               TlUpdateReplySuccess {replysuccessResult = res}
         else do
           errCode <- o .: "error_code"
           description <- o .: "description"
-          pure $ Left $
+          pure $
+            Left $
               TlUpdateReplyError
                 { replyerrorErrorCode = errCode,
                   replyerrorDescription = description

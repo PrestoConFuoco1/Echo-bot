@@ -2,7 +2,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE TypeFamilies #-}
 
-module BotTypesClass.ClassTypes (BotClassTypes(..)) where
+module BotTypesClass.ClassTypes (BotClassTypes (..)) where
 
 import qualified GenericPretty as GP
 import qualified Messenger as M

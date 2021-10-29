@@ -1,5 +1,3 @@
-{-# LANGUAGE DeriveAnyClass #-}
-{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DerivingVia #-}
 
 module Messenger (Messenger (..)) where
@@ -11,5 +9,3 @@ data Messenger
   | Telegram
   deriving stock (Show, Eq)
   deriving (GP.PrettyShow) via GP.Showable Messenger
-
-

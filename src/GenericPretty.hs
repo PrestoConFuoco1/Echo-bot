@@ -2,7 +2,18 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
 
-module GenericPretty where
+module GenericPretty
+  ( PrettyShow (..),
+    Showable (..),
+    genericPrettyShow,
+    defaultOptionsL,
+    consModifier,
+    LayoutValue (..),
+    defaultPretty,
+    textPretty,
+    defaultPrettyT,
+  )
+where
 
 import Data.Aeson (encode)
 import Data.Aeson.Types (Value)

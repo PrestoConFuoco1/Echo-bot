@@ -4,8 +4,8 @@
 module BotTypesClass.TelegramInstance () where
 
 import BotTypesClass.ClassTypes (BotClassTypes (..))
-import Telegram
 import qualified Messenger as M
+import Telegram
 
 instance BotClassTypes 'M.Telegram where
   type Rep 'M.Telegram = TlReply

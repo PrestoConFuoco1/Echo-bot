@@ -1,10 +1,7 @@
-{-# LANGUAGE DeriveAnyClass #-}
-{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DerivingVia #-}
 
 module Execute.Types
-  (
-    Command (..),
+  ( Command (..),
     Event (..),
     CallbQuery (..),
   )

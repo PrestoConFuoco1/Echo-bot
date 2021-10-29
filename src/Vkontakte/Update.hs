@@ -2,8 +2,15 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DerivingVia #-}
 
-module Vkontakte.Update (VkReply(..), VkUpdate(..), VkUpdateReplyError(..), VkUpdateReplySuccess(..), parseUpdatesResponse2,
-VkEvent(..)) where
+module Vkontakte.Update
+  ( VkReply (..),
+    VkUpdate (..),
+    VkUpdateReplyError (..),
+    VkUpdateReplySuccess (..),
+    parseUpdatesResponse2,
+    VkEvent (..),
+  )
+where
 
 import Data.Aeson (decode)
 import Data.Aeson.Types ((.:), (.:?))

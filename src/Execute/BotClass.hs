@@ -1,7 +1,7 @@
 {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE TypeFamilies #-}
 
-module Execute.BotClass (BotClassUtility(..), BotClass(..), buildHTTP) where
+module Execute.BotClass (BotClassUtility (..), BotClass (..), buildHTTP) where
 
 import qualified App.Handle as D
 import BotTypesClass.ClassTypes

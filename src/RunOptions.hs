@@ -1,17 +1,19 @@
 {-# LANGUAGE DeriveGeneric #-}
 
-module RunOptions (RunOptions(..),
-getOptsIO,
-ghciRunOpts,
-toLoggerFilter
-) where
+module RunOptions
+  ( RunOptions (..),
+    getOptsIO,
+    ghciRunOpts,
+    toLoggerFilter,
+  )
+where
 
 import qualified App.Logger as L
 import qualified Data.Text as T
 import GHC.Generics
 import qualified GenericPretty as P
-import Options.Applicative
 import qualified Messenger as M
+import Options.Applicative
 
 data LoggerSettings
   = LogAll

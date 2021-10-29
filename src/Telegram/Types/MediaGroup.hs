@@ -3,9 +3,14 @@
 {-# LANGUAGE DerivingStrategies #-}
 {-# LANGUAGE RecordWildCards #-}
 
-module Telegram.Types.MediaGroup (TlMediaGroupIdentifier(..), TlMediaGroupUnit(..), TlMediaGroupPair(..),
-maybeMediaGroupUnit, photoVideoCaption
-) where
+module Telegram.Types.MediaGroup
+  ( TlMediaGroupIdentifier (..),
+    TlMediaGroupUnit (..),
+    TlMediaGroupPair (..),
+    maybeMediaGroupUnit,
+    photoVideoCaption,
+  )
+where
 
 import Data.Aeson.Types (ToJSON (..), object, (.=))
 import Data.Foldable (asum)

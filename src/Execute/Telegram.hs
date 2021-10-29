@@ -8,23 +8,24 @@ module Execute.Telegram () where
 import qualified App.Handle as D
 import qualified App.Handle.Telegram as HT
 import BotTypesClass.TelegramInstance ()
-import qualified Control.Monad.Catch as C (throwM)
+import qualified Control.Monad.Catch as C (MonadThrow, throwM)
 import qualified Data.Aeson.Types as AeT
-  ( parseEither,
+  ( Value,
+    parseEither,
     parseJSON,
     toJSON,
   )
 import Data.Foldable (asum)
-import qualified Data.Text as T (pack)
+import qualified Data.Text as T (Text, pack)
+import qualified Environment as Env
 import qualified Exceptions as Ex
 import Execute.BotClass
 import qualified Execute.Logic as E (sendNTimes)
 import qualified GenericPretty as GP
 import HTTP.Types as H
+import qualified Messenger as M
 import qualified Stuff as S
 import Telegram
-import qualified Messenger as M
-import qualified Environment as Env
 
 instance BotClassUtility 'M.Telegram where
   getResult = Just . replysuccessResult
@@ -48,66 +49,87 @@ instance BotClassUtility 'M.Telegram where
 
 instance BotClass 'M.Telegram where
   takesJSON = tlTakesJSON
-  getUpdatesRequest h = do
-    let tout = Env.getDefaultTimeout $ D.commonEnv h
-        url = HT.stcUrl $ D.getConstState h
-        req uid =
-          H.Req
-            H.GET
-            (url <> "getUpdates")
-            [unit "offset" uid, unit "timeout" tout]
-    curUpdID <- HT.getUpdateID (D.specH h)
-    pure $ req curUpdID
+  getUpdatesRequest = getUpdatesRequestTl
   isSuccess = replyOk
-  handleFailedUpdatesRequest h err = do
-    let funcName = "tl_handleFailedUpdatesRequest: "
-    D.logError h $ funcName <> "got telegram error"
-    D.logError h $ GP.defaultPrettyT err
-    D.logError h $
-      funcName <> "unable to handle any telegram errors"
-    C.throwM Ex.UnableToHandleError
-  parseUpdatesValueList rep = do
-    res <-
-      maybe (Left "Couldn't parse update list") Right $
-        getResult @'M.Telegram rep
-    AeT.parseEither AeT.parseJSON res
-  parseUpdate = AeT.parseEither AeT.parseJSON
-  repNumKeyboard lst cmd = [unit "reply_markup" obj]
-    where
-      obj = AeT.toJSON $ repNumKeyboardTele cmd lst
-  sendTextMsg _ Nothing _ _ =
-    pure $
-      Left
-        "M.Telegram: no chat supplied, unable to send messages to users"
-  sendTextMsg h (Just c) _ text =
-    let url = HT.stcUrl $ D.getConstState h
-     in pure $
-          Right $
-            buildHTTP
-              url
-              ( "sendMessage",
-                [unit "chat_id" $ chatID c, unit "text" text]
-              )
-  epilogue _ [] _ = pure ()
-  epilogue h us _ = do
-    let funcName = "tl_epilogue: "
-        newUpdateID = maximum (map updateUpdateID us) + 1
-    HT.putUpdateID (D.specH h) newUpdateID
-    stmMediaGroups <- HT.getMediaGroups (D.specH h)
-    D.logDebug h $
-      funcName
-        <> "ready to process some media groups, if any"
-    D.logDebug h $ GP.defaultPrettyT stmMediaGroups
-    mapM_ (sendMediaGroup h) stmMediaGroups
-    HT.purgeMediaGroups (D.specH h)
-  processMessage = processMessage1
+  handleFailedUpdatesRequest = handleFailedUpdatesRequestTl
+  parseUpdatesValueList = parseUpdatesValueListTl
+  parseUpdate = parseUpdateTl
+  repNumKeyboard = repNumKeyboardTl
+  sendTextMsg = sendTextMsgTl
+  processMessage = processMessageTl
+  epilogue = epilogueTl
 
-processMessage1 ::
+getUpdatesRequestTl :: (Monad m) => D.BotHandler 'M.Telegram m -> m HTTPRequest
+getUpdatesRequestTl h = do
+  let tout = Env.getDefaultTimeout $ D.commonEnv h
+      url = HT.stcUrl $ D.getConstState h
+      req uid =
+        H.Req
+          H.GET
+          (url <> "getUpdates")
+          [unit "offset" uid, unit "timeout" tout]
+  curUpdID <- HT.getUpdateID (D.specH h)
+  pure $ req curUpdID
+
+handleFailedUpdatesRequestTl :: (C.MonadThrow m) => D.BotHandler 'M.Telegram m -> TlUpdateReplyError -> m b
+handleFailedUpdatesRequestTl h err = do
+  let funcName = "tl_handleFailedUpdatesRequest: "
+  D.logError h $ funcName <> "got telegram error"
+  D.logError h $ GP.defaultPrettyT err
+  D.logError h $
+    funcName <> "unable to handle any telegram errors"
+  C.throwM Ex.UnableToHandleError
+
+parseUpdatesValueListTl :: TlUpdateReplySuccess -> Either String [AeT.Value]
+parseUpdatesValueListTl rep = do
+  res <-
+    maybe (Left "Couldn't parse update list") Right $
+      getResult @'M.Telegram rep
+  AeT.parseEither AeT.parseJSON res
+
+parseUpdateTl :: AeT.Value -> Either String TlUpdate
+parseUpdateTl = AeT.parseEither AeT.parseJSON
+
+repNumKeyboardTl :: [Int] -> T.Text -> [H.ParamsUnit]
+repNumKeyboardTl lst cmd = [unit "reply_markup" obj]
+  where
+    obj = AeT.toJSON $ repNumKeyboardTele cmd lst
+
+sendTextMsgTl :: (Monad m) => D.BotHandler 'M.Telegram m -> Maybe TlChat -> Maybe TlUser -> T.Text -> m (Either String H.HTTPRequest)
+sendTextMsgTl _ Nothing _ _ =
+  pure $
+    Left
+      "M.Telegram: no chat supplied, unable to send messages to users"
+sendTextMsgTl h (Just c) _ text =
+  let url = HT.stcUrl $ D.getConstState h
+   in pure $
+        Right $
+          buildHTTP
+            url
+            ( "sendMessage",
+              [unit "chat_id" $ chatID c, unit "text" text]
+            )
+
+epilogueTl :: (Monad m) => D.BotHandler 'M.Telegram m -> [TlUpdate] -> TlUpdateReplySuccess -> m ()
+epilogueTl _ [] _ = pure ()
+epilogueTl h us _ = do
+  let funcName = "tl_epilogue: "
+      newUpdateID = maximum (map updateUpdateID us) + 1
+  HT.putUpdateID (D.specH h) newUpdateID
+  stmMediaGroups <- HT.getMediaGroups (D.specH h)
+  D.logDebug h $
+    funcName
+      <> "ready to process some media groups, if any"
+  D.logDebug h $ GP.defaultPrettyT stmMediaGroups
+  mapM_ (sendMediaGroup h) stmMediaGroups
+  HT.purgeMediaGroups (D.specH h)
+
+processMessageTl ::
   (Monad m) =>
   D.BotHandler 'M.Telegram m ->
   TlMessage ->
   m (Maybe (m H.HTTPRequest))
-processMessage1 h m =
+processMessageTl h m =
   if isMediaGroup m
     then processMediaGroup h m >> pure Nothing
     else
@@ -121,7 +143,7 @@ processMessage1 h m =
   where
     funcName = "tl_processMessage: "
     sendMessage =
-      let eithMethodParams = sendMessageTele m
+      let eithMethodParams = echoMessageTele m
           url = HT.stcUrl $ D.getConstState h
        in pure . buildHTTP url
             <$> eithMethodParams

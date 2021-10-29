@@ -53,9 +53,9 @@ library
       RunOptions
       Stuff
       Telegram
+      Telegram.EchoMessage
       Telegram.Exceptions
       Telegram.Keyboard
-      Telegram.ProcessMessage
       Telegram.Types.Entity
       Telegram.Types.MediaGroup
       Telegram.Types.ProcessMessage

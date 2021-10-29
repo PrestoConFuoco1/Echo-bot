@@ -1,37 +1,43 @@
 {-# LANGUAGE DataKinds #-}
-{-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE DeriveAnyClass #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
-module App.Handle.Telegram (
-    TlHandler(..), TlStateConst (..), initResources, resourcesToHandle, tlErrorHandlers, Resources (..)
-) where
+module App.Handle.Telegram
+  ( TlHandler (..),
+    TlStateConst (..),
+    initResources,
+    resourcesToHandle,
+    tlErrorHandlers,
+    Resources (..),
+  )
+where
 
-import GHC.Generics
-import GenericPretty as GP
 import qualified App.Handle as D
 import qualified App.Logger as L
 import BotTypesClass.TelegramInstance ()
+import Config.Types (TlConfig (..))
 import qualified Control.Monad.Catch as C
 import Data.IORef
 import qualified Data.Map as M
-import qualified Data.Text as T (pack, Text)
-import qualified System.Exit as Q (ExitCode (..), exitWith)
-import Telegram (TlMediaGroupUnit, TlMediaGroupIdentifier, TlMediaGroupPair(..), TlUser)
-import qualified Telegram.Exceptions as TlEx
+import qualified Data.Text as T (Text)
+import qualified Environment as Env
+import GHC.Generics
+import GenericPretty as GP
 import qualified HTTP.Telegram as HTl
 import qualified Messenger as M
-import Config.Types (TlConfig(..))
-import qualified Environment as Env
+import qualified System.Exit as Q (ExitCode (..), exitWith)
+import Telegram (TlMediaGroupIdentifier, TlMediaGroupPair (..), TlMediaGroupUnit, TlUser)
+import qualified Telegram.Exceptions as TlEx
 
 instance D.HasBotHandler 'M.Telegram where
-    type StateC 'M.Telegram = TlStateConst
-    type StateM 'M.Telegram = TlStateMut
-    type Hndl 'M.Telegram = TlHandler
+  type StateC 'M.Telegram = TlStateConst
+  type StateM 'M.Telegram = TlStateMut
+  type Hndl 'M.Telegram = TlHandler
 
 data Resources = Resources
-  { commonEnv :: Env.EnvironmentCommon,
+  { commonEnv :: Env.Environment,
     constState :: TlStateConst,
     mutState :: IORef TlStateMut,
     usersMap :: IORef (M.Map TlUser Int)
@@ -57,10 +63,9 @@ data TlStateMut = TSM
   }
   deriving stock (Show, Generic)
 
-
 ----------------- IO handler ------------------------
 
-initResources :: L.LoggerHandler IO -> Env.EnvironmentCommon -> TlConfig -> IO Resources
+initResources :: L.LoggerHandler IO -> Env.Environment -> TlConfig -> IO Resources
 initResources _ common tlConf = do
   let initStateTele =
         TSM
@@ -136,16 +141,6 @@ tlErrorHandler logger _ _ TlEx.TlException = do
     "Unable to handle any telegram errors, error is logged"
   Q.exitWith (Q.ExitFailure 1)
 
-defaultHandler ::
-  L.LoggerHandler IO ->
-  Resources ->
-  C.SomeException ->
-  IO Resources
-defaultHandler logger _ e = do
-  L.logFatal logger "unable to handle exception"
-  L.logFatal logger $ T.pack $ C.displayException e
-  Q.exitWith (Q.ExitFailure 1)
-
 tlErrorHandlers ::
   L.LoggerHandler IO ->
   TlConfig ->
@@ -153,7 +148,6 @@ tlErrorHandlers ::
   [C.Handler IO Resources]
 tlErrorHandlers logger conf resources =
   [C.Handler $ tlErrorHandler logger conf resources]
-
 
 ------ pure functions -------------
 getUpdateIDPure :: TlStateMut -> Integer
@@ -179,5 +173,3 @@ getMediaGroupsPure :: TlStateMut -> [TlMediaGroupPair]
 getMediaGroupsPure TSM {stmMediaGroups = x} = map f $ M.toList x
   where
     f (k, v) = TlMediaGroupPair k v
-
-

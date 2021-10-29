@@ -6,16 +6,23 @@
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
 
-module Config.Load (loadConfig, configHandlers, BotConfigurable (..)
-) where
+module Config.Load
+  ( loadConfig,
+    configHandlers,
+    BotConfigurable (..),
+  )
+where
 
 import qualified App.Logger as L
+import Config.Types (TlConfig (..), VkConfig (..))
 import qualified Control.Exception as E (IOException)
 import qualified Control.Monad.Catch as CMC
 import qualified Data.Configurator as C
 import qualified Data.Configurator.Types as CT
 import qualified Data.Text as T (Text)
+import qualified Environment as Env
 import qualified GenericPretty as GP
+import qualified Messenger as M
 import qualified Stuff as S (withEither)
 import qualified System.Exit as Q (ExitCode (..), exitWith)
 import qualified System.IO.Error as E
@@ -23,9 +30,6 @@ import qualified System.IO.Error as E
     isDoesNotExistError,
     isPermissionError,
   )
-import qualified Messenger as M
-import Config.Types (VkConfig(..), TlConfig(..))
-import qualified Environment as Env
 
 data ConfigException
   = RequiredFieldMissing
@@ -38,7 +42,7 @@ loadConfig ::
   (BotConfigurable s) =>
   L.LoggerHandler IO ->
   FilePath ->
-  IO (Env.EnvironmentCommon, Conf s)
+  IO (Env.Environment, Conf s)
 loadConfig logger path = do
   conf <- C.load [CT.Required path]
   let genConf = C.subconfig "general" conf
@@ -60,22 +64,22 @@ loadConfig logger path = do
   L.logDebug logger $ GP.textPretty stSpec
   pure (stGen, stSpec)
 
+withDefault :: (CT.Configured a) => CT.Config -> (Env.Environment -> a) -> CT.Name -> IO a
+withDefault conf getDefault = C.lookupDefault (getDefault Env.defStateGen) conf
+
 loadGeneral ::
-  L.LoggerHandler IO -> CT.Config -> IO Env.EnvironmentCommon
+  L.LoggerHandler IO -> CT.Config -> IO Env.Environment
 loadGeneral _ conf =
   CMC.handle
-    (const $ pure Env.defStateGen :: CMC.SomeException -> IO Env.EnvironmentCommon)
+    (const $ pure Env.defStateGen :: CMC.SomeException -> IO Env.Environment)
     $ do
-      let dg = Env.defStateGen
-          withDefault :: (CT.Configured a) => (Env.EnvironmentCommon -> a) -> CT.Name -> IO a
-          withDefault f = C.lookupDefault (f dg) conf
-      confHelpMsg <- withDefault Env.getHelpMessage "help_message"
-      confRepQue <- withDefault Env.getRepeatQuestion "repeat_question"
-      confRepNum <- withDefault Env.repNum "default_repeat_num"
-      confTimeout <- withDefault Env.timeout "timeout"
-      confHelpCmd <- withDefault Env.getHelpCommand "help_command"
+      confHelpMsg <- withDefault conf Env.getHelpMessage "help_message"
+      confRepQue <- withDefault conf Env.getRepeatQuestion "repeat_question"
+      confRepNum <- withDefault conf Env.repNum "default_repeat_num"
+      confTimeout <- withDefault conf Env.timeout "timeout"
+      confHelpCmd <- withDefault conf Env.getHelpCommand "help_command"
       confSetRepNumCmd <-
-        withDefault Env.getSetRepNumCommand "set_rep_num_command"
+        withDefault conf Env.getSetRepNumCommand "set_rep_num_command"
       let cmds =
             Env.EnvCommands
               { Env.helpCommand = confHelpCmd,
@@ -87,7 +91,7 @@ loadGeneral _ conf =
                 Env.repQuestion = confRepQue
               }
       pure $
-        Env.EnvironmentCommon
+        Env.Environment
           { Env.envCommands = cmds,
             Env.envMessages = msgs,
             Env.repNum = confRepNum,
@@ -162,22 +166,23 @@ logKeyException logger = L.logError logger . f
       "No field with name " <> name <> " found."
 
 configHandlers :: L.LoggerHandler IO -> [CMC.Handler IO a]
-configHandlers h =
-  let f (CMC.Handler g) =
-        CMC.Handler
-          \e -> do
-            g e
-            L.logFatal
-              h
-              "Failed to get required data from configuration files, terminating..."
-            Q.exitWith (Q.ExitFailure 1)
-   in map
-        f
-        [ CMC.Handler (handleIOError h),
-          CMC.Handler (handleConfigError h),
-          CMC.Handler (handleConfig2Error h),
-          CMC.Handler (handleOthers h)
-        ]
+configHandlers logger =
+  map
+    (terminateAfterHandler logger)
+    [ CMC.Handler (handleIOError logger),
+      CMC.Handler (handleConfigError logger),
+      CMC.Handler (handleConfig2Error logger),
+      CMC.Handler (handleOthers logger)
+    ]
+
+terminateAfterHandler :: L.LoggerHandler IO -> CMC.Handler IO () -> CMC.Handler IO a
+terminateAfterHandler logger (CMC.Handler g) =
+  CMC.Handler $ \e -> do
+    g e
+    L.logFatal
+      logger
+      "Failed to get required data from configuration files, terminating..."
+    Q.exitWith (Q.ExitFailure 1)
 
 handleIOError :: L.LoggerHandler IO -> E.IOException -> IO ()
 handleIOError logger exc

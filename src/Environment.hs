@@ -2,17 +2,26 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DerivingVia #-}
 
-module Environment (EnvironmentCommon(..), EnvMessages(..),
-EnvCommands(..), defStateGen, getHelpMessage, getRepeatQuestion,
-getHelpCommand, getSetRepNumCommand, getDefaultRepNum, getDefaultTimeout
-) where
+module Environment
+  ( Environment (..),
+    EnvMessages (..),
+    EnvCommands (..),
+    defStateGen,
+    getHelpMessage,
+    getRepeatQuestion,
+    getHelpCommand,
+    getSetRepNumCommand,
+    getDefaultRepNum,
+    getDefaultTimeout,
+  )
+where
 
 import qualified Data.Text as T (Text)
 import GHC.Generics
 import qualified GenericPretty as GP
 import qualified Stuff as S (Timeout)
 
-data EnvironmentCommon = EnvironmentCommon -- never changes
+data Environment = Environment -- never changes
   { envMessages :: EnvMessages,
     repNum :: Int,
     timeout :: S.Timeout,
@@ -20,7 +29,7 @@ data EnvironmentCommon = EnvironmentCommon -- never changes
   }
   deriving stock (Show, Generic)
 
-instance GP.PrettyShow EnvironmentCommon where
+instance GP.PrettyShow Environment where
   prettyShow =
     GP.genericPrettyShow
       GP.defaultOptionsL
@@ -59,31 +68,29 @@ defaultCommands =
       setRepNumCommand = "/set"
     }
 
-defStateGen :: EnvironmentCommon
+defStateGen :: Environment
 defStateGen =
-  EnvironmentCommon
+  Environment
     { envMessages = defaultMessages,
       repNum = 1,
       timeout = 25,
       envCommands = defaultCommands
     }
 
-getHelpMessage :: EnvironmentCommon -> T.Text
+getHelpMessage :: Environment -> T.Text
 getHelpMessage = helpMsg . envMessages
 
-getRepeatQuestion :: EnvironmentCommon -> T.Text
+getRepeatQuestion :: Environment -> T.Text
 getRepeatQuestion = repQuestion . envMessages
 
-getHelpCommand :: EnvironmentCommon -> T.Text
+getHelpCommand :: Environment -> T.Text
 getHelpCommand = helpCommand . envCommands
 
-getSetRepNumCommand :: EnvironmentCommon -> T.Text
+getSetRepNumCommand :: Environment -> T.Text
 getSetRepNumCommand = setRepNumCommand . envCommands
 
-getDefaultTimeout :: EnvironmentCommon -> S.Timeout
+getDefaultTimeout :: Environment -> S.Timeout
 getDefaultTimeout = timeout
 
-getDefaultRepNum :: EnvironmentCommon -> Int
+getDefaultRepNum :: Environment -> Int
 getDefaultRepNum = repNum
-
-

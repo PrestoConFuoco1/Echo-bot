@@ -2,7 +2,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DerivingVia #-}
 
-module Telegram.Types.Entity (TlChat(..), TlMessage(..), TlUser(..), chatIDfromMsg, TlCallback(..), isMediaGroup) where
+module Telegram.Types.Entity (TlChat (..), TlMessage (..), TlUser (..), chatIDfromMsg, TlCallback (..), isMediaGroup) where
 
 import Data.Aeson (FromJSON (..), ToJSON (..))
 import Data.Function (on)

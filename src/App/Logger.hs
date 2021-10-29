@@ -1,7 +1,19 @@
-module App.Logger (Priority(..), LoggerHandler(..), LoggerEntry,
-logDebug, logInfo, logWarning, logError, logFatal,
-stdCondHandler, LoggerConfig(..), stdHandler, withSelfSufficientLogger
-) where
+module App.Logger
+  ( Priority (..),
+    LoggerHandler (..),
+    LoggerEntry,
+    logDebug,
+    logInfo,
+    logWarning,
+    logError,
+    logFatal,
+    stdCondHandler,
+    LoggerConfig (..),
+    stdHandler,
+    withSelfSufficientLogger,
+    emptyLogger,
+  )
+where
 
 import Control.Monad (unless, when)
 import qualified Control.Monad.Catch as C
@@ -77,16 +89,17 @@ initializationErrorHandler e = do
   logFatal stdHandler "failed to initialize logger"
   logIOError e
   Q.exitWith (Q.ExitFailure 1)
-  where
-    logIOError err
-      | IOE.isAlreadyInUseError err =
-        logError stdHandler lockedmsg
-      | IOE.isPermissionError err =
-        logError stdHandler "not enough permissions"
-      | otherwise =
-        logError stdHandler $
-          "unexpected IO error: "
-            <> T.pack (C.displayException err)
+
+logIOError :: IOE.IOError -> IO ()
+logIOError err
+  | IOE.isAlreadyInUseError err =
+    logError stdHandler lockedmsg
+  | IOE.isPermissionError err =
+    logError stdHandler "not enough permissions"
+  | otherwise =
+    logError stdHandler $
+      "unexpected IO error: "
+        <> T.pack (C.displayException err)
 
 lockedmsg :: T.Text
 lockedmsg = "target log file is locked"
@@ -99,7 +112,7 @@ initializeDefaultHandler e = do
 
 withSelfSufficientLogger ::
   LoggerConfig -> (LoggerHandler IO -> IO a) -> IO a
-withSelfSufficientLogger conf action = do
+withSelfSufficientLogger conf action =
   C.bracket
     (initializeSelfSufficientLoggerResources conf)
     closeSelfSufficientLogger

@@ -3,7 +3,7 @@
 {-# LANGUAGE DerivingVia #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 
-module Vkontakte.Entity (VkMessage(..), VkChat, VkUser(..), VkMyCallback(..), VkPayload(..)) where
+module Vkontakte.Entity (VkMessage (..), VkChat, VkUser (..), VkMyCallback (..), VkPayload (..)) where
 
 import qualified Data.Aeson.Types as AeT
 import Data.Function (on)
