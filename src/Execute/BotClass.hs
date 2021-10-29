@@ -32,7 +32,7 @@ class
   getCallbackChat :: CallbackQuery s -> Maybe (Chat s)
 
 class
-  (BotClassUtility s) =>
+  (BotClassUtility s, D.HasBotHandler s) =>
   BotClass s
   where
   takesJSON :: Bool

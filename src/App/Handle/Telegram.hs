@@ -1,6 +1,10 @@
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE TypeFamilies #-}
 
-module App.Handle.Telegram where
+module App.Handle.Telegram (
+    module App.Handle.Telegram,
+    module App.Handle.Internal.Telegram
+) where
 
 import qualified App.Handle as D
 import qualified App.Logger as L
@@ -16,6 +20,12 @@ import qualified Telegram.Send as G
 import qualified Messenger as M
 import Config.Types (TlConfig(..))
 import qualified Environment as Env
+import App.Handle.Internal.Telegram
+
+instance D.HasBotHandler 'M.Telegram where
+    type StateC 'M.Telegram = TlStateConst
+    type StateM 'M.Telegram = TlStateMut
+    type Hndl 'M.Telegram = TlHandler
 
 data Config = Config
   { configCommonEnv :: Env.EnvironmentCommon,

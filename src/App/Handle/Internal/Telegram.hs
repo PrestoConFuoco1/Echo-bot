@@ -1,8 +1,29 @@
-module Telegram.HandlerPure where
+{-# LANGUAGE DeriveAnyClass #-}
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DerivingStrategies #-}
 
+module App.Handle.Internal.Telegram where
+
+import qualified Data.Text as T (Text)
+import GHC.Generics (Generic)
+import GenericPretty as GP
 import qualified Data.Map as M
-import Telegram.General (TlStateMut (..))
 import Telegram.Types.MediaGroup (TlMediaGroupIdentifier, TlMediaGroupPair (..), TlMediaGroupUnit)
+
+
+
+
+newtype TlStateConst = TSC
+  { stcUrl :: T.Text
+  }
+  deriving stock (Show, Generic)
+  deriving anyclass (PrettyShow)
+
+data TlStateMut = TSM
+  { stmUpdateID :: Integer,
+    stmMediaGroups :: M.Map TlMediaGroupIdentifier [TlMediaGroupUnit]
+  }
+  deriving stock (Show, Generic)
 
 getUpdateIDPure :: TlStateMut -> Integer
 getUpdateIDPure = stmUpdateID

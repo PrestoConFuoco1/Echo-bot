@@ -3,8 +3,12 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DerivingStrategies #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TypeFamilies #-}
 
-module App.Handle.Vkontakte where
+module App.Handle.Vkontakte (
+    module App.Handle.Vkontakte,
+    module App.Handle.Internal.Vkontakte
+) where
 
 import qualified App.Handle as D
 import qualified App.Logger as L
@@ -36,6 +40,12 @@ import qualified Vkontakte.Exceptions as VkEx
 import qualified Vkontakte.Send as G
 import Config.Types (VkConfig(..))
 import qualified Environment as Env
+import App.Handle.Internal.Vkontakte
+
+instance D.HasBotHandler 'M.Vkontakte where
+    type StateC 'M.Vkontakte = VkStateConst
+    type StateM 'M.Vkontakte = VkStateMut
+    type Hndl 'M.Vkontakte = VkHandler
 
 data Config = Config
   { configCommonEnv :: Env.EnvironmentCommon,
@@ -251,3 +261,9 @@ parseInitResp = eithParsed
         . decode
     eithParsed x =
       initReplyToJSON x >>= AeT.parseEither parseInitRep
+
+defaultVkParams :: VkStateConst -> H.ParamsList
+defaultVkParams sc =
+  defaultVkParams' (vkAccessToken sc) (apiVersion sc)
+
+

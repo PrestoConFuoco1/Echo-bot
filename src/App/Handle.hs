@@ -1,4 +1,6 @@
 {-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE DataKinds #-}
 
 module App.Handle where
 
@@ -9,6 +11,12 @@ import qualified Data.Text as T (Text)
 import qualified HTTPTypes as H
 import Prelude hiding (log)
 import qualified Environment as Env
+import qualified Messenger as M
+
+class HasBotHandler (s :: M.Messenger) where
+    type StateC s :: *
+    type StateM s :: *
+    type Hndl s :: (* -> *) -> *
 
 data BotHandler s m = BotHandler
   { log :: L.LoggerHandler m,
@@ -31,7 +39,7 @@ data BotHandler s m = BotHandler
     sendKeyboard :: H.HTTPRequest -> m (Either String (Rep s)),
     sendRepNumMessage :: H.HTTPRequest -> m (Either String (Rep s)),
     specH ::
-      (BotClassTypes s) =>
+      (HasBotHandler s) =>
       Hndl s m
   }
 

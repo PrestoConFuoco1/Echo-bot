@@ -8,8 +8,6 @@ import Telegram
 import qualified Messenger as M
 
 instance BotClassTypes 'M.Telegram where
-  type StateC 'M.Telegram = TlStateConst
-  type StateM 'M.Telegram = TlStateMut
   type Rep 'M.Telegram = TlReply
   type RepErr 'M.Telegram = TlUpdateReplyError
   type RepSucc 'M.Telegram = TlUpdateReplySuccess
@@ -18,4 +16,3 @@ instance BotClassTypes 'M.Telegram where
   type Chat 'M.Telegram = TlChat
   type User 'M.Telegram = TlUser
   type CallbackQuery 'M.Telegram = TlCallback
-  type Hndl 'M.Telegram = TlHandler

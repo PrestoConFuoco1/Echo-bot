@@ -6,6 +6,7 @@
 module Execute.Telegram where
 
 import qualified App.Handle as D
+import qualified App.Handle.Telegram as HT
 import BotTypesClass.TelegramInstance ()
 import qualified Control.Monad.Catch as C (throwM)
 import qualified Data.Aeson.Types as AeT
@@ -49,13 +50,13 @@ instance BotClass 'M.Telegram where
   takesJSON = tlTakesJSON
   getUpdatesRequest h = do
     let tout = Env.getDefaultTimeout $ D.commonEnv h
-        url = stcUrl $ D.getConstState h
+        url = HT.stcUrl $ D.getConstState h
         req uid =
           H.Req
             H.GET
             (url <> "getUpdates")
             [unit "offset" uid, unit "timeout" tout]
-    curUpdID <- getUpdateID (D.specH h)
+    curUpdID <- HT.getUpdateID (D.specH h)
     pure $ req curUpdID
   isSuccess = replyOk
   handleFailedUpdatesRequest h err = do
@@ -79,7 +80,7 @@ instance BotClass 'M.Telegram where
       Left
         "M.Telegram: no chat supplied, unable to send messages to users"
   sendTextMsg h (Just c) _ text =
-    let url = stcUrl $ D.getConstState h
+    let url = HT.stcUrl $ D.getConstState h
      in pure $
           Right $
             buildHTTP
@@ -91,14 +92,14 @@ instance BotClass 'M.Telegram where
   epilogue h us _ = do
     let funcName = "tl_epilogue: "
         newUpdateID = maximum (map updateUpdateID us) + 1
-    putUpdateID (D.specH h) newUpdateID
-    stmMediaGroups <- getMediaGroups (D.specH h)
+    HT.putUpdateID (D.specH h) newUpdateID
+    stmMediaGroups <- HT.getMediaGroups (D.specH h)
     D.logDebug h $
       funcName
         <> "ready to process some media groups, if any"
     D.logDebug h $ GP.defaultPrettyT stmMediaGroups
     mapM_ (sendMediaGroup h) stmMediaGroups
-    purgeMediaGroups (D.specH h)
+    HT.purgeMediaGroups (D.specH h)
   processMessage = processMessage1
 
 processMessage1 ::
@@ -121,7 +122,7 @@ processMessage1 h m =
     funcName = "tl_processMessage: "
     sendMessage =
       let eithMethodParams = sendMessageTele m
-          url = stcUrl $ D.getConstState h
+          url = HT.stcUrl $ D.getConstState h
        in pure . buildHTTP url
             <$> eithMethodParams
 
@@ -138,7 +139,7 @@ processMediaGroup h m =
       mMediaGroupUnit = maybeMediaGroupUnit m
       mAction =
         asum
-          [ insertMediaGroupUnit (D.specH h)
+          [ HT.insertMediaGroupUnit (D.specH h)
               <$> mMediaGroupIdent
               <*> mMediaGroupUnit
           ]
@@ -162,7 +163,7 @@ sendMediaGroup h (TlMediaGroupPair ident items) = do
       mUser = tmgidUser ident
       reversedItems = reverse items
       method = "sendMediaGroup"
-      url = stcUrl $ D.getConstState h
+      url = HT.stcUrl $ D.getConstState h
       mCaption = S.safeHead items >>= photoVideoCaption
       pars =
         [ unit "chat_id" $ chatID chat,

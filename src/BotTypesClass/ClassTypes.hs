@@ -16,8 +16,6 @@ class
   ) =>
   BotClassTypes (s :: M.Messenger)
   where
-  type StateC s :: *
-  type StateM s :: *
   type Rep s :: *
   type RepSucc s :: *
   type RepErr s :: *
@@ -26,4 +24,3 @@ class
   type Chat s :: *
   type User s :: *
   type CallbackQuery s :: *
-  type Hndl s :: (* -> *) -> *

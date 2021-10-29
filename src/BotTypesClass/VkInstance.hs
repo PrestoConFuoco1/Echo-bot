@@ -3,13 +3,11 @@
 
 module BotTypesClass.VkInstance where
 
-import BotTypesClass.ClassTypes
+import BotTypesClass.ClassTypes (BotClassTypes (..))
 import qualified Messenger as M
 import Vkontakte
 
 instance BotClassTypes 'M.Vkontakte where
-  type StateC 'M.Vkontakte = VkStateConst
-  type StateM 'M.Vkontakte = VkStateMut
   type Rep 'M.Vkontakte = VkReply
   type RepErr 'M.Vkontakte = VkUpdateReplyError
   type RepSucc 'M.Vkontakte = VkUpdateReplySuccess
@@ -18,4 +16,3 @@ instance BotClassTypes 'M.Vkontakte where
   type Chat 'M.Vkontakte = VkChat
   type User 'M.Vkontakte = VkUser
   type CallbackQuery 'M.Vkontakte = VkMyCallback
-  type Hndl 'M.Vkontakte = VkHandler

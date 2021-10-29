@@ -26,6 +26,8 @@ source-repository head
 library
   exposed-modules:
       App.Handle
+      App.Handle.Internal.Telegram
+      App.Handle.Internal.Vkontakte
       App.Handle.Telegram
       App.Handle.Vkontakte
       App.Logger
@@ -53,7 +55,6 @@ library
       Telegram
       Telegram.Exceptions
       Telegram.General
-      Telegram.HandlerPure
       Telegram.Keyboard
       Telegram.ProcessMessage
       Telegram.Send
@@ -68,7 +69,6 @@ library
       Vkontakte.Entity
       Vkontakte.Exceptions
       Vkontakte.General
-      Vkontakte.HandlerPure
       Vkontakte.Keyboard
       Vkontakte.Send
       Vkontakte.Update

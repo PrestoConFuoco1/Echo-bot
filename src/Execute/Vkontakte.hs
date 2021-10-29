@@ -6,6 +6,7 @@
 module Execute.Vkontakte where
 
 import qualified App.Handle as D
+import qualified App.Handle.Vkontakte as HV
 import BotTypesClass.VkInstance ()
 import qualified Control.Monad.Catch as C
   ( MonadThrow,
@@ -68,13 +69,13 @@ getUpdatesRequest1 ::
   (Monad m) => D.BotHandler 'M.Vkontakte m -> m H.HTTPRequest
 getUpdatesRequest1 h =
   do
-    curTS <- getTimestamp (D.specH h)
+    curTS <- HV.getTimestamp (D.specH h)
     let constState = D.getConstState h
         timeout' = Env.timeout $ D.commonEnv h
-        fullUrl = vkServer constState
+        fullUrl = HV.vkServer constState
         pars =
           [ unit "act" ("a_check" :: T.Text),
-            unit "key" $ vkKey constState,
+            unit "key" $ HV.vkKey constState,
             unit "ts" curTS,
             unit "wait" timeout'
           ]
@@ -98,7 +99,7 @@ handleFailedUpdatesRequest1 ::
   m ()
 handleFailedUpdatesRequest1 h e@(VkUpdateReplyError {..}) =
   let funcName = "handleFailedUpdatesRequest: "
-      key = vkKey $ D.getConstState h
+      key = HV.vkKey $ D.getConstState h
    in case replyerrorFailed of
         x
           | x == 1 -> do
@@ -109,7 +110,7 @@ handleFailedUpdatesRequest1 h e@(VkUpdateReplyError {..}) =
               ( \ts -> do
                   D.logInfo h $
                     funcName <> "using new ts"
-                  putTimestamp (D.specH h) ts
+                  HV.putTimestamp (D.specH h) ts
               )
           | x == 2 -> do
             D.logError h $ funcName <> errorMsg2
@@ -145,14 +146,14 @@ sendTextMsg1 _ _ Nothing _ =
 sendTextMsg1 h _ (Just u) text = do
   let method = "messages.send"
       sc = D.getConstState h
-  randomID <- getRandomID (D.specH h)
+  randomID <- HV.getRandomID (D.specH h)
   let pars =
         [ unit "user_id" (userID u),
           unit "message" text,
           unit "random_id" randomID
         ]
-          ++ defaultVkParams sc
-  pure $ Right $ buildHTTP (vkUrl sc) (method, pars)
+          ++ HV.defaultVkParams sc
+  pure $ Right $ buildHTTP (HV.vkUrl sc) (method, pars)
 
 repNumKeyboard1 :: [Int] -> T.Text -> H.ParamsList
 repNumKeyboard1 lst cmd = [unit "keyboard" obj]
@@ -168,7 +169,7 @@ epilogue1 ::
 epilogue1 h _ rep =
   case replysuccessTs rep of
     Nothing -> pure ()
-    Just x -> putTimestamp (D.specH h) x
+    Just x -> HV.putTimestamp (D.specH h) x
 
 processMessage1 ::
   (Monad m) =>
@@ -229,12 +230,12 @@ processMessageVk ::
 processMessageVk h user maybeText attachmentsEtc = do
   let sc = D.getConstState h
       method = "messages.send"
-  randomID <- getRandomID (D.specH h)
+  randomID <- HV.getRandomID (D.specH h)
   let pars =
         [ unit "user_id" $ userID user,
           mUnit "message" maybeText,
           unit "random_id" randomID
         ]
-          ++ defaultVkParams sc
+          ++ HV.defaultVkParams sc
   pure $
-    buildHTTP (vkUrl sc) (method, attachmentsEtc ++ pars)
+    buildHTTP (HV.vkUrl sc) (method, attachmentsEtc ++ pars)
