@@ -1,15 +1,15 @@
 module Test.Vkontakte.TestData where
 
+import Environment
 import Test.Hspec
-import Types
 import Data.IORef
 import Handlers
-import qualified HTTPRequests as H
+import qualified HTTP.Types as H
 import App.Handle as D
 import Vkontakte
-import BotClass.ClassTypes
-import BotClass.ClassTypesVkInstance
-import BotClass.BotVkInstance
+import BotTypesClass.ClassTypes
+import BotTypesClass.VkInstance
+import Execute.Vkontakte
 import Execute
 import Execute.Logic
 import Data.Aeson
@@ -39,7 +39,7 @@ defaultMessage = VkMessage {
     }
 
 sendHelpMessageMsg :: VkMessage
-sendHelpMessageMsg = defaultMessage { messageText = Just $ helpCommand defStateGen }
+sendHelpMessageMsg = defaultMessage { messageText = Just $ getHelpCommand defStateGen }
 
 
 {-
@@ -61,7 +61,7 @@ buildUpdate event msg = VkUpdate {
     }
 
 
-sendKeyboardMessage = defaultMessage { messageText = Just $ setRepNumCommand defStateGen }
+sendKeyboardMessage = defaultMessage { messageText = Just $ getSetRepNumCommand defStateGen }
 
 sendKeyboardMessageUpd :: VkUpdate
 sendKeyboardMessageUpd = buildUpdate (VEMsg sendKeyboardMessage) "send repnum buttons request"

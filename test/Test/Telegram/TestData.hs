@@ -2,21 +2,21 @@ module Test.Telegram.TestData where
 
 import Telegram
 import Test.Hspec
-import Types
 import Data.IORef
 import Handlers
-import qualified HTTPRequests as H
+import qualified HTTP.Types as H
 import App.Handle as D
-import Telegram.General
-import BotClass.ClassTypes
-import BotClass.ClassTypesTeleInstance
-import BotClass.BotTeleInstance
+import Telegram
+import BotTypesClass.ClassTypes
+import BotTypesClass.TelegramInstance
+import Execute.Telegram
 import Execute
 import Execute.Logic
 import Data.Aeson
 import Data.Text as T
 import qualified Stuff as S
-
+import Telegram.Types.ProcessMessage
+import Environment
 
 
 defaultMessageID = 0
@@ -69,7 +69,7 @@ successReply = TlReply {
 
 
 sendHelpMessageMsg :: TlMessage
-sendHelpMessageMsg = defaultMessage { messageText = Just $ helpCommand defStateGen }
+sendHelpMessageMsg = defaultMessage { messageText = Just $ getHelpCommand defStateGen }
 
 buildUpdate :: TlEvent -> T.Text -> TlUpdate
 buildUpdate event msg = TlUpdate {
@@ -84,7 +84,7 @@ sendHelpMessageUpd =
     in  buildUpdate event "help request update"
 
 sendKeyboardMessage :: TlMessage
-sendKeyboardMessage = defaultMessage { messageText = Just $ setRepNumCommand defStateGen }
+sendKeyboardMessage = defaultMessage { messageText = Just $ getSetRepNumCommand defStateGen }
 
 sendKeyboardMessageUpd = buildUpdate (TEMsg sendKeyboardMessage) "send repnum buttons request"
 

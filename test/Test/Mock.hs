@@ -7,15 +7,14 @@ module Test.Mock where
 
 import Telegram
 import Test.Hspec
-import Types
 import Data.IORef
 import Handlers
-import qualified HTTPRequests as H
+import qualified HTTP.Types as H
 import App.Handle as D
-import Telegram.General
-import BotClass.ClassTypes
-import BotClass.ClassTypesTeleInstance
-import BotClass.BotTeleInstance
+import Telegram
+import BotTypesClass.ClassTypes
+import BotTypesClass.TelegramInstance
+import Execute.Telegram
 import Execute
 import Execute.Logic
 import Data.Aeson

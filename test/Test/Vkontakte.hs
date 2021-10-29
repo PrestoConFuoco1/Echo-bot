@@ -3,14 +3,13 @@ module Test.Vkontakte where
 
 import Vkontakte
 import Test.Hspec
-import Types
 import Data.IORef
 import Handlers
-import qualified HTTPRequests as H
+import qualified HTTP.Types as H
 import App.Handle as D
-import BotClass.ClassTypes
-import BotClass.ClassTypesVkInstance
-import BotClass.BotVkInstance
+import BotTypesClass.ClassTypes
+import BotTypesClass.VkInstance
+import Execute.Vkontakte
 import Execute
 import Execute.Logic
 import Data.Aeson
@@ -18,7 +17,8 @@ import Data.Text as T
 import qualified Stuff as S
 import Test.Vkontakte.TestData
 import Test.Mock
-
+import Messenger
+import App.Handle.Vkontakte
 
 testVkontakte :: Spec
 testVkontakte = describe "vkontakte logic" $ do
