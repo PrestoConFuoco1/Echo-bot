@@ -13,7 +13,8 @@ import qualified Data.ByteString.Lazy.Char8 as BSL
 import qualified HTTP.Send as H
 import qualified HTTP.Types as H
 import Telegram (tlTakesJSON)
-import Telegram.Update (TlReply, TlUpdateReplyError, TlUpdateReplySuccess, parseUpdatesResponse1)
+import Telegram.Update (TlReply, TlUpdateReplyError, TlUpdateReplySuccess)
+import qualified Telegram.Update as U (parseUpdatesResponse)
 
 parseUpdatesResponse ::
   BSL.ByteString ->
@@ -28,7 +29,7 @@ parseUpdatesResponse resp -- Either
         )
         Right
         $ Ae.decode resp
-    parseUpdatesResponse1 val
+    U.parseUpdatesResponse val
 
 getUpdates ::
   L.LoggerHandler IO ->

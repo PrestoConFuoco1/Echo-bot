@@ -8,7 +8,7 @@ module Telegram.Update
     TlUpdateReplySuccess (..),
     TlUpdate (..),
     TlEvent (..),
-    parseUpdatesResponse1,
+    parseUpdatesResponse,
   )
 where
 
@@ -43,10 +43,10 @@ data TlUpdateReplyError = TlUpdateReplyError
   deriving stock (Show, Eq, Generic)
   deriving anyclass (PrettyShow)
 
-parseUpdatesResponse1 ::
+parseUpdatesResponse ::
   Value ->
   Either String (Either TlUpdateReplyError TlUpdateReplySuccess)
-parseUpdatesResponse1 =
+parseUpdatesResponse =
   parseEither $
     withObject "M.Telegram updates object" $ \o -> do
       ok <- o .: "ok"
