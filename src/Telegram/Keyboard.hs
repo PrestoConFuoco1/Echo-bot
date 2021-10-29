@@ -1,7 +1,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DerivingVia #-}
 
-module Telegram.Keyboard where
+module Telegram.Keyboard (repNumKeyboardTele) where
 
 import Data.Aeson.Types (FromJSON (..), ToJSON (..))
 import qualified Data.Text as T (Text, pack)

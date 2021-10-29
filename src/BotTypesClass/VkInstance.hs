@@ -1,7 +1,7 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeFamilies #-}
 
-module BotTypesClass.VkInstance where
+module BotTypesClass.VkInstance () where
 
 import BotTypesClass.ClassTypes (BotClassTypes (..))
 import qualified Messenger as M

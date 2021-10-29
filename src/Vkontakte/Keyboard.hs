@@ -1,7 +1,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DerivingVia #-}
 
-module Vkontakte.Keyboard where
+module Vkontakte.Keyboard (repNumKeyboardVkTxt) where
 
 import Data.Aeson.Types ((.=))
 import qualified Data.Aeson.Types as AeT

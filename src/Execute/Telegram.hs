@@ -3,7 +3,7 @@
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
 
-module Execute.Telegram where
+module Execute.Telegram () where
 
 import qualified App.Handle as D
 import qualified App.Handle.Telegram as HT

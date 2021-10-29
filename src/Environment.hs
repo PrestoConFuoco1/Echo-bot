@@ -2,7 +2,10 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DerivingVia #-}
 
-module Environment where
+module Environment (EnvironmentCommon(..), EnvMessages(..),
+EnvCommands(..), defStateGen, getHelpMessage, getRepeatQuestion,
+getHelpCommand, getSetRepNumCommand, getDefaultRepNum, getDefaultTimeout
+) where
 
 import qualified Data.Text as T (Text)
 import GHC.Generics

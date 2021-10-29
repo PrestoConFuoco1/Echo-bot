@@ -2,7 +2,10 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE DataKinds #-}
 
-module App.Handle where
+module App.Handle (BotHandler(..), HasBotHandler(..),
+logDebug, logError, logFatal, logWarning, logInfo, logEntry,
+findWithDefault
+) where
 
 import qualified App.Logger as L
 import BotTypesClass.ClassTypes (BotClassTypes (..))

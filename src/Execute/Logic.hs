@@ -2,7 +2,7 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeApplications #-}
 
-module Execute.Logic where
+module Execute.Logic (handleUpdate, sendNTimes) where
 
 import qualified App.Handle as D
 import BotTypesClass.ClassTypes (BotClassTypes (..))

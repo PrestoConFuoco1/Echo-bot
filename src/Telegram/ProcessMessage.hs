@@ -1,4 +1,5 @@
-module Telegram.ProcessMessage where
+module Telegram.ProcessMessage (sendMessageTele
+) where
 
 import Control.Monad (guard, (>=>))
 import Data.Foldable (asum)

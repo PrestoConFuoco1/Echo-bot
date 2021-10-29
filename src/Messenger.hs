@@ -1,7 +1,8 @@
 {-# LANGUAGE DeriveAnyClass #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DerivingVia #-}
-module Messenger where
+
+module Messenger (Messenger (..)) where
 
 import qualified GenericPretty as GP
 

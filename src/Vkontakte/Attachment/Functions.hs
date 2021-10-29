@@ -1,4 +1,4 @@
-module Vkontakte.Attachment.Functions where
+module Vkontakte.Attachment.Functions (attsToParsVk) where
 
 import qualified App.Logger as L
 import Control.Monad.Writer (Writer, tell)

@@ -4,10 +4,8 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DerivingStrategies #-}
 
-
-
 module App.Handle.Telegram (
-    module App.Handle.Telegram,
+    TlHandler(..), TlStateConst (..), initResources, resourcesToHandle, tlErrorHandlers, Resources (..)
 ) where
 
 import GHC.Generics
@@ -20,9 +18,9 @@ import Data.IORef
 import qualified Data.Map as M
 import qualified Data.Text as T (pack, Text)
 import qualified System.Exit as Q (ExitCode (..), exitWith)
-import Telegram
+import Telegram (TlMediaGroupUnit, TlMediaGroupIdentifier, TlMediaGroupPair(..), TlUser)
 import qualified Telegram.Exceptions as TlEx
-import qualified HTTP.Telegram as G
+import qualified HTTP.Telegram as HTl
 import qualified Messenger as M
 import Config.Types (TlConfig(..))
 import qualified Environment as Env
@@ -31,12 +29,7 @@ instance D.HasBotHandler 'M.Telegram where
     type StateC 'M.Telegram = TlStateConst
     type StateM 'M.Telegram = TlStateMut
     type Hndl 'M.Telegram = TlHandler
-{-
-data Config = Config
-  { configCommonEnv :: Env.EnvironmentCommon,
-    configTelegram :: TlConfig
-  }
--}
+
 data Resources = Resources
   { commonEnv :: Env.EnvironmentCommon,
     constState :: TlStateConst,
@@ -100,11 +93,11 @@ resourcesToHandle resources logger =
       D.getUser =
         \u ->
           M.lookup u <$> readIORef (usersMap resources),
-      D.getUpdates = G.getUpdates logger,
-      D.sendEcho = G.sendThis logger,
-      D.sendHelp = G.sendThis logger,
-      D.sendKeyboard = G.sendThis logger,
-      D.sendRepNumMessage = G.sendThis logger,
+      D.getUpdates = HTl.getUpdates logger,
+      D.sendEcho = HTl.sendThis logger,
+      D.sendHelp = HTl.sendThis logger,
+      D.sendKeyboard = HTl.sendThis logger,
+      D.sendRepNumMessage = HTl.sendThis logger,
       D.specH =
         resourcesToTelegramHandler resources logger
     }

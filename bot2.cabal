@@ -29,7 +29,6 @@ library
       App.Handle.Telegram
       App.Handle.Vkontakte
       App.Logger
-      App.Tmp
       BotTypesClass.ClassTypes
       BotTypesClass.TelegramInstance
       BotTypesClass.VkInstance

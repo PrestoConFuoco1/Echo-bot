@@ -2,7 +2,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DerivingStrategies #-}
 
-module Config.Types where
+module Config.Types (VkConfig(..), TlConfig(..)) where
 
 import qualified Data.Text as T (Text)
 import GHC.Generics (Generic)
@@ -24,16 +24,4 @@ data VkConfig = VkConf
   }
   deriving stock (Show, Eq, Generic)
   deriving anyclass (PrettyShow)
-{-
-data VkConfigDefault = VkConfDef
-  { defaultconfUrl :: T.Text,
-    defaultconfApiVersion :: T.Text
-  }
-  deriving stock (Show, Eq, Generic)
-  deriving anyclass (PrettyShow)
-
-defaultVkConfig :: VkConfigDefault
-defaultVkConfig =
-  VkConfDef "https://api.vk.com/method/" "5.124"
--}
 

@@ -2,7 +2,8 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DerivingVia #-}
 
-module Telegram.Update where
+module Telegram.Update (TlReply(..), TlUpdateReplyError(..), TlUpdateReplySuccess(..), TlUpdate (..), TlEvent(..), parseUpdatesResponse1
+) where
 
 import Data.Aeson.Types (FromJSON (..), ToJSON (..), Value, parseEither, withObject, (.:))
 import Data.Foldable (asum)

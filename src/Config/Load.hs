@@ -6,7 +6,8 @@
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
 
-module Config.Load where
+module Config.Load (loadConfig, configHandlers, BotConfigurable (..)
+) where
 
 import qualified App.Logger as L
 import qualified Control.Exception as E (IOException)

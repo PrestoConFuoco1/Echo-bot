@@ -3,7 +3,7 @@
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
 
-module Execute.Vkontakte where
+module Execute.Vkontakte () where
 
 import qualified App.Handle as D
 import qualified App.Handle.Vkontakte as HV

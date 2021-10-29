@@ -1,4 +1,7 @@
-module App.Logger where
+module App.Logger (Priority(..), LoggerHandler(..), LoggerEntry,
+logDebug, logInfo, logWarning, logError, logFatal,
+stdCondHandler, LoggerConfig(..), stdHandler, withSelfSufficientLogger
+) where
 
 import Control.Monad (unless, when)
 import qualified Control.Monad.Catch as C

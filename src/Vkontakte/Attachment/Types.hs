@@ -2,7 +2,13 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DerivingVia #-}
 
-module Vkontakte.Attachment.Types where
+module Vkontakte.Attachment.Types (
+VkAttachment(..),
+VkAttMessageSendable(..),
+VkAttsPartition(..),
+nullPartition,
+VkSticker(..)
+) where
 
 import Control.Applicative ((<|>))
 import Data.Aeson.Types ((.:), (.:?))

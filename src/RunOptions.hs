@@ -1,6 +1,10 @@
 {-# LANGUAGE DeriveGeneric #-}
 
-module RunOptions where
+module RunOptions (RunOptions(..),
+getOptsIO,
+ghciRunOpts,
+toLoggerFilter
+) where
 
 import qualified App.Logger as L
 import qualified Data.Text as T

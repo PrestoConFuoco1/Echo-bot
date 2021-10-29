@@ -1,7 +1,7 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeApplications #-}
 
-module Execute where
+module Execute (execute) where
 
 import qualified App.Handle as D
 import BotTypesClass.ClassTypes (BotClassTypes (..))

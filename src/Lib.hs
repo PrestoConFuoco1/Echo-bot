@@ -27,7 +27,6 @@ import qualified GenericPretty as GP
 import RunOptions (RunOptions (..), getOptsIO, ghciRunOpts, toLoggerFilter)
 import qualified System.Exit as Q (exitSuccess)
 import qualified Messenger as M
-import Config.Types (VkConfig(..), TlConfig(..))
 import qualified Environment as Env
 import Execute.BotClass
 
@@ -90,7 +89,7 @@ instance BotRun 'M.Vkontakte where
 mainAction :: forall s. (BotRun s) => L.LoggerHandler IO -> Env.EnvironmentCommon -> Conf s -> IO ()
 mainAction logger env conf = do
     resources <- initResources @s logger env conf
-    forever resources action
+    _ <- forever resources action
     pure ()
 
   where

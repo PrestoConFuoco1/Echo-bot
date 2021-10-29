@@ -12,11 +12,7 @@ module App.Handle.Vkontakte (
 import qualified App.Handle as D
 import qualified App.Logger as L
 import BotTypesClass.VkInstance ()
-import qualified Control.Monad.Catch as C
-  ( Handler (..),
-    SomeException,
-    displayException,
-  )
+import qualified Control.Monad.Catch as C (Handler (..))
 import Data.Aeson (decode)
 import Data.Aeson.Types ((.:))
 import qualified Data.Aeson.Types as AeT
@@ -29,19 +25,16 @@ import qualified Data.Map as M
 import qualified Data.Text as T (Text, pack)
 import GHC.Generics (Generic)
 import GenericPretty as GP
-import qualified HTTP.Send as H
-import qualified HTTP.Types as H
+import qualified HTTP.Send as HS
+import qualified HTTP.Types as HT
 import qualified System.Exit as Q (ExitCode (..), exitWith)
 import System.Random (newStdGen)
 import qualified Messenger as M
-import Vkontakte
+import Vkontakte (VkUser(..), defaultVkParams')
 import qualified Vkontakte.Exceptions as VkEx
-import qualified HTTP.Vkontakte as G
+import qualified HTTP.Vkontakte as HV
 import Config.Types (VkConfig(..))
 import qualified Environment as Env
-import qualified Data.Text as T (Text)
-import GHC.Generics (Generic)
-import GenericPretty (PrettyShow)
 import System.Random (randomR, StdGen)
 
 
@@ -117,11 +110,11 @@ resourcesToHandle resources logger =
         \u ->
           M.lookup u
             <$> readIORef (usersMap resources),
-      D.getUpdates = G.getUpdates logger,
-      D.sendEcho = G.sendThis logger,
-      D.sendHelp = G.sendThis logger,
-      D.sendKeyboard = G.sendThis logger,
-      D.sendRepNumMessage = G.sendThis logger,
+      D.getUpdates = HV.getUpdates logger,
+      D.sendEcho = HV.sendThis logger,
+      D.sendHelp = HV.sendThis logger,
+      D.sendKeyboard = HV.sendThis logger,
+      D.sendRepNumMessage = HV.sendThis logger,
       D.specH = resourcesToVkHandler resources logger
     }
 
@@ -167,16 +160,6 @@ vkErrorHandlers logger conf resources =
   [ C.Handler $ vkServerErrorHandler logger conf resources
   ]
 
-defaultHandler ::
-  L.LoggerHandler IO ->
-  Resources ->
-  C.SomeException ->
-  IO Resources
-defaultHandler logger _ e = do
-  L.logFatal logger "unable to handle exception"
-  L.logFatal logger $ T.pack $ C.displayException e
-  Q.exitWith (Q.ExitFailure 1)
-
 resourcesToVkHandler ::
   Resources -> L.LoggerHandler IO -> VkHandler IO
 resourcesToVkHandler resources _ =
@@ -197,17 +180,17 @@ getLongPollServer ::
 getLongPollServer logger VkConf {..} = do
   let funcName = "vk_initialize: "
       pars =
-        H.unit "group_id" vkConfigGroupID :
+        HT.unit "group_id" vkConfigGroupID :
         defaultVkParams' vkConfigAccessToken vkConfigApiVersion
       initReq =
-        H.Req
-          H.GET
+        HT.Req
+          HT.GET
           (vkConfigUrl <> "groups.getLongPollServer")
           pars
       takesJson = True
   L.logDebug logger $
     funcName <> "sending initialize request"
-  eithInitReply <- H.sendRequest logger takesJson initReq
+  eithInitReply <- HS.sendRequest logger takesJson initReq
   initReply <-
     either (initRequestFail logger) pure eithInitReply
   let eithParsed = parseInitResp initReply
@@ -294,7 +277,7 @@ parseInitResp = eithParsed
 
 
 ----------------- stuff -------------------------------
-defaultVkParams :: VkStateConst -> H.ParamsList
+defaultVkParams :: VkStateConst -> HT.ParamsList
 defaultVkParams sc =
   defaultVkParams' (vkAccessToken sc) (apiVersion sc)
 
