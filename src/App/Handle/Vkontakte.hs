@@ -6,8 +6,7 @@
 {-# LANGUAGE TypeFamilies #-}
 
 module App.Handle.Vkontakte (
-    module App.Handle.Vkontakte,
-    module App.Handle.Internal.Vkontakte
+    VkHandler(..), defaultVkParams, VkStateConst (..), initResources, resourcesToHandle, vkErrorHandlers, Resources (..)
 ) where
 
 import qualified App.Handle as D
@@ -40,18 +39,24 @@ import qualified Vkontakte.Exceptions as VkEx
 import qualified HTTP.Vkontakte as G
 import Config.Types (VkConfig(..))
 import qualified Environment as Env
-import App.Handle.Internal.Vkontakte
+import qualified Data.Text as T (Text)
+import GHC.Generics (Generic)
+import GenericPretty (PrettyShow)
+import System.Random (randomR, StdGen)
 
+
+
+---------- types -----------------------
 instance D.HasBotHandler 'M.Vkontakte where
     type StateC 'M.Vkontakte = VkStateConst
     type StateM 'M.Vkontakte = VkStateMut
     type Hndl 'M.Vkontakte = VkHandler
-
+{-
 data Config = Config
   { configCommonEnv :: Env.EnvironmentCommon,
     configVkontakte :: VkConfig
   }
-
+-}
 data Resources = Resources
   { commonEnv :: Env.EnvironmentCommon,
     constState :: VkStateConst,
@@ -59,8 +64,32 @@ data Resources = Resources
     usersMap :: IORef (M.Map VkUser Int)
   }
 
-initResources :: L.LoggerHandler IO -> Config -> IO Resources
-initResources h (Config common vkConf) = do
+data VkHandler m = VkHandler
+  { getRandomID :: m Integer,
+    getTimestamp :: m T.Text,
+    putTimestamp :: T.Text -> m ()
+  }
+
+data VkStateConst = VKSC
+  { vkKey :: T.Text,
+    vkServer :: T.Text,
+    vkUrl :: T.Text, -- only for methods
+    vkAccessToken :: T.Text,
+    vkGroupID :: Integer,
+    apiVersion :: T.Text
+  }
+  deriving stock (Show, Eq, Generic)
+  deriving anyclass (PrettyShow)
+
+data VkStateMut = VKSM
+  { vkTs :: T.Text, -- timestamp
+    vkRndGen :: StdGen
+  }
+  deriving stock (Show)
+
+------------------------- IO -------------------------------
+initResources :: L.LoggerHandler IO -> Env.EnvironmentCommon -> VkConfig -> IO Resources
+initResources h common vkConf = do
   (sc, sm) <- initialize h vkConf
   umap <- newIORef M.empty
   mut <- newIORef sm
@@ -96,15 +125,15 @@ resourcesToHandle resources logger =
       D.specH = resourcesToVkHandler resources logger
     }
 
-vkErrorHandler ::
+vkServerErrorHandler ::
   L.LoggerHandler IO ->
   VkConfig ->
   Resources ->
   VkEx.VkException ->
   IO Resources
-vkErrorHandler logger conf resources VkEx.KeyOutOfDateGetNew =
+vkServerErrorHandler logger conf resources VkEx.KeyOutOfDateGetNew =
   getNewKey logger conf resources
-vkErrorHandler logger conf resources VkEx.KeyAndTsLosedGetNew =
+vkServerErrorHandler logger conf resources VkEx.KeyAndTsLosedGetNew =
   getNewKeyAndTs logger conf resources
 
 modifyKey :: T.Text -> Resources -> Resources
@@ -129,13 +158,13 @@ getNewKeyAndTs logger config resources = do
   let resources' = resources {mutState = smRef'}
   pure $ modifyKey (initKey initData) resources'
 
-vkHandlers ::
+vkErrorHandlers ::
   L.LoggerHandler IO ->
   VkConfig ->
   Resources ->
   [C.Handler IO Resources]
-vkHandlers logger conf resources =
-  [ C.Handler $ vkErrorHandler logger conf resources
+vkErrorHandlers logger conf resources =
+  [ C.Handler $ vkServerErrorHandler logger conf resources
   ]
 
 defaultHandler ::
@@ -202,7 +231,8 @@ initialize logger conf@(VkConf {..}) = do
   initRndNum <- newStdGen
   pure
     ( VKSC
-        { vkKey = initKey initData,
+        --{ vkKey = initKey initData,
+        { vkKey = "hahahah",
           vkServer = initServer initData,
           vkUrl = vkConfigUrl,
           vkAccessToken = vkConfigAccessToken,
@@ -262,8 +292,25 @@ parseInitResp = eithParsed
     eithParsed x =
       initReplyToJSON x >>= AeT.parseEither parseInitRep
 
+
+----------------- stuff -------------------------------
 defaultVkParams :: VkStateConst -> H.ParamsList
 defaultVkParams sc =
   defaultVkParams' (vkAccessToken sc) (apiVersion sc)
+
+------------------ pure handler functions ----------------
+getRandomIDPure :: VkStateMut -> (VkStateMut, Integer)
+getRandomIDPure sm =
+  let (rndInt32, g') =
+        randomR (0 :: Integer, 2 ^ (32 - 1 :: Int)) $
+          vkRndGen sm
+   in (sm {vkRndGen = g'}, rndInt32)
+
+putTimestampPure :: T.Text -> VkStateMut -> VkStateMut
+putTimestampPure newTs sm = sm {vkTs = newTs}
+
+getTimestampPure :: VkStateMut -> T.Text
+getTimestampPure = vkTs
+
 
 

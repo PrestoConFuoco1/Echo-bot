@@ -26,11 +26,10 @@ source-repository head
 library
   exposed-modules:
       App.Handle
-      App.Handle.Internal.Telegram
-      App.Handle.Internal.Vkontakte
       App.Handle.Telegram
       App.Handle.Vkontakte
       App.Logger
+      App.Tmp
       BotTypesClass.ClassTypes
       BotTypesClass.TelegramInstance
       BotTypesClass.VkInstance

@@ -18,6 +18,7 @@ class HasBotHandler (s :: M.Messenger) where
     type StateM s :: *
     type Hndl s :: (* -> *) -> *
 
+
 data BotHandler s m = BotHandler
   { log :: L.LoggerHandler m,
     commonEnv :: Env.EnvironmentCommon,

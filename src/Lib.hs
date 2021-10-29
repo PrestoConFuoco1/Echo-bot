@@ -3,6 +3,7 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE TypeFamilies #-}
 
 module Lib
   ( main,
@@ -28,6 +29,7 @@ import qualified System.Exit as Q (exitSuccess)
 import qualified Messenger as M
 import Config.Types (VkConfig(..), TlConfig(..))
 import qualified Environment as Env
+import Execute.BotClass
 
 ghciMain :: M.Messenger -> IO () -- for ghci
 ghciMain m =
@@ -43,16 +45,12 @@ main = do
 runWithOpts :: RunOptions -> IO ()
 runWithOpts opts =
   case messenger opts of
-    M.Telegram -> runBotWithOpts @'M.Telegram opts telegramAction
-    M.Vkontakte -> runBotWithOpts @'M.Vkontakte opts vkAction
+    M.Telegram -> runBotWithOpts @'M.Telegram opts
+    M.Vkontakte -> runBotWithOpts @'M.Vkontakte opts
 
-runBotWithOpts ::
-  forall s.
-  (BotConfigurable s) =>
-  RunOptions ->
-  (L.LoggerHandler IO -> Env.EnvironmentCommon -> Conf s -> IO ()) ->
-  IO ()
-runBotWithOpts opts todo = do
+
+runBotWithOpts :: forall s. (BotRun s) => RunOptions -> IO ()
+runBotWithOpts opts = do
   let configLogger =
         L.stdCondHandler $ toLoggerFilter $ loggerSettings opts
       loggerConfig =
@@ -68,56 +66,43 @@ runBotWithOpts opts todo = do
     "Successfully got bot configuration."
   when (testConfig opts) Q.exitSuccess
   L.withSelfSufficientLogger loggerConfig $ \logger ->
-    todo logger gen conf `C.catch` defaultHandler logger
+    mainAction @s logger gen conf `C.catch` defaultHandler logger
 
-telegramAction ::
-  L.LoggerHandler IO -> Env.EnvironmentCommon -> TlConfig -> IO ()
-telegramAction logger gen tlConf = do
-  let tlConfig = T.Config gen tlConf
-  resources <- T.initResources logger tlConfig
-  _ <-
-    forever resources $
-      mainLoop
-        tlConf
-        (`T.resourcesToHandle` logger)
-        D.log
-        T.tlHandlers
-        (execute @'M.Telegram)
-  pure ()
+class (BotConfigurable s, BotClass s) => BotRun s where
+    type Resources s :: *
+    initResources :: L.LoggerHandler IO -> Env.EnvironmentCommon -> Conf s -> IO (Resources s)
+    resourcesToHandler :: Resources s -> L.LoggerHandler IO -> BotHandler s IO
+    errorHandlers :: L.LoggerHandler IO -> Conf s -> Resources s -> [C.Handler IO (Resources s)]
 
-vkAction ::
-  L.LoggerHandler IO -> Env.EnvironmentCommon -> VkConfig -> IO ()
-vkAction logger gen vkConf = do
-  let vkConfig = V.Config gen vkConf
-  resources <- V.initResources logger vkConfig
-  _ <-
-    forever resources $
-      mainLoop
-        vkConf
-        (`V.resourcesToHandle` logger)
-        D.log
-        V.vkHandlers
-        (execute @'M.Vkontakte)
-  pure ()
+instance BotRun 'M.Telegram where
+    type Resources 'M.Telegram = T.Resources
+    initResources = T.initResources
+    resourcesToHandler = T.resourcesToHandle
+    errorHandlers = T.tlErrorHandlers
+
+instance BotRun 'M.Vkontakte where
+    type Resources 'M.Vkontakte = V.Resources
+    initResources = V.initResources
+    resourcesToHandler = V.resourcesToHandle
+    errorHandlers = V.vkErrorHandlers
+
+
+mainAction :: forall s. (BotRun s) => L.LoggerHandler IO -> Env.EnvironmentCommon -> Conf s -> IO ()
+mainAction logger env conf = do
+    resources <- initResources @s logger env conf
+    forever resources action
+    pure ()
+
+  where
+    action :: Resources s -> IO (Resources s)
+    action res = do
+        let handle = resourcesToHandler @s res logger
+        (execute handle >> pure res) `C.catches` errorHandlers @s logger conf res
 
 forever :: a -> (a -> IO a) -> IO a
 forever res action = do
   res' <- action res
   forever res' action
-
-mainLoop ::
-  d -> -- config
-  (a -> b) -> -- resources to handlers
-  (b -> L.LoggerHandler IO) -> -- handlers to logger
-  (L.LoggerHandler IO -> d -> a -> [C.Handler IO a]) -> -- error handlers
-  (b -> IO ()) -> -- handlers to execute-action
-  a -> -- resources
-  IO a
-mainLoop conf resourcesToHandles toLogger errorHandlers action resources = do
-  let handle = resourcesToHandles resources
-      logger = toLogger handle
-  (action handle >> pure resources)
-    `C.catches` errorHandlers logger conf resources
 
 defaultHandler :: L.LoggerHandler IO -> C.SomeException -> IO a
 defaultHandler h e = do
