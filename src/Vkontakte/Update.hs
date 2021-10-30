@@ -7,7 +7,7 @@ module Vkontakte.Update
     , VkUpdate(..)
     , VkUpdateReplyError(..)
     , VkUpdateReplySuccess(..)
-    , parseUpdatesResponse2
+    , parseUpdatesResponse
     , VkEvent(..)
     ) where
 
@@ -54,33 +54,44 @@ data VkUpdateReplyError =
   deriving  (Show, Eq, Generic)
   deriving anyclass (PrettyShow)
 
-parseUpdatesResponse2 ::
+parseUpdatesResponse ::
        AeT.Value
     -> Either String (Either VkUpdateReplyError VkUpdateReplySuccess)
-parseUpdatesResponse2 =
+parseUpdatesResponse =
     AeT.parseEither $
     AeT.withObject "M.Vkontakte update object" $ \o -> do
-        ts <-
-            asum
-                [ o .:? "ts"
-                , fmap
-                      (fmap S.showT)
-                      (o .:? "ts" :: AeT.Parser (Maybe Integer))
-                ]
-        let success = do
-                updates <- o .: "updates"
-                pure $
-                    VkUpdateReplySuccess
-                        { replysuccessUpdates = updates
-                        , replysuccessTs = ts
-                        }
-            err = do
-                failed <- o .: "failed"
-                pure $
-                    VkUpdateReplyError
-                        {replyerrorFailed = failed, replyerrorTs = ts}
+        ts <- getTimestamp o
+        let success = parseUpdateReplySuccess ts o
+            err = parseUpdateReplyError ts o
         asum [fmap Right success, fmap Left err]
 
+getTimestamp :: AeT.Object -> AeT.Parser (Maybe T.Text)
+getTimestamp o =
+    asum
+        [ o .:? "ts"
+          , fmap
+                (fmap S.showT)
+                (o .:? "ts" :: AeT.Parser (Maybe Integer))
+        ]
+
+parseUpdateReplyError :: Maybe T.Text -> AeT.Object -> AeT.Parser VkUpdateReplyError
+parseUpdateReplyError ts o = do
+    failed <- o .: "failed"
+    pure $
+        VkUpdateReplyError {
+            replyerrorFailed = failed
+            , replyerrorTs = ts
+        }
+ 
+parseUpdateReplySuccess :: Maybe T.Text -> AeT.Object -> AeT.Parser VkUpdateReplySuccess
+parseUpdateReplySuccess ts o = do
+    updates <- o .: "updates"
+    pure $
+        VkUpdateReplySuccess
+            { replysuccessUpdates = updates
+            , replysuccessTs = ts
+            }
+ 
 data VkUpdate =
     VkUpdate
         { updateValue :: AeT.Value

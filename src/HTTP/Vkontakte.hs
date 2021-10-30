@@ -15,8 +15,8 @@ import Vkontakte.Update
     ( VkReply
     , VkUpdateReplyError
     , VkUpdateReplySuccess
-    , parseUpdatesResponse2
     )
+import qualified Vkontakte.Update as VU (parseUpdatesResponse)
 
 parseUpdatesResponse ::
        BSL.ByteString
@@ -28,7 +28,7 @@ parseUpdatesResponse resp -- Either
             (Left "Couldn't parse updates response into aeson Value")
             Right $
         Ae.decode resp
-    parseUpdatesResponse2 val
+    VU.parseUpdatesResponse val
 
 getUpdates ::
        L.LoggerHandler IO

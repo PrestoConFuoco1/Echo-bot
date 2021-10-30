@@ -18,6 +18,8 @@ import Data.Aeson.Types
     , (.:)
     , parseEither
     , withObject
+    , Object
+    , Parser
     )
 import Data.Foldable (asum)
 import qualified Data.Text as T (Text)
@@ -60,20 +62,25 @@ parseUpdatesResponse =
     withObject "M.Telegram updates object" $ \o -> do
         ok <- o .: "ok"
         if ok
-            then do
-                res <- o .: "result"
-                pure $
-                    Right $
-                    TlUpdateReplySuccess {replysuccessResult = res}
-            else do
-                errCode <- o .: "error_code"
-                description <- o .: "description"
-                pure $
-                    Left $
-                    TlUpdateReplyError
-                        { replyerrorErrorCode = errCode
-                        , replyerrorDescription = description
-                        }
+            then Left <$> parseUpdateReplyError o
+            else Right <$> parseUpdateReplySuccess o
+
+parseUpdateReplyError :: Object -> Parser TlUpdateReplyError
+parseUpdateReplyError o = do
+    errCode <- o .: "error_code"
+    description <- o .: "description"
+    pure $
+        TlUpdateReplyError
+            { replyerrorErrorCode = errCode
+            , replyerrorDescription = description
+            }
+
+parseUpdateReplySuccess :: Object -> Parser TlUpdateReplySuccess
+parseUpdateReplySuccess o = do
+    res <- o .: "result"
+    pure $
+        TlUpdateReplySuccess {replysuccessResult = res}
+
 
 data TlUpdate =
     TlUpdate

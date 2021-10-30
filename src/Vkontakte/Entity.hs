@@ -5,7 +5,7 @@
 
 module Vkontakte.Entity
     ( VkMessage(..)
-    , VkChat
+    , VkChat(..)
     , VkUser(..)
     , VkMyCallback(..)
     , VkPayload(..)
