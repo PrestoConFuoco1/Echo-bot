@@ -4,7 +4,6 @@
 module Execute.BotClass
     ( BotClassUtility(..)
     , BotClass(..)
-    , buildHTTP
     ) where
 
 import qualified App.Handle as D
@@ -13,9 +12,6 @@ import qualified Control.Monad.Catch as C
 import Data.Aeson (Value)
 import qualified Data.Text as T (Text)
 import qualified HTTP.Types as H
-
-buildHTTP :: T.Text -> (T.Text, H.ParamsList) -> H.HTTPRequest
-buildHTTP url (method, params) = H.Req H.POST (url <> method) params
 
 class (BotClassTypes s) => BotClassUtility s where
     getResult :: RepSucc s -> Maybe Value
