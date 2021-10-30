@@ -30,7 +30,7 @@ execute h = do
     S.withEither eithResp respParseFail $ \resp' -> do
         D.logDebug h $
             funcName <> "got and successfully parsed server reply:"
-        D.logDebug h $ T.pack $ GP.defaultPretty resp'
+        D.logDebug h $ GP.textPretty resp'
         case resp' of
             Left updErr -> handleFailedUpdatesRequest h updErr
             Right resp -> handleUpdatesSuccess h resp
@@ -87,7 +87,7 @@ singleUpdateParseFail h (u, e) = do
     D.logError h $
         funcName <>
         "Failed to parse update: <" <> T.pack e <> ">, update is:"
-    D.logError h $ GP.defaultPrettyT u
+    D.logError h $ GP.textPretty u
 
 attachErrorReason :: (a -> Either b c) -> a -> Either (a, b) c
 attachErrorReason f x =

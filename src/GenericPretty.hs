@@ -5,13 +5,13 @@
 module GenericPretty
     ( PrettyShow(..)
     , Showable(..)
+    , StrWrap(..)
     , genericPrettyShow
     , defaultOptionsL
     , consModifier
-    , LayoutValue(..)
+    , LayoutValue
     , defaultPretty
     , textPretty
-    , defaultPrettyT
     ) where
 
 import Data.Aeson (encode)
@@ -62,6 +62,9 @@ data LayoutValue
     | LJSON String
   deriving (Show, Eq)
 
+layoutStr :: String -> LayoutValue
+layoutStr = LStr
+
 newtype Layout =
     Layout [LayoutUnit]
   deriving (Show, Eq)
@@ -94,9 +97,6 @@ withIndent ind str = numToIndent ind ++ str
 
 defaultPretty :: (PrettyShow a) => a -> String
 defaultPretty x = prettyValue 0 (prettyShow x)
-
-defaultPrettyT :: (PrettyShow a) => a -> T.Text
-defaultPrettyT = T.pack . defaultPretty
 
 textPretty :: (PrettyShow a) => a -> T.Text
 textPretty = T.pack . defaultPretty

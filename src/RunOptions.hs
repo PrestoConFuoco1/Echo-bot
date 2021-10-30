@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DerivingVia #-}
 
 module RunOptions
     ( RunOptions(..)
@@ -18,9 +19,7 @@ data LoggerSettings
     = LogAll
     | LogGreaterThan L.Priority
   deriving (Show, Eq)
-
-instance P.PrettyShow LoggerSettings where
-    prettyShow = P.LStr . show
+  deriving P.PrettyShow via P.Showable LoggerSettings
 
 toLoggerFilter :: LoggerSettings -> (L.Priority -> Bool)
 toLoggerFilter LogAll = const True

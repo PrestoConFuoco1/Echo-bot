@@ -32,7 +32,7 @@ handleUpdate h u =
         ET.ECallback callback -> handleCallback h callback
         ET.EError err -> do
             D.logError h "handleUpdate: unexpected update type"
-            D.logError h $ GP.defaultPrettyT err
+            D.logError h $ GP.textPretty err
 
 defineUpdateType ::
        forall s m. (BotClass s)
@@ -78,22 +78,20 @@ defineCallbackType ::
     => CallbackQuery s
     -> ET.CallbQuery (User s) (Chat s)
 defineCallbackType callback =
-    let user = getCallbackUser @s callback
+    let noCallbackMsg = "No callback data found, unable to respond."
+        expectedNumberMsg = "Expected number after \"set\" command."
+        unknownCallbackQueryMsg = "Unknown callback query"
+        user = getCallbackUser @s callback
         mData = getCallbackData @s callback
         mChat = getCallbackChat @s callback
         eithSetN = do
             dat <-
-                maybe
-                    (Left "No callback data found, unable to respond.")
-                    Right
-                    mData
+                maybe (Left noCallbackMsg) Right mData
             case T.words dat of
                 ("set":num:_) ->
-                    maybe
-                        (Left "Expected number after \"set\" command.")
-                        Right
+                    maybe (Left expectedNumberMsg) Right
                         (readMaybe $ T.unpack num :: Maybe Int)
-                _ -> Left "Unknown callback query"
+                _ -> Left unknownCallbackQueryMsg
      in either ET.CError id $
         asum [ET.CSetRepNum user mChat <$> eithSetN]
 
@@ -233,7 +231,7 @@ handleMessage h m = do
     mReqFunc <- processMessage h m
     S.withMaybe mReqFunc (pure ()) $ \req -> do
         D.logDebug h $ funcName <> "sending some copies of message"
-        D.logDebug h $ T.pack $ GP.defaultPretty m
+        D.logDebug h $ GP.textPretty m
         sendNTimes @s h maybeUser req
 
 sendNTimes ::
@@ -260,3 +258,4 @@ validateRepNum x
     | x > maxRepNum = maxRepNum
     | x < minRepNum = minRepNum
     | otherwise = x
+

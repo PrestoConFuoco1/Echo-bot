@@ -81,7 +81,7 @@ handleFailedUpdatesRequestTl ::
 handleFailedUpdatesRequestTl h err = do
     let funcName = "tl_handleFailedUpdatesRequest: "
     D.logError h $ funcName <> "got telegram error"
-    D.logError h $ GP.defaultPrettyT err
+    D.logError h $ GP.textPretty err
     D.logError h $ funcName <> "unable to handle any telegram errors"
     C.throwM Ex.UnableToHandleError
 
@@ -135,7 +135,7 @@ epilogueTl h us _ = do
     stmMediaGroups <- HT.getMediaGroups (D.specH h)
     D.logDebug h $
         funcName <> "ready to process some media groups, if any"
-    D.logDebug h $ GP.defaultPrettyT stmMediaGroups
+    D.logDebug h $ GP.textPretty stmMediaGroups
     mapM_ (sendMediaGroup h) stmMediaGroups
     HT.purgeMediaGroups (D.specH h)
 

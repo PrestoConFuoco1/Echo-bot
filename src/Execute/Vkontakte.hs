@@ -116,7 +116,7 @@ handleFailedUpdatesRequestVk h e@(VkUpdateReplyError {..}) =
                     D.logFatal
                         h
                         "failed to get updates and unable to handle error"
-                    D.logFatal h $ defaultPrettyT e
+                    D.logFatal h $ textPretty e
                     C.throwM Ex.UnableToHandleError
 
 sendTextMsgVk ::

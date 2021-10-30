@@ -190,7 +190,7 @@ getLongPollServer logger VkConf {..} = do
     initData <-
         either (initRequestParseFail logger initReply) pure eithParsed
     L.logDebug logger $ funcName <> "received initial vk api data"
-    L.logDebug logger $ funcName <> GP.defaultPrettyT initData
+    L.logDebug logger $ funcName <> GP.textPretty initData
     pure initData
 
 initialize ::
