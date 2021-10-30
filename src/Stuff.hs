@@ -16,7 +16,7 @@ type Timeout = Integer
 
 --------------------------------------------
 safeHead :: [a] -> Maybe a
-safeHead (x : _) = Just x
+safeHead (x:_) = Just x
 safeHead _ = Nothing
 
 emptyToNothing :: Maybe T.Text -> Maybe T.Text
@@ -37,8 +37,8 @@ withMaybe :: Maybe a -> b -> (a -> b) -> b
 withMaybe m nothing just = maybe nothing just m
 
 removeTwoUnderscores :: String -> String
-removeTwoUnderscores x@('_' : ys) =
-  case dropWhile (/= '_') ys of
-    ('_' : zs) -> zs
-    _ -> x
+removeTwoUnderscores x@('_':ys) =
+    case dropWhile (/= '_') ys of
+        ('_':zs) -> zs
+        _ -> x
 removeTwoUnderscores x = x

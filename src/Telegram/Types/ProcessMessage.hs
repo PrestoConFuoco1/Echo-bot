@@ -3,139 +3,153 @@
 {-# LANGUAGE DerivingVia #-}
 
 module Telegram.Types.ProcessMessage
-  ( TlAnimation (..),
-    TlAudio (..),
-    TlDocument (..),
-    TlPhotoSize (..),
-    TlSticker (..),
-    TlVideo (..),
-    TlVideoNote (..),
-    TlVoice (..),
-    TlContact (..),
-    TlDice (..),
-    TlPoll (..),
-    TlVenue (..),
-    TlLocation (..),
-    TlPollOption (..),
-  )
-where
+    ( TlAnimation(..)
+    , TlAudio(..)
+    , TlDocument(..)
+    , TlPhotoSize(..)
+    , TlSticker(..)
+    , TlVideo(..)
+    , TlVideoNote(..)
+    , TlVoice(..)
+    , TlContact(..)
+    , TlDice(..)
+    , TlPoll(..)
+    , TlVenue(..)
+    , TlLocation(..)
+    , TlPollOption(..)
+    ) where
 
-import Data.Aeson.Types (FromJSON (..), ToJSON (..))
+import Data.Aeson.Types (FromJSON(..), ToJSON(..))
 import qualified Data.Text as T (Text)
-import DerivingJSON (BotSelectorModifier (..))
+import DerivingJSON (BotSelectorModifier(..))
 import GHC.Generics (Generic)
 import GenericPretty (PrettyShow)
 
-data TlSticker = TlSticker
-  { stickerFileID :: T.Text,
-    stickerFileUniqueID :: T.Text,
-    stickerWidth :: Int,
-    stickerHeight :: Int,
-    stickerIsAnimated :: Bool
-  }
-  deriving stock (Show, Eq, Generic)
+data TlSticker =
+    TlSticker
+        { stickerFileID :: T.Text
+        , stickerFileUniqueID :: T.Text
+        , stickerWidth :: Int
+        , stickerHeight :: Int
+        , stickerIsAnimated :: Bool
+        }
+  deriving  (Show, Eq, Generic)
+  deriving anyclass (PrettyShow)
   deriving (ToJSON, FromJSON) via BotSelectorModifier TlSticker
-  deriving anyclass (PrettyShow)
 
-newtype TlAudio = TlAudio
-  { audioFileID :: T.Text
-  }
-  deriving stock (Show, Eq, Generic)
+newtype TlAudio =
+    TlAudio
+        { audioFileID :: T.Text
+        }
+  deriving  (Show, Eq, Generic)
+  deriving anyclass (PrettyShow)
   deriving (FromJSON) via BotSelectorModifier TlAudio
-  deriving anyclass (PrettyShow)
 
-newtype TlDocument = TlDocument
-  { documentFileID :: T.Text
-  }
-  deriving stock (Show, Eq, Generic)
+newtype TlDocument =
+    TlDocument
+        { documentFileID :: T.Text
+        }
+  deriving  (Show, Eq, Generic)
+  deriving anyclass (PrettyShow)
   deriving (FromJSON) via BotSelectorModifier TlDocument
-  deriving anyclass (PrettyShow)
 
-newtype TlPhotoSize = TlPhotoSize
-  { photosizeFileID :: T.Text
-  }
-  deriving stock (Show, Eq, Generic)
+newtype TlPhotoSize =
+    TlPhotoSize
+        { photosizeFileID :: T.Text
+        }
+  deriving  (Show, Eq, Generic)
+  deriving anyclass (PrettyShow)
   deriving (FromJSON) via BotSelectorModifier TlPhotoSize
-  deriving anyclass (PrettyShow)
 
-newtype TlVideo = TlVideo
-  { videoFileID :: T.Text
-  }
-  deriving stock (Show, Eq, Generic)
+newtype TlVideo =
+    TlVideo
+        { videoFileID :: T.Text
+        }
+  deriving  (Show, Eq, Generic)
+  deriving anyclass (PrettyShow)
   deriving (FromJSON) via BotSelectorModifier TlVideo
-  deriving anyclass (PrettyShow)
 
-newtype TlAnimation = TlAnimation
-  { animationFileID :: T.Text
-  }
-  deriving stock (Show, Eq, Generic)
+newtype TlAnimation =
+    TlAnimation
+        { animationFileID :: T.Text
+        }
+  deriving  (Show, Eq, Generic)
+  deriving anyclass (PrettyShow)
   deriving (FromJSON) via BotSelectorModifier TlAnimation
-  deriving anyclass (PrettyShow)
 
-newtype TlVoice = TlVoice
-  { voiceFileID :: T.Text
-  }
-  deriving stock (Show, Eq, Generic)
+newtype TlVoice =
+    TlVoice
+        { voiceFileID :: T.Text
+        }
+  deriving  (Show, Eq, Generic)
+  deriving anyclass (PrettyShow)
   deriving (FromJSON) via BotSelectorModifier TlVoice
-  deriving anyclass (PrettyShow)
 
-newtype TlVideoNote = TlVideoNote
-  { videonoteFileID :: T.Text
-  }
-  deriving stock (Show, Eq, Generic)
+newtype TlVideoNote =
+    TlVideoNote
+        { videonoteFileID :: T.Text
+        }
+  deriving  (Show, Eq, Generic)
+  deriving anyclass (PrettyShow)
   deriving (FromJSON) via BotSelectorModifier TlVideoNote
-  deriving anyclass (PrettyShow)
 
-data TlLocation = TlLocation
-  { locationLongitude :: Double,
-    locationLatitude :: Double
-  }
-  deriving stock (Show, Eq, Generic)
+data TlLocation =
+    TlLocation
+        { locationLongitude :: Double
+        , locationLatitude :: Double
+        }
+  deriving  (Show, Eq, Generic)
+  deriving anyclass (PrettyShow)
   deriving (FromJSON) via BotSelectorModifier TlLocation
-  deriving anyclass (PrettyShow)
 
-data TlVenue = TlVenue
-  { venueLocation :: TlLocation,
-    venueTitle :: T.Text,
-    venueAddress :: T.Text
-  }
-  deriving stock (Show, Eq, Generic)
+data TlVenue =
+    TlVenue
+        { venueLocation :: TlLocation
+        , venueTitle :: T.Text
+        , venueAddress :: T.Text
+        }
+  deriving  (Show, Eq, Generic)
+  deriving anyclass (PrettyShow)
   deriving (FromJSON) via BotSelectorModifier TlVenue
-  deriving anyclass (PrettyShow)
 
-data TlContact = TlContact
-  { contactPhoneNumber :: T.Text,
-    contactFirstName :: T.Text,
-    contactLastName :: Maybe T.Text,
-    contactUserID :: Maybe Integer,
-    contactVcard :: Maybe T.Text
-  }
-  deriving stock (Show, Eq, Generic)
+data TlContact =
+    TlContact
+        { contactPhoneNumber :: T.Text
+        , contactFirstName :: T.Text
+        , contactLastName :: Maybe T.Text
+        , contactUserID :: Maybe Integer
+        , contactVcard :: Maybe T.Text
+        }
+  deriving  (Show, Eq, Generic)
+  deriving anyclass (PrettyShow)
   deriving (FromJSON) via BotSelectorModifier TlContact
-  deriving anyclass (PrettyShow)
 
-data TlPollOption = TlPollOptions
-  { polloptionText :: T.Text,
-    polloptionVoterCount :: Int
-  }
-  deriving stock (Show, Eq, Generic)
+data TlPollOption =
+    TlPollOptions
+        { polloptionText :: T.Text
+        , polloptionVoterCount :: Int
+        }
+  deriving  (Show, Eq, Generic)
+  deriving anyclass (PrettyShow)
   deriving (FromJSON) via BotSelectorModifier TlPollOption
-  deriving anyclass (PrettyShow)
 
-data TlPoll = TlPoll
-  { pollID :: T.Text,
-    pollQuestion :: T.Text,
-    pollOptions :: [TlPollOption],
-    pollTotalVoterCount :: Int
-  }
-  deriving stock (Show, Eq, Generic)
+data TlPoll =
+    TlPoll
+        { pollID :: T.Text
+        , pollQuestion :: T.Text
+        , pollOptions :: [TlPollOption]
+        , pollTotalVoterCount :: Int
+        }
+  deriving  (Show, Eq, Generic)
+  deriving anyclass (PrettyShow)
   deriving (FromJSON) via BotSelectorModifier TlPoll
-  deriving anyclass (PrettyShow)
 
-data TlDice = TlDice
-  { diceEmoji :: T.Text,
-    diceValue :: Int
-  }
-  deriving stock (Show, Eq, Generic)
+data TlDice =
+    TlDice
+        { diceEmoji :: T.Text
+        , diceValue :: Int
+        }
+  deriving  (Show, Eq, Generic)
   deriving (FromJSON) via BotSelectorModifier TlDice
   deriving anyclass (PrettyShow)
+

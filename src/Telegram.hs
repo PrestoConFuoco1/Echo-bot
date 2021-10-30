@@ -1,8 +1,7 @@
 module Telegram
-  ( module T,
-    tlTakesJSON,
-  )
-where
+    ( module T
+    , tlTakesJSON
+    ) where
 
 import Telegram.EchoMessage as T
 import Telegram.Exceptions as T

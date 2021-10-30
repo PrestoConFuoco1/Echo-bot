@@ -1,12 +1,11 @@
 {-# LANGUAGE DeriveGeneric #-}
 
 module RunOptions
-  ( RunOptions (..),
-    getOptsIO,
-    ghciRunOpts,
-    toLoggerFilter,
-  )
-where
+    ( RunOptions(..)
+    , getOptsIO
+    , ghciRunOpts
+    , toLoggerFilter
+    ) where
 
 import qualified App.Logger as L
 import qualified Data.Text as T
@@ -16,24 +15,25 @@ import qualified Messenger as M
 import Options.Applicative
 
 data LoggerSettings
-  = LogAll
-  | LogGreaterThan L.Priority
+    = LogAll
+    | LogGreaterThan L.Priority
   deriving (Show, Eq)
 
 instance P.PrettyShow LoggerSettings where
-  prettyShow = P.LStr . show
+    prettyShow = P.LStr . show
 
 toLoggerFilter :: LoggerSettings -> (L.Priority -> Bool)
 toLoggerFilter LogAll = const True
 toLoggerFilter (LogGreaterThan pri) = (>= pri)
 
-data RunOptions = RunOptions
-  { confPath :: T.Text,
-    messenger :: M.Messenger,
-    loggerSettings :: LoggerSettings,
-    logPath :: T.Text,
-    testConfig :: Bool
-  }
+data RunOptions =
+    RunOptions
+        { confPath :: T.Text
+        , messenger :: M.Messenger
+        , loggerSettings :: LoggerSettings
+        , logPath :: T.Text
+        , testConfig :: Bool
+        }
   deriving (Show, Eq, Generic)
 
 instance P.PrettyShow RunOptions
@@ -41,47 +41,50 @@ instance P.PrettyShow RunOptions
 --for ghci
 ghciRunOpts :: RunOptions
 ghciRunOpts =
-  RunOptions
-    { confPath = "src/bot.conf",
-      messenger = M.Telegram,
-      loggerSettings = LogAll,
-      logPath = "./log",
-      testConfig = False
-    }
+    RunOptions
+        { confPath = "src/bot.conf"
+        , messenger = M.Telegram
+        , loggerSettings = LogAll
+        , logPath = "./log"
+        , testConfig = False
+        }
 
 getOpts :: Parser RunOptions
 getOpts =
-  RunOptions
-    <$> argument str (metavar "CONFPATH")
-    <*> (vkMessenger <|> telegramMessenger)
-    <*> ( (getLoggerSettings <$> option auto (short 'l' <> metavar "LOGLEVEL" <> help "Log level"))
-            <|> pure LogAll
-        )
-    <*> ( strOption (long "logpath" <> metavar "LOGFILE" <> help "Log path")
-            <|> pure "./log"
-        )
-    <*> switch (long "test-config" <> help "Test configuration")
+    RunOptions <$> argument str (metavar "CONFPATH") <*>
+    (vkMessenger <|> telegramMessenger) <*>
+    ((getLoggerSettings <$>
+      option
+          auto
+          (short 'l' <> metavar "LOGLEVEL" <> help "Log level")) <|>
+     pure LogAll) <*>
+    (strOption
+         (long "logpath" <> metavar "LOGFILE" <> help "Log path") <|>
+     pure "./log") <*>
+    switch (long "test-config" <> help "Test configuration")
 
 botHeader :: String
 botHeader = "Echo-bot for Telegram and Vk"
 
 --botDescription = ""
-
 getOptsIO :: IO RunOptions
 getOptsIO =
-  execParser $
+    execParser $
     info
-      (getOpts <**> helper)
-      ( fullDesc
+        (getOpts <**> helper)
+        (fullDesc
           --    <> progDesc botDescription
-          <> header botHeader
-      )
+          <>
+         header botHeader)
 
 vkMessenger :: Parser M.Messenger
 vkMessenger = flag' M.Vkontakte (long "vk" <> help "Vk bot")
 
 telegramMessenger :: Parser M.Messenger
-telegramMessenger = flag' M.Telegram (long "tl" <> long "telegram" <> help "Telegram bot")
+telegramMessenger =
+    flag'
+        M.Telegram
+        (long "tl" <> long "telegram" <> help "Telegram bot")
 
 getLoggerSettings :: L.Priority -> LoggerSettings
 getLoggerSettings = LogGreaterThan
