@@ -3,7 +3,6 @@ module Vkontakte.Attachment.Functions
     ) where
 
 import qualified App.Logger as L
-import Control.Monad.Writer (Writer, tell)
 import Data.Foldable (asum)
 import qualified Data.Text as T (Text, intercalate, pack)
 import qualified GenericPretty as GP
@@ -11,9 +10,8 @@ import HTTP.Types as H
 import qualified Stuff as S
 import Vkontakte.Attachment.Types
 
-attsToParsVk ::
-       [VkAttachment] -> Writer [L.LoggerEntry] (Maybe H.ParamsList)
-attsToParsVk atts = do
+attsToParsVk :: (Monad m) => L.LoggerHandler m -> [VkAttachment] -> m (Maybe H.ParamsList)
+attsToParsVk logger atts = do
     let part = partitionVkAttachments atts
         messageSendable =
             map encodeVkAtt (pPhotos part) <>
@@ -42,9 +40,8 @@ attsToParsVk atts = do
                     (T.pack . show . length $ xs) <>
                     " unexpected attachments."
     S.withMaybe maybeUnexpectedAttsMsg (pure ()) $ \u -> do
-        tell . (: []) $ (L.Warning, u)
-        let f x = (L.Warning, GP.defaultPrettyT x)
-        tell $ map f unexpList
+        L.logWarning logger u
+        mapM_ (L.logWarning logger . GP.textPretty) unexpList
     pure $ fmap (: []) maybePars
 
 encodeVkAtt :: (VkAttMessageSendable a) => a -> T.Text

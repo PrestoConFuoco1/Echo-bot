@@ -190,7 +190,7 @@ logEither ::
     -> (a -> m ())
     -> Either String a
     -> m ()
-logEither h f = either (D.logError h . T.pack) f
+logEither h = either (D.logError h . T.pack)
 
 sendFixedInfo ::
        (BotClass s, Monad m)

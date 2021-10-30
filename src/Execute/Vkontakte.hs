@@ -11,7 +11,6 @@ import qualified App.Handle as D
 import qualified App.Handle.Vkontakte as HV
 import BotTypesClass.VkInstance ()
 import qualified Control.Monad.Catch as C (MonadThrow, throwM)
-import Control.Monad.Writer (runWriter)
 import Data.Aeson.Types as AeT (parseEither, parseJSON, toJSON)
 import Data.Maybe (fromMaybe, isNothing)
 import qualified Data.Text as T (Text, pack)
@@ -169,9 +168,8 @@ processMessageVk h m
         D.logError h $ funcName <> "Unable to send empty message."
         pure Nothing
     | otherwise = do
-        let (maybePars, toLog) = runWriter $ attsToParsVk atts
         D.logDebug h $ funcName <> "processing vk attachments"
-        mapM_ (D.logEntry h) toLog
+        maybePars <- attsToParsVk (D.log h) atts
         S.withMaybe
             maybeText
             (S.withMaybe
