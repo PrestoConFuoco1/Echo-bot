@@ -14,9 +14,7 @@ class ( GP.PrettyShow (Rep s)
       , GP.PrettyShow (RepSucc s)
       , GP.PrettyShow (RepErr s)
       , GP.PrettyShow (Msg s)
-      ) =>
-      BotClassTypes (s :: M.Messenger)
-    where
+      ) => BotClassTypes (s :: M.Messenger) where
     type Rep s :: *
     type RepSucc s :: *
     type RepErr s :: *

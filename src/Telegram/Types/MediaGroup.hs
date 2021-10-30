@@ -31,7 +31,7 @@ data TlMediaGroupIdentifier =
         , tmgidUser :: Maybe TlUser
         , tmgidMediaGroupID :: T.Text
         }
-  deriving  (Show, Eq, Ord, Generic)
+  deriving (Show, Eq, Ord, Generic)
   deriving anyclass (GP.PrettyShow)
 
 data TlInputMediaPhoto =
@@ -39,7 +39,7 @@ data TlInputMediaPhoto =
         { impCaption :: Maybe T.Text
         , impMedia :: T.Text
         }
-  deriving  (Show, Generic, Eq)
+  deriving (Show, Generic, Eq)
   deriving anyclass (GP.PrettyShow)
 
 instance ToJSON TlInputMediaPhoto where
@@ -55,7 +55,7 @@ data TlInputMediaVideo =
         { imvCaption :: Maybe T.Text
         , imvMedia :: T.Text
         }
-  deriving  (Show, Generic, Eq)
+  deriving (Show, Generic, Eq)
   deriving anyclass (GP.PrettyShow)
 
 instance ToJSON TlInputMediaVideo where
@@ -71,7 +71,7 @@ data TlInputMediaDocument =
         { imdCaption :: Maybe T.Text
         , imdMedia :: T.Text
         }
-  deriving  (Show, Generic, Eq)
+  deriving (Show, Generic, Eq)
   deriving anyclass (GP.PrettyShow)
 
 instance ToJSON TlInputMediaDocument where
@@ -87,7 +87,7 @@ data TlInputMediaAudio =
         { imaudioCaption :: Maybe T.Text
         , imaudioMedia :: T.Text
         }
-  deriving  (Show, Generic, Eq)
+  deriving (Show, Generic, Eq)
   deriving anyclass (GP.PrettyShow)
 
 instance ToJSON TlInputMediaAudio where
@@ -105,7 +105,7 @@ data TlMediaGroupPair =
         { mgpairIdentifier :: TlMediaGroupIdentifier
         , mgpairItems :: [TlMediaGroupUnit]
         }
-  deriving  (Show, Generic)
+  deriving (Show, Generic)
   deriving anyclass (GP.PrettyShow)
 
 data TlMediaGroupUnit
@@ -113,7 +113,7 @@ data TlMediaGroupUnit
     | TlpvVideo TlInputMediaVideo
     | TlpvDocument TlInputMediaDocument
     | TlpvAudio TlInputMediaAudio
-  deriving  (Show, Generic, Eq)
+  deriving (Show, Generic, Eq)
   deriving anyclass (GP.PrettyShow)
 
 instance ToJSON TlMediaGroupUnit where

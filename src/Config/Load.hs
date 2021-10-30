@@ -66,29 +66,21 @@ withDefault ::
 withDefault conf getDefault =
     C.lookupDefault (getDefault Env.defStateGen) conf
 
-
 loadGeneral :: L.LoggerHandler IO -> CT.Config -> IO Env.Environment
 loadGeneral _ conf = do
-    confHelpMsg <-
-        withDefault conf Env.getHelpMessage "help_message"
+    confHelpMsg <- withDefault conf Env.getHelpMessage "help_message"
     confRepQue <-
         withDefault conf Env.getRepeatQuestion "repeat_question"
     confRepNum <- withDefault conf Env.getRepNum "default_repeat_num"
     confTimeout <- withDefault conf Env.getTimeout "timeout"
-    confHelpCmd <-
-        withDefault conf Env.getHelpCommand "help_command"
+    confHelpCmd <- withDefault conf Env.getHelpCommand "help_command"
     confSetRepNumCmd <-
-        withDefault
-            conf
-            Env.getSetRepNumCommand
-            "set_rep_num_command"
+        withDefault conf Env.getSetRepNumCommand "set_rep_num_command"
     let cmds = Env.newEnvCommands confHelpCmd confSetRepNumCmd
         msgs = Env.newEnvMessages confHelpMsg confRepQue
     pure $ Env.newEnvironment confRepNum confTimeout msgs cmds
 
-class (GP.PrettyShow (Conf s)) =>
-      BotConfigurable (s :: M.Messenger)
-    where
+class (GP.PrettyShow (Conf s)) => BotConfigurable (s :: M.Messenger) where
     type Conf s :: *
     loadSpecial :: L.LoggerHandler IO -> CT.Config -> IO (Conf s)
     messagerName :: T.Text
@@ -160,12 +152,12 @@ configHandlers logger =
 terminateAfterHandler ::
        L.LoggerHandler IO -> CMC.Handler IO () -> CMC.Handler IO a
 terminateAfterHandler logger (CMC.Handler g) =
-    let configFailMsg = 
+    let configFailMsg =
             "Failed to get required data from configuration files, terminating..."
      in CMC.Handler $ \e -> do
-        g e
-        L.logFatal logger configFailMsg
-        Q.exitWith (Q.ExitFailure 1)
+            g e
+            L.logFatal logger configFailMsg
+            Q.exitWith (Q.ExitFailure 1)
 
 handleIOError :: L.LoggerHandler IO -> E.IOException -> IO ()
 handleIOError logger exc

@@ -85,11 +85,12 @@ defineCallbackType callback =
         mData = getCallbackData @s callback
         mChat = getCallbackChat @s callback
         eithSetN = do
-            dat <-
-                maybe (Left noCallbackMsg) Right mData
+            dat <- maybe (Left noCallbackMsg) Right mData
             case T.words dat of
                 ("set":num:_) ->
-                    maybe (Left expectedNumberMsg) Right
+                    maybe
+                        (Left expectedNumberMsg)
+                        Right
                         (readMaybe $ T.unpack num :: Maybe Int)
                 _ -> Left unknownCallbackQueryMsg
      in either ET.CError id $
@@ -258,4 +259,3 @@ validateRepNum x
     | x > maxRepNum = maxRepNum
     | x < minRepNum = minRepNum
     | otherwise = x
-

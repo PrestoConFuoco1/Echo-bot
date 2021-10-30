@@ -61,7 +61,7 @@ newtype TlStateConst =
     TSC
         { stcUrl :: T.Text
         }
-  deriving  (Show, Generic)
+  deriving (Show, Generic)
   deriving anyclass (PrettyShow)
 
 data TlStateMut =
@@ -69,7 +69,7 @@ data TlStateMut =
         { stmUpdateID :: Integer
         , stmMediaGroups :: M.Map TlMediaGroupIdentifier [TlMediaGroupUnit]
         }
-  deriving  (Show, Generic)
+  deriving (Show, Generic)
 
 ----------------- IO handler ------------------------
 initResources ::

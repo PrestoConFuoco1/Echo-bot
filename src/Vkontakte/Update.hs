@@ -28,7 +28,7 @@ data VkReply =
         { replyFailed :: Maybe Int
         , replyVal :: AeT.Value
         }
-  deriving  (Eq, Show, Generic)
+  deriving (Eq, Show, Generic)
   deriving anyclass (PrettyShow)
 
 instance AeT.FromJSON VkReply where
@@ -43,7 +43,7 @@ data VkUpdateReplySuccess =
         { replysuccessUpdates :: AeT.Value
         , replysuccessTs :: Maybe T.Text
         }
-  deriving  (Show, Eq, Generic)
+  deriving (Show, Eq, Generic)
   deriving anyclass (PrettyShow)
 
 data VkUpdateReplyError =
@@ -51,7 +51,7 @@ data VkUpdateReplyError =
         { replyerrorFailed :: Int
         , replyerrorTs :: Maybe T.Text
         }
-  deriving  (Show, Eq, Generic)
+  deriving (Show, Eq, Generic)
   deriving anyclass (PrettyShow)
 
 parseUpdatesResponse ::
@@ -69,41 +69,39 @@ getTimestamp :: AeT.Object -> AeT.Parser (Maybe T.Text)
 getTimestamp o =
     asum
         [ o .:? "ts"
-          , fmap
-                (fmap S.showT)
-                (o .:? "ts" :: AeT.Parser (Maybe Integer))
+        , fmap
+              (fmap S.showT)
+              (o .:? "ts" :: AeT.Parser (Maybe Integer))
         ]
 
-parseUpdateReplyError :: Maybe T.Text -> AeT.Object -> AeT.Parser VkUpdateReplyError
+parseUpdateReplyError ::
+       Maybe T.Text -> AeT.Object -> AeT.Parser VkUpdateReplyError
 parseUpdateReplyError ts o = do
     failed <- o .: "failed"
     pure $
-        VkUpdateReplyError {
-            replyerrorFailed = failed
-            , replyerrorTs = ts
-        }
- 
-parseUpdateReplySuccess :: Maybe T.Text -> AeT.Object -> AeT.Parser VkUpdateReplySuccess
+        VkUpdateReplyError
+            {replyerrorFailed = failed, replyerrorTs = ts}
+
+parseUpdateReplySuccess ::
+       Maybe T.Text -> AeT.Object -> AeT.Parser VkUpdateReplySuccess
 parseUpdateReplySuccess ts o = do
     updates <- o .: "updates"
     pure $
         VkUpdateReplySuccess
-            { replysuccessUpdates = updates
-            , replysuccessTs = ts
-            }
- 
+            {replysuccessUpdates = updates, replysuccessTs = ts}
+
 data VkUpdate =
     VkUpdate
         { updateValue :: AeT.Value
         , updateObject :: VkEvent
         }
-  deriving  (Eq, Show)
+  deriving (Eq, Show)
 
 data VkEvent
     = VEMsg VkMessage
     | VECallback VkMyCallback
     | VEUnexpectedEvent
-  deriving  (Eq, Show)
+  deriving (Eq, Show)
 
 instance AeT.FromJSON VkUpdate where
     parseJSON value =

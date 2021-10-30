@@ -62,9 +62,6 @@ data LayoutValue
     | LJSON String
   deriving (Show, Eq)
 
-layoutStr :: String -> LayoutValue
-layoutStr = LStr
-
 newtype Layout =
     Layout [LayoutUnit]
   deriving (Show, Eq)
@@ -121,8 +118,7 @@ prettyLayout ind (Layout ls) = concatMap (prettyUnit ind) ls
 
 class PrettyShow a where
     prettyShow :: a -> LayoutValue
-    default prettyShow :: (Generic a, GPrettyShow (Rep a)) =>
-        a -> LayoutValue
+    default prettyShow :: (Generic a, GPrettyShow (Rep a)) => a -> LayoutValue
     prettyShow = genericPrettyShow defaultOptionsL
 
 genericPrettyShow ::
@@ -180,8 +176,7 @@ instance (PrettyShow a, PrettyShow b) => PrettyShow (Either a b)
 instance (PrettyShow a) => PrettyShow [a] where
     prettyShow [] = LEmpty
     prettyShow xs =
-        LLay "{Array}" $ Layout $ foldr f [] $ zip [0 :: Int ..] xs
-      where
+        LLay "{Array}" $ Layout $ foldr f [] $ zip [0 :: Int ..] xs where
         f (n, x) acc =
             LayoutUnit (encloseSq $ show n) (prettyShow x) : acc
 

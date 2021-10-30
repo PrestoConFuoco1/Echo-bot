@@ -69,9 +69,7 @@ runBotWithOpts opts = do
     L.withSelfSufficientLogger loggerConfig $ \logger ->
         mainAction @s logger gen conf `C.catch` defaultHandler logger
 
-class (BotConfigurable s, BotClass s) =>
-      BotRun s
-    where
+class (BotConfigurable s, BotClass s) => BotRun s where
     type Resources s :: *
     initResources ::
            L.LoggerHandler IO

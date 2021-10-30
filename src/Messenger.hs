@@ -9,6 +9,6 @@ import qualified GenericPretty as GP
 data Messenger
     = Vkontakte
     | Telegram
-  deriving  (Show, Eq)
+  deriving (Show, Eq)
   deriving (GP.PrettyShow) via GP.Showable Messenger
 

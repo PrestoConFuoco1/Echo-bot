@@ -36,7 +36,7 @@ data VkAttachment
     | VASticker VkSticker
     | VAGift VkGift
     | VAUnexpectedAtt VkUnexpectedAtt
-  deriving  (Show, Eq, Generic)
+  deriving (Show, Eq, Generic)
 
 data VkAttsPartition =
     VkAttsPartition
@@ -53,7 +53,7 @@ data VkAttsPartition =
         , pGifts :: [VkGift]
         , pUnexpected :: [VkUnexpectedAtt]
         }
-  deriving  (Show)
+  deriving (Show)
 
 nullPartition :: VkAttsPartition
 nullPartition = VkAttsPartition [] [] [] [] [] [] [] [] [] [] [] []
@@ -86,7 +86,7 @@ data VkPhoto =
         , photoID :: Integer
         , photoAccessKey :: Maybe T.Text
         }
-  deriving  (Show, Eq, Generic)
+  deriving (Show, Eq, Generic)
   deriving anyclass (PrettyShow)
   deriving (AeT.FromJSON) via BotSelectorModifier VkPhoto
 
@@ -97,7 +97,7 @@ data VkVideo =
         , videoID :: Integer
         , videoAccessKey :: Maybe T.Text
         }
-  deriving  (Show, Eq, Generic)
+  deriving (Show, Eq, Generic)
   deriving anyclass (PrettyShow)
   deriving (AeT.FromJSON) via BotSelectorModifier VkVideo
 
@@ -108,7 +108,7 @@ data VkAudio =
         , audioID :: Integer
         , audioAccessKey :: Maybe T.Text
         }
-  deriving  (Show, Eq, Generic)
+  deriving (Show, Eq, Generic)
   deriving anyclass (PrettyShow)
   deriving (AeT.FromJSON) via BotSelectorModifier VkAudio
 
@@ -119,7 +119,7 @@ data VkDocument =
         , documentID :: Integer
         , documentAccessKey :: Maybe T.Text
         }
-  deriving  (Show, Eq, Generic)
+  deriving (Show, Eq, Generic)
   deriving anyclass (PrettyShow)
   deriving (AeT.FromJSON) via BotSelectorModifier VkDocument
 
@@ -129,7 +129,7 @@ data VkLink =
         { linkUrl :: T.Text
         , linkTitle :: T.Text
         }
-  deriving  (Show, Eq, Generic)
+  deriving (Show, Eq, Generic)
   deriving anyclass (PrettyShow)
   deriving (AeT.FromJSON) via BotSelectorModifier VkLink
 
@@ -140,7 +140,7 @@ data VkMarket =
         , marketID :: Integer
         , marketAccessKey :: Maybe T.Text
         }
-  deriving  (Show, Eq, Generic)
+  deriving (Show, Eq, Generic)
   deriving anyclass (PrettyShow)
   deriving (AeT.FromJSON) via BotSelectorModifier VkMarket
 
@@ -151,7 +151,7 @@ data VkMarketAlbum =
         , _VMAl_id :: Integer
         , _VMAl_access_key :: Maybe T.Text
         }
-  deriving  (Show, Eq, Generic)
+  deriving (Show, Eq, Generic)
   deriving anyclass (PrettyShow)
   deriving (AeT.FromJSON) via BotSelectorModifier VkMarketAlbum
 
@@ -162,7 +162,7 @@ data VkWall =
         , wallID :: Integer
         , wallAccessKey :: Maybe T.Text
         }
-  deriving  (Show, Eq, Generic)
+  deriving (Show, Eq, Generic)
   deriving anyclass (PrettyShow)
 
 instance AeT.FromJSON VkWall where
@@ -179,7 +179,7 @@ data VkWallReply =
         { wallreplyID :: Integer
         , wallreplyAccessKey :: Maybe T.Text
         }
-  deriving  (Show, Eq, Generic)
+  deriving (Show, Eq, Generic)
   deriving anyclass (PrettyShow)
   deriving (AeT.FromJSON) via BotSelectorModifier VkWallReply
 
@@ -188,7 +188,7 @@ newtype VkSticker =
     VkSticker
         { stickerStickerID :: Integer
         }
-  deriving  (Show, Eq, Generic)
+  deriving (Show, Eq, Generic)
   deriving anyclass (PrettyShow)
   deriving (AeT.FromJSON) via BotSelectorModifier VkSticker
 
@@ -197,7 +197,7 @@ newtype VkGift =
     VkGift -- how to send this?
         { giftID :: Integer
         }
-  deriving  (Show, Eq, Generic)
+  deriving (Show, Eq, Generic)
   deriving anyclass (PrettyShow)
   deriving (AeT.FromJSON) via BotSelectorModifier VkGift
 
@@ -206,7 +206,7 @@ data VkUnexpectedAtt =
         { unexpattachmentType :: T.Text
         , unexpattachmentVal :: AeT.Value
         }
-  deriving  (Show, Eq, Generic)
+  deriving (Show, Eq, Generic)
   deriving anyclass (PrettyShow)
 
 -------------------------------------------------

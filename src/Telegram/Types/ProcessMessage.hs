@@ -33,7 +33,7 @@ data TlSticker =
         , stickerHeight :: Int
         , stickerIsAnimated :: Bool
         }
-  deriving  (Show, Eq, Generic)
+  deriving (Show, Eq, Generic)
   deriving anyclass (PrettyShow)
   deriving (ToJSON, FromJSON) via BotSelectorModifier TlSticker
 
@@ -41,7 +41,7 @@ newtype TlAudio =
     TlAudio
         { audioFileID :: T.Text
         }
-  deriving  (Show, Eq, Generic)
+  deriving (Show, Eq, Generic)
   deriving anyclass (PrettyShow)
   deriving (FromJSON) via BotSelectorModifier TlAudio
 
@@ -49,7 +49,7 @@ newtype TlDocument =
     TlDocument
         { documentFileID :: T.Text
         }
-  deriving  (Show, Eq, Generic)
+  deriving (Show, Eq, Generic)
   deriving anyclass (PrettyShow)
   deriving (FromJSON) via BotSelectorModifier TlDocument
 
@@ -57,7 +57,7 @@ newtype TlPhotoSize =
     TlPhotoSize
         { photosizeFileID :: T.Text
         }
-  deriving  (Show, Eq, Generic)
+  deriving (Show, Eq, Generic)
   deriving anyclass (PrettyShow)
   deriving (FromJSON) via BotSelectorModifier TlPhotoSize
 
@@ -65,7 +65,7 @@ newtype TlVideo =
     TlVideo
         { videoFileID :: T.Text
         }
-  deriving  (Show, Eq, Generic)
+  deriving (Show, Eq, Generic)
   deriving anyclass (PrettyShow)
   deriving (FromJSON) via BotSelectorModifier TlVideo
 
@@ -73,7 +73,7 @@ newtype TlAnimation =
     TlAnimation
         { animationFileID :: T.Text
         }
-  deriving  (Show, Eq, Generic)
+  deriving (Show, Eq, Generic)
   deriving anyclass (PrettyShow)
   deriving (FromJSON) via BotSelectorModifier TlAnimation
 
@@ -81,7 +81,7 @@ newtype TlVoice =
     TlVoice
         { voiceFileID :: T.Text
         }
-  deriving  (Show, Eq, Generic)
+  deriving (Show, Eq, Generic)
   deriving anyclass (PrettyShow)
   deriving (FromJSON) via BotSelectorModifier TlVoice
 
@@ -89,7 +89,7 @@ newtype TlVideoNote =
     TlVideoNote
         { videonoteFileID :: T.Text
         }
-  deriving  (Show, Eq, Generic)
+  deriving (Show, Eq, Generic)
   deriving anyclass (PrettyShow)
   deriving (FromJSON) via BotSelectorModifier TlVideoNote
 
@@ -98,7 +98,7 @@ data TlLocation =
         { locationLongitude :: Double
         , locationLatitude :: Double
         }
-  deriving  (Show, Eq, Generic)
+  deriving (Show, Eq, Generic)
   deriving anyclass (PrettyShow)
   deriving (FromJSON) via BotSelectorModifier TlLocation
 
@@ -108,7 +108,7 @@ data TlVenue =
         , venueTitle :: T.Text
         , venueAddress :: T.Text
         }
-  deriving  (Show, Eq, Generic)
+  deriving (Show, Eq, Generic)
   deriving anyclass (PrettyShow)
   deriving (FromJSON) via BotSelectorModifier TlVenue
 
@@ -120,7 +120,7 @@ data TlContact =
         , contactUserID :: Maybe Integer
         , contactVcard :: Maybe T.Text
         }
-  deriving  (Show, Eq, Generic)
+  deriving (Show, Eq, Generic)
   deriving anyclass (PrettyShow)
   deriving (FromJSON) via BotSelectorModifier TlContact
 
@@ -129,7 +129,7 @@ data TlPollOption =
         { polloptionText :: T.Text
         , polloptionVoterCount :: Int
         }
-  deriving  (Show, Eq, Generic)
+  deriving (Show, Eq, Generic)
   deriving anyclass (PrettyShow)
   deriving (FromJSON) via BotSelectorModifier TlPollOption
 
@@ -140,7 +140,7 @@ data TlPoll =
         , pollOptions :: [TlPollOption]
         , pollTotalVoterCount :: Int
         }
-  deriving  (Show, Eq, Generic)
+  deriving (Show, Eq, Generic)
   deriving anyclass (PrettyShow)
   deriving (FromJSON) via BotSelectorModifier TlPoll
 
@@ -149,7 +149,7 @@ data TlDice =
         { diceEmoji :: T.Text
         , diceValue :: Int
         }
-  deriving  (Show, Eq, Generic)
+  deriving (Show, Eq, Generic)
   deriving (FromJSON) via BotSelectorModifier TlDice
   deriving anyclass (PrettyShow)
 

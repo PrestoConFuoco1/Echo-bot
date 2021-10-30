@@ -71,7 +71,7 @@ data VkStateConst =
         , vkGroupID :: Integer
         , apiVersion :: T.Text
         }
-  deriving  (Show, Eq, Generic)
+  deriving (Show, Eq, Generic)
   deriving anyclass (PrettyShow)
 
 data VkStateMut =
@@ -79,7 +79,7 @@ data VkStateMut =
         { vkTs :: T.Text -- timestamp
         , vkRndGen :: StdGen
         }
-  deriving  (Show)
+  deriving (Show)
 
 ------------------------- IO -------------------------------
 initResources ::

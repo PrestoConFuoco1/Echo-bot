@@ -16,7 +16,7 @@ data TlConfig =
         { tlConfigUpdateID :: Integer
         , tlConfigUrl :: T.Text
         }
-  deriving  (Show, Generic)
+  deriving (Show, Generic)
   deriving anyclass (PrettyShow)
 
 data VkConfig =
@@ -26,6 +26,6 @@ data VkConfig =
         , vkConfigGroupID :: Integer
         , vkConfigApiVersion :: T.Text
         }
-  deriving  (Show, Eq, Generic)
+  deriving (Show, Eq, Generic)
   deriving anyclass (PrettyShow)
 

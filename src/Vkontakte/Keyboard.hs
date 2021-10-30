@@ -17,7 +17,7 @@ data VkKeyboard =
         { keyboardInline :: Bool
         , keyboardButtons :: [[VkButton]]
         }
-  deriving  (Eq, Show, Generic)
+  deriving (Eq, Show, Generic)
   deriving (AeT.ToJSON) via BotSelectorModifier VkKeyboard
 
 data VkButton =
@@ -25,13 +25,13 @@ data VkButton =
         { buttonColor :: T.Text
         , buttonAction :: VkButtonActions
         }
-  deriving  (Eq, Show, Generic)
+  deriving (Eq, Show, Generic)
   deriving (AeT.ToJSON) via BotSelectorModifier VkButton
 
 data VkButtonActions
     = VBACallback VkCallbackButton
     | VBAText VkTextButton
-  deriving  (Eq, Show)
+  deriving (Eq, Show)
 
 instance AeT.ToJSON VkButtonActions where
     toJSON (VBACallback (VkCallbackButton l p)) =
@@ -52,7 +52,7 @@ data VkCallbackButton =
         { callbackbuttonLabel :: T.Text
         , callbackbuttonPayload :: T.Text
         }
-  deriving  (Show, Eq, Generic)
+  deriving (Show, Eq, Generic)
   deriving (AeT.ToJSON, AeT.FromJSON) via BotSelectorModifier VkCallbackButton
 
 data VkTextButton =
@@ -60,7 +60,7 @@ data VkTextButton =
         { textbuttonLabel :: T.Text
         , textbuttonPayload :: VkPayload
         }
-  deriving  (Show, Eq, Generic)
+  deriving (Show, Eq, Generic)
   deriving (AeT.ToJSON) via BotSelectorModifier VkTextButton
 
 repNumButtonVkTxt :: T.Text -> Int -> VkTextButton

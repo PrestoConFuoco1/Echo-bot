@@ -32,7 +32,7 @@ data Environment =
         , timeout :: S.Timeout
         , envCommands :: EnvCommands
         }
-  deriving  (Show, Generic)
+  deriving (Show, Generic)
 
 getTimeout :: Environment -> S.Timeout
 getTimeout = timeout
@@ -40,13 +40,15 @@ getTimeout = timeout
 getRepNum :: Environment -> Int
 getRepNum = repNum
 
-newEnvironment :: Int -> S.Timeout -> EnvMessages -> EnvCommands -> Environment
-newEnvironment rep tim envMsgs envCmds = Environment {
-    repNum = rep
-    , timeout = tim
-    , envMessages = envMsgs
-    , envCommands = envCmds
-    }
+newEnvironment ::
+       Int -> S.Timeout -> EnvMessages -> EnvCommands -> Environment
+newEnvironment rep tim envMsgs envCmds =
+    Environment
+        { repNum = rep
+        , timeout = tim
+        , envMessages = envMsgs
+        , envCommands = envCmds
+        }
 
 instance GP.PrettyShow Environment where
     prettyShow =
@@ -59,28 +61,24 @@ data EnvMessages =
         { helpMsg :: T.Text
         , repQuestion :: T.Text
         }
-  deriving  (Show, Generic)
+  deriving (Show, Generic)
   deriving anyclass (GP.PrettyShow)
 
 newEnvMessages :: T.Text -> T.Text -> EnvMessages
-newEnvMessages help repQ = EnvMessages {
-    helpMsg = help
-    , repQuestion = repQ
-    }
+newEnvMessages help repQ =
+    EnvMessages {helpMsg = help, repQuestion = repQ}
 
 data EnvCommands =
     EnvCommands
         { helpCommand :: T.Text
         , setRepNumCommand :: T.Text
         }
-  deriving  (Show, Generic)
+  deriving (Show, Generic)
   deriving anyclass (GP.PrettyShow)
 
 newEnvCommands :: T.Text -> T.Text -> EnvCommands
-newEnvCommands help setRepNum = EnvCommands {
-    helpCommand = help
-    , setRepNumCommand = setRepNum
-    }
+newEnvCommands help setRepNum =
+    EnvCommands {helpCommand = help, setRepNumCommand = setRepNum}
 
 defaultMessages :: EnvMessages
 defaultMessages =

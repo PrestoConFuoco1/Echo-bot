@@ -50,7 +50,7 @@ data TlMessage =
         , messageVenue :: Maybe TlVenue
         , messageLocation :: Maybe TlLocation
         }
-  deriving  (Show, Eq, Generic)
+  deriving (Show, Eq, Generic)
   deriving anyclass (PrettyShow)
   deriving (FromJSON) via (BotSelectorModifier TlMessage)
 
@@ -59,7 +59,7 @@ newtype TlChat =
     TlChat
         { chatID :: Integer
         }
-  deriving  (Show, Eq, Generic)
+  deriving (Show, Eq, Generic)
   deriving anyclass (PrettyShow)
   deriving (FromJSON, ToJSON) via (BotSelectorModifier TlChat)
 
@@ -75,7 +75,7 @@ data TlUser =
         , userLastName :: Maybe T.Text
         , userUsername :: Maybe T.Text
         }
-  deriving  (Show, Generic)
+  deriving (Show, Generic)
   deriving anyclass (PrettyShow)
   deriving (FromJSON, ToJSON) via BotSelectorModifier TlUser
 
@@ -92,7 +92,7 @@ data TlCallback =
         , callbackData :: Maybe T.Text
         , callbackMessage :: Maybe TlMessage
         }
-  deriving  (Show, Eq, Generic)
+  deriving (Show, Eq, Generic)
   deriving (FromJSON) via BotSelectorModifier TlCallback
   deriving anyclass (PrettyShow)
 

@@ -13,13 +13,13 @@ module Telegram.Update
 
 import Data.Aeson.Types
     ( FromJSON(..)
+    , Object
+    , Parser
     , ToJSON(..)
     , Value
     , (.:)
     , parseEither
     , withObject
-    , Object
-    , Parser
     )
 import Data.Foldable (asum)
 import qualified Data.Text as T (Text)
@@ -35,7 +35,7 @@ data TlReply =
         , replyDescription :: Maybe T.Text
         , replyErrorCode :: Maybe Integer
         }
-  deriving  (Show, Eq, Generic)
+  deriving (Show, Eq, Generic)
   deriving anyclass (PrettyShow)
   deriving (ToJSON, FromJSON) via BotSelectorModifier TlReply
 
@@ -43,7 +43,7 @@ newtype TlUpdateReplySuccess =
     TlUpdateReplySuccess
         { replysuccessResult :: Value
         }
-  deriving  (Show, Eq, Generic)
+  deriving (Show, Eq, Generic)
   deriving anyclass (PrettyShow)
 
 data TlUpdateReplyError =
@@ -51,7 +51,7 @@ data TlUpdateReplyError =
         { replyerrorErrorCode :: Integer
         , replyerrorDescription :: Maybe T.Text
         }
-  deriving  (Show, Eq, Generic)
+  deriving (Show, Eq, Generic)
   deriving anyclass (PrettyShow)
 
 parseUpdatesResponse ::
@@ -62,8 +62,8 @@ parseUpdatesResponse =
     withObject "M.Telegram updates object" $ \o -> do
         ok <- o .: "ok"
         if ok
-            then Left <$> parseUpdateReplyError o
-            else Right <$> parseUpdateReplySuccess o
+            then Right <$> parseUpdateReplySuccess o
+            else Left <$> parseUpdateReplyError o
 
 parseUpdateReplyError :: Object -> Parser TlUpdateReplyError
 parseUpdateReplyError o = do
@@ -78,9 +78,7 @@ parseUpdateReplyError o = do
 parseUpdateReplySuccess :: Object -> Parser TlUpdateReplySuccess
 parseUpdateReplySuccess o = do
     res <- o .: "result"
-    pure $
-        TlUpdateReplySuccess {replysuccessResult = res}
-
+    pure $ TlUpdateReplySuccess {replysuccessResult = res}
 
 data TlUpdate =
     TlUpdate
@@ -88,13 +86,13 @@ data TlUpdate =
         , updateEvent :: TlEvent
         , updateValue :: Value
         }
-  deriving  (Show, Eq, Generic)
+  deriving (Show, Eq, Generic)
 
 data TlEvent
     = TEMsg TlMessage
     | TECallback TlCallback
     | TEUnexpectedEvent
-  deriving  (Show, Eq, Generic)
+  deriving (Show, Eq, Generic)
 
 instance FromJSON TlUpdate where
     parseJSON value =

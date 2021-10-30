@@ -26,7 +26,7 @@ data VkMessage =
         , messageText :: Maybe T.Text
         , messageAttachments :: [VkAttachment]
         }
-  deriving  (Eq, Show, Generic)
+  deriving (Eq, Show, Generic)
   deriving anyclass (PrettyShow)
 
 instance AeT.FromJSON VkMessage where
@@ -45,7 +45,7 @@ newtype VkUser =
     VkUser
         { userID :: Integer
         }
-  deriving  (Show, Generic)
+  deriving (Show, Generic)
   deriving newtype (AeT.FromJSON)
   deriving anyclass (PrettyShow)
 
@@ -61,13 +61,12 @@ data VkMyCallback =
         , mycallbackText :: Maybe T.Text
         , mycallbackPayload :: VkPayload
         }
-  deriving  (Show, Eq, Generic)
+  deriving (Show, Eq, Generic)
   deriving (AeT.FromJSON) via BotSelectorModifier VkMyCallback
 
 newtype VkPayload =
     VkPayload
         { payloadPayload :: T.Text
         }
-  deriving  (Show, Eq, Generic)
-  deriving (AeT.ToJSON, AeT.FromJSON) via BotSelectorModifier VkPayload
+  deriving (Show, Eq, Generic)  deriving (AeT.ToJSON, AeT.FromJSON) via BotSelectorModifier VkPayload
 

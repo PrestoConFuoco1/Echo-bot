@@ -15,14 +15,14 @@ data TlInlineButton =
         { inlinebuttonText :: T.Text
         , inlinebuttonCallbackData :: T.Text
         }
-  deriving  (Show, Eq, Generic)
+  deriving (Show, Eq, Generic)
   deriving (ToJSON, FromJSON) via BotSelectorModifier TlInlineButton
 
 newtype TlInlineKeyboard =
     TlInlineKeyboard
         { inlinekeyboardInlineKeyboard :: [[TlInlineButton]]
         }
-  deriving  (Show, Eq, Generic)
+  deriving (Show, Eq, Generic)
   deriving (ToJSON, FromJSON) via BotSelectorModifier TlInlineKeyboard
 
 repNumButtonTele :: T.Text -> Int -> TlInlineButton

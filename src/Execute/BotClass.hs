@@ -17,9 +17,7 @@ import qualified HTTP.Types as H
 buildHTTP :: T.Text -> (T.Text, H.ParamsList) -> H.HTTPRequest
 buildHTTP url (method, params) = H.Req H.POST (url <> method) params
 
-class (BotClassTypes s) =>
-      BotClassUtility s
-    where
+class (BotClassTypes s) => BotClassUtility s where
     getResult :: RepSucc s -> Maybe Value
     getMsg :: Upd s -> Maybe (Msg s)
     getUpdateValue :: Upd s -> Value
@@ -32,9 +30,7 @@ class (BotClassTypes s) =>
     getCallbackData :: CallbackQuery s -> Maybe T.Text
     getCallbackChat :: CallbackQuery s -> Maybe (Chat s)
 
-class (BotClassUtility s, D.HasBotHandler s) =>
-      BotClass s
-    where
+class (BotClassUtility s, D.HasBotHandler s) => BotClass s where
     takesJSON :: Bool
     getUpdatesRequest ::
            (Monad m) => D.BotHandler s m -> m H.HTTPRequest

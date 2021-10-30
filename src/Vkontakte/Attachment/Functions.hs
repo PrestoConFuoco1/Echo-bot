@@ -10,7 +10,11 @@ import HTTP.Types as H
 import qualified Stuff as S
 import Vkontakte.Attachment.Types
 
-attsToParsVk :: (Monad m) => L.LoggerHandler m -> [VkAttachment] -> m (Maybe H.ParamsList)
+attsToParsVk ::
+       (Monad m)
+    => L.LoggerHandler m
+    -> [VkAttachment]
+    -> m (Maybe H.ParamsList)
 attsToParsVk logger atts = do
     let part = partitionVkAttachments atts
         messageSendable =
