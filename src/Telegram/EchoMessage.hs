@@ -10,7 +10,7 @@ import qualified GenericPretty as GP
 import HTTP.Types as H
 import qualified Stuff as S (safeHead)
 import Telegram.Types.Entity (TlMessage(..), chatIDfromMsg)
-import Telegram.Types.ProcessMessage
+import Telegram.Types.MessageContent
 
 echoMessageTele :: TlMessage -> Either String (T.Text, H.ParamsList)
 echoMessageTele m =

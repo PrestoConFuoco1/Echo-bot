@@ -109,17 +109,16 @@ tryGetConfig logger messager atry = do
     L.logDebug logger $
         "Trying to get " <> messager <> " bot configuration"
     eithStMsgError <- CMC.try atry -- :: IO (Either CT.KeyError a)
-    S.withEither
-        eithStMsgError
-        (\e -> do
-             L.logError logger $
-                 messager <> ": configuration error occured:"
-             logKeyException logger e
-             CMC.throwM RequiredFieldMissing)
-        (\c -> do
-             L.logDebug logger $
-                 "Ok, " <> messager <> " bot config loaded."
-             pure c)
+    S.withEither eithStMsgError logThenThrow logOk
+  where
+    logThenThrow e = do
+        L.logError logger $
+            messager <> ": configuration error occured:"
+        logKeyException logger e
+        CMC.throwM RequiredFieldMissing
+    logOk c = do
+        L.logDebug logger $ "Ok, " <> messager <> " bot config loaded."
+        pure c
 
 loadTeleConfig :: L.LoggerHandler IO -> CT.Config -> IO TlConfig
 loadTeleConfig _ conf = do

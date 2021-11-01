@@ -149,11 +149,13 @@ processMessageTl h m =
         then processMediaGroup h m >> pure Nothing
         else S.withEither
                  sendMessage
-                 (\e -> do
-                      D.logError h $ funcName <> T.pack e
-                      pure Nothing)
+                 logThenNothing 
                  (pure . Just)
   where
+    logThenNothing e = do
+        D.logError h $ funcName <> T.pack e
+        pure Nothing
+       
     funcName = "tl_processMessage: "
     sendMessage =
         let eithMethodParams = echoMessageTele m

@@ -35,9 +35,9 @@ execute h = do
             Left updErr -> handleFailedUpdatesRequest h updErr
             Right resp -> handleUpdatesSuccess h resp
 
-updLstParseFail ::
+updateListParseFail ::
        (C.MonadThrow m) => D.BotHandler s m -> String -> m a
-updLstParseFail h x = do
+updateListParseFail h x = do
     let funcName = "updateListParseFail: "
     D.logError h .
         ("failed to parse update list: " <>) . (funcName <>) . T.pack $
@@ -68,7 +68,7 @@ handleUpdatesSuccess ::
     -> m ()
 handleUpdatesSuccess h resp = do
     let eithUpdValueList = parseUpdatesValueList @s resp
-    S.withEither eithUpdValueList (updLstParseFail h) $ \updValues -> do
+    S.withEither eithUpdValueList (updateListParseFail h) $ \updValues -> do
         let parsedUpdates =
                 map (attachErrorReason $ parseUpdate @s) updValues
             (errs, upds) = partitionEithers parsedUpdates

@@ -18,7 +18,7 @@ import qualified Data.Text as T (Text)
 import DerivingJSON (BotSelectorModifier(..))
 import GHC.Generics
 import GenericPretty (PrettyShow(..))
-import Telegram.Types.ProcessMessage
+import Telegram.Types.MessageContent
 
 chatIDfromMsg :: TlMessage -> Integer
 chatIDfromMsg = chatID . messageChat

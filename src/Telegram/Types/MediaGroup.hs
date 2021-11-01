@@ -18,7 +18,7 @@ import GHC.Generics
 import qualified GenericPretty as GP
 import qualified Stuff as S
 import Telegram.Types.Entity (TlChat(..), TlMessage(..), TlUser(..))
-import Telegram.Types.ProcessMessage
+import Telegram.Types.MessageContent
     ( TlPhotoSize(..)
     , audioFileID
     , documentFileID
