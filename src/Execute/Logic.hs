@@ -45,7 +45,8 @@ defineUpdateType h u =
         mUser = mMsg >>= getUser @s
         mChat = mMsg >>= getChat @s
         mCmd =
-            mText >>= S.safeHead . T.words >>= getCmd (BotH.commonEnv h)
+            mText >>= S.safeHead . T.words >>=
+            getCmd (BotH.commonEnv h)
         mCallback = getCallbackQuery @s u
         unexpectedValue = getUpdateValue @s u
      in fromMaybe (ET.EError unexpectedValue) $
@@ -144,7 +145,11 @@ sendHelp ::
 sendHelp h mChat mUser = do
     let funcName = "sendHelp: "
     eithReqFunc <-
-        sendTextMsg h mChat mUser (Env.getHelpMessage $ BotH.commonEnv h)
+        sendTextMsg
+            h
+            mChat
+            mUser
+            (Env.getHelpMessage $ BotH.commonEnv h)
     BotH.logDebug h $
         funcName <> "sending HTTP request to send help message"
     S.withEither

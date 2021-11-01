@@ -95,7 +95,9 @@ initResources _ common tlConf = do
             }
 
 resourcesToHandle ::
-       Resources -> L.LoggerHandler IO -> BotH.BotHandler 'M.Telegram IO
+       Resources
+    -> L.LoggerHandler IO
+    -> BotH.BotHandler 'M.Telegram IO
 resourcesToHandle resources logger =
     BotH.BotHandler
         { BotH.log = logger

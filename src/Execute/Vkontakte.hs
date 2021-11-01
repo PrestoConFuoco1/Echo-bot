@@ -102,7 +102,8 @@ handleFailedUpdatesRequestVk h e@(VkUpdateReplyError {..}) =
                         replyerrorTs
                         (BotH.logError h $ funcName <> "no ts found")
                         (\ts -> do
-                             BotH.logInfo h $ funcName <> "using new ts"
+                             BotH.logInfo h $
+                                 funcName <> "using new ts"
                              HV.putTimestamp (BotH.specH h) ts)
                 | x == 2 -> do
                     BotH.logError h $ funcName <> errorMsg2

@@ -114,8 +114,5 @@ addParams params req = req {pars = params ++ pars req}
 addParamsUnit :: ParamsUnit -> HTTPRequest -> HTTPRequest
 addParamsUnit paramsUnit req = req {pars = paramsUnit : pars req}
 
-
 buildHTTP :: T.Text -> (T.Text, ParamsList) -> HTTPRequest
 buildHTTP url (method, params) = Req POST (url <> method) params
-
-

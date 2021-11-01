@@ -67,6 +67,4 @@ data VkMyCallback =
 newtype VkPayload =
     VkPayload
         { payloadPayload :: T.Text
-        }
-  deriving (Show, Eq, Generic)  deriving (AeT.ToJSON, AeT.FromJSON) via BotSelectorModifier VkPayload
-
+        }  deriving (Show, Eq, Generic)  deriving (AeT.ToJSON, AeT.FromJSON) via BotSelectorModifier VkPayload

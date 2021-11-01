@@ -100,7 +100,9 @@ initResources h common vkConf = do
             }
 
 resourcesToHandle ::
-       Resources -> L.LoggerHandler IO -> BotH.BotHandler 'M.Vkontakte IO
+       Resources
+    -> L.LoggerHandler IO
+    -> BotH.BotHandler 'M.Vkontakte IO
 resourcesToHandle resources logger =
     BotH.BotHandler
         { BotH.log = logger
@@ -236,7 +238,8 @@ data VkInitData =
 
 instance AeT.FromJSON VkInitData where
     parseJSON =
-        AeT.withObject "object: key, server, ts" $ \o' -> do -- AeT.Parser a
+        AeT.withObject "object: key, server, ts" $ \o' -- AeT.Parser a
+         -> do
             o <- o' .: "response"
             key <- o .: "key" :: AeT.Parser T.Text
             server <- o .: "server" :: AeT.Parser T.Text

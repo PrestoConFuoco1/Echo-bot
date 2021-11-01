@@ -82,7 +82,8 @@ handleFailedUpdatesRequestTl h err = do
     let funcName = "tl_handleFailedUpdatesRequest: "
     BotH.logError h $ funcName <> "got telegram error"
     BotH.logError h $ GP.textPretty err
-    BotH.logError h $ funcName <> "unable to handle any telegram errors"
+    BotH.logError h $
+        funcName <> "unable to handle any telegram errors"
     C.throwM Ex.UnableToHandleError
 
 parseUpdatesValueListTl ::
@@ -147,15 +148,11 @@ processMessageTl ::
 processMessageTl h m =
     if isMediaGroup m
         then processMediaGroup h m >> pure Nothing
-        else S.withEither
-                 sendMessage
-                 logThenNothing 
-                 (pure . Just)
+        else S.withEither sendMessage logThenNothing (pure . Just)
   where
     logThenNothing e = do
         BotH.logError h $ funcName <> T.pack e
         pure Nothing
-       
     funcName = "tl_processMessage: "
     sendMessage =
         let eithMethodParams = echoMessageTele m

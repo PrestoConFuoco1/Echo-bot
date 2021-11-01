@@ -117,7 +117,8 @@ tryGetConfig logger messager atry = do
         logKeyException logger e
         CMC.throwM RequiredFieldMissing
     logOk c = do
-        L.logDebug logger $ "Ok, " <> messager <> " bot config loaded."
+        L.logDebug logger $
+            "Ok, " <> messager <> " bot config loaded."
         pure c
 
 loadTeleConfig :: L.LoggerHandler IO -> CT.Config -> IO TlConfig
