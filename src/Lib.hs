@@ -9,7 +9,7 @@ module Lib
     ( main
     ) where
 
-import App.Handle as D
+import qualified App.BotHandler as BotH
 import qualified App.Handle.Telegram as T
 import qualified App.Handle.Vkontakte as V
 import qualified App.Logger as L
@@ -77,7 +77,7 @@ class (BotConfigurable s, BotClass s) => BotRun s where
         -> Conf s
         -> IO (Resources s)
     resourcesToHandler ::
-           Resources s -> L.LoggerHandler IO -> BotHandler s IO
+           Resources s -> L.LoggerHandler IO -> BotH.BotHandler s IO
     errorHandlers ::
            L.LoggerHandler IO
         -> Conf s

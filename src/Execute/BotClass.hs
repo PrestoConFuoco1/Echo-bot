@@ -6,7 +6,7 @@ module Execute.BotClass
     , BotClass(..)
     ) where
 
-import qualified App.Handle as D
+import qualified App.BotHandler as BotH
 import BotTypesClass.ClassTypes
 import qualified Control.Monad.Catch as C
 import Data.Aeson (Value)
@@ -26,18 +26,18 @@ class (BotClassTypes s) => BotClassUtility s where
     getCallbackData :: CallbackQuery s -> Maybe T.Text
     getCallbackChat :: CallbackQuery s -> Maybe (Chat s)
 
-class (BotClassUtility s, D.HasBotHandler s) => BotClass s where
+class (BotClassUtility s, BotH.HasBotHandler s) => BotClass s where
     takesJSON :: Bool
     getUpdatesRequest ::
-           (Monad m) => D.BotHandler s m -> m H.HTTPRequest
+           (Monad m) => BotH.BotHandler s m -> m H.HTTPRequest
     isSuccess :: Rep s -> Bool
     handleFailedUpdatesRequest ::
-           (C.MonadThrow m) => D.BotHandler s m -> RepErr s -> m ()
+           (C.MonadThrow m) => BotH.BotHandler s m -> RepErr s -> m ()
     parseUpdatesValueList :: RepSucc s -> Either String [Value]
     parseUpdate :: Value -> Either String (Upd s)
     sendTextMsg ::
            (Monad m)
-        => D.BotHandler s m
+        => BotH.BotHandler s m
         -> Maybe (Chat s)
         -> Maybe (User s)
         -> T.Text
@@ -45,12 +45,12 @@ class (BotClassUtility s, D.HasBotHandler s) => BotClass s where
     repNumKeyboard :: [Int] -> T.Text -> H.ParamsList
     processMessage ::
            (Monad m)
-        => D.BotHandler s m
+        => BotH.BotHandler s m
         -> Msg s
         -> m (Maybe (m H.HTTPRequest))
     epilogue ::
            (Monad m)
-        => D.BotHandler s m
+        => BotH.BotHandler s m
         -> [Upd s]
         -> RepSucc s
         -> m ()

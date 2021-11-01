@@ -1,93 +1,91 @@
 module Test.Telegram.TestData where
 
-import Telegram
-import Test.Hspec
-import Data.IORef
-import Handlers
-import qualified HTTP.Types as H
-import App.Handle as D
-import Telegram
+import App.BotHandler as D
 import BotTypesClass.ClassTypes
 import BotTypesClass.TelegramInstance
-import Execute.Telegram
+import Data.Aeson
+import Data.IORef
+import Data.Text as T
+import Environment
 import Execute
 import Execute.Logic
-import Data.Aeson
-import Data.Text as T
+import Execute.Telegram
+import qualified HTTP.Types as H
+import Handlers
 import qualified Stuff as S
-import Telegram.Types.ProcessMessage
-import Environment
-
+import Telegram
+import Telegram.Types.MessageContent
+import Test.Hspec
 
 defaultMessageID = 0
+
 defaultDate = 0
+
 defaultText = Nothing
-defaultUser = TlUser {
-    userID = 0,
-    userIsBot = False,
-    userFirstName = "firstname",
-    userLastName = Just "lastname",
-    userUsername = Just "username"
+
+defaultUser =
+  TlUser
+    { userID = 0
+    , userIsBot = False
+    , userFirstName = "firstname"
+    , userLastName = Just "lastname"
+    , userUsername = Just "username"
     }
 
+defaultChat = TlChat {chatID = 0}
 
-defaultChat = TlChat {
-    chatID = 0
-    }
-
-defaultMessage = TlMessage {
-    messageMessageID = defaultMessageID,
-    messageFrom = Just defaultUser,
-    messageDate = defaultDate,
-    messageChat = defaultChat,
-    messageText = defaultText,
-    messageMediaGroupID = Nothing,
-    messageAnimation = Nothing,
-    messageAudio = Nothing,
-    messageDocument = Nothing,
-    messagePhoto = Nothing,
-    messageSticker = Nothing,
-    messageVideo = Nothing,
-    messageVideoNote = Nothing,
-    messageVoice = Nothing,
-    messageCaption = Nothing,
-    messageContact = Nothing,
-    messageDice = Nothing,
-    messageVenue = Nothing,
-    messageLocation = Nothing,
-    messagePoll = Nothing
+defaultMessage =
+  TlMessage
+    { messageMessageID = defaultMessageID
+    , messageFrom = Just defaultUser
+    , messageDate = defaultDate
+    , messageChat = defaultChat
+    , messageText = defaultText
+    , messageMediaGroupID = Nothing
+    , messageAnimation = Nothing
+    , messageAudio = Nothing
+    , messageDocument = Nothing
+    , messagePhoto = Nothing
+    , messageSticker = Nothing
+    , messageVideo = Nothing
+    , messageVideoNote = Nothing
+    , messageVoice = Nothing
+    , messageCaption = Nothing
+    , messageContact = Nothing
+    , messageDice = Nothing
+    , messageVenue = Nothing
+    , messageLocation = Nothing
+    , messagePoll = Nothing
     }
 
 successReply :: TlReply
-successReply = TlReply {
-    replyOk = True
+successReply =
+  TlReply
+    { replyOk = True
     , replyResult = Just $ String "success"
     , replyDescription = Nothing
     , replyErrorCode = Nothing
     }
 
-
-
 sendHelpMessageMsg :: TlMessage
-sendHelpMessageMsg = defaultMessage { messageText = Just $ getHelpCommand defStateGen }
+sendHelpMessageMsg =
+  defaultMessage {messageText = Just $ getHelpCommand defStateGen}
 
 buildUpdate :: TlEvent -> T.Text -> TlUpdate
-buildUpdate event msg = TlUpdate {
-    updateUpdateID = 0
-    , updateEvent = event
-    , updateValue = String msg
-    }
+buildUpdate event msg =
+  TlUpdate {updateUpdateID = 0, updateEvent = event, updateValue = String msg}
 
 sendHelpMessageUpd :: TlUpdate
 sendHelpMessageUpd =
-    let event = TEMsg $ sendHelpMessageMsg
-    in  buildUpdate event "help request update"
+  let event = TEMsg sendHelpMessageMsg
+   in buildUpdate event "help request update"
 
 sendKeyboardMessage :: TlMessage
-sendKeyboardMessage = defaultMessage { messageText = Just $ getSetRepNumCommand defStateGen }
+sendKeyboardMessage =
+  defaultMessage {messageText = Just $ getSetRepNumCommand defStateGen}
 
-sendKeyboardMessageUpd = buildUpdate (TEMsg sendKeyboardMessage) "send repnum buttons request"
-
+sendKeyboardMessageUpd =
+  buildUpdate (TEMsg sendKeyboardMessage) "send repnum buttons request"
 
 {-
 {"text":"Now every your message will be repeated 2 times.","from":{"first_na
@@ -109,31 +107,28 @@ sendKeyboardMessageUpd = buildUpdate (TEMsg sendKeyboardMessage) "send repnum bu
         callback_data":"set 3"},{"text":"4","callback_data":"set 4"},{"text":"5","ca
         llback_data":"set 5"}]]}}},"update_id":332501240}]
 -}
-
-
 setRepNumCallback :: Int -> TlCallback
-setRepNumCallback int = TlCallback {
-    callbackID = "callback_id"
+setRepNumCallback int =
+  TlCallback
+    { callbackID = "callback_id"
     , callbackFrom = defaultUser
     , callbackData = Just $ "set " <> S.showT int
     , callbackMessage = Just sendKeyboardMessage
     }
 
 setRepNumUpdate :: Int -> TlUpdate
-setRepNumUpdate repnum = buildUpdate (TECallback $ setRepNumCallback repnum) "set repeat number update"
+setRepNumUpdate repnum =
+  buildUpdate (TECallback $ setRepNumCallback repnum) "set repeat number update"
 
-simpleMessage = defaultMessage { messageText = Just "hello, this is yoba" }
+simpleMessage = defaultMessage {messageText = Just "hello, this is yoba"}
 
 simpleMessageUpdate :: TlUpdate
 simpleMessageUpdate = buildUpdate (TEMsg simpleMessage) "simple message to echo"
 
-
-
-mediaGroupMessage = defaultMessage {
-    messageMediaGroupID = Just "media group id"
-    , messageAudio = Just TlAudio {
-        audioFileID = "file identifier"
-        }
+mediaGroupMessage =
+  defaultMessage
+    { messageMediaGroupID = Just "media group id"
+    , messageAudio = Just TlAudio {audioFileID = "file identifier"}
     }
 
 mediaGroupUpdate = buildUpdate (TEMsg mediaGroupMessage) "media group update"

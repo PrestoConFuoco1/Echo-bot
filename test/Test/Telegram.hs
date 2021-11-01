@@ -1,28 +1,29 @@
 {-# LANGUAGE TypeApplications, DataKinds #-}
+
 module Test.Telegram where
 
-import Telegram
-import Test.Hspec
-import Data.IORef
-import Handlers
-import qualified HTTP.Types as H
-import App.Handle as D
+import App.BotHandler as D
+import App.Handle.Telegram
 import BotTypesClass.ClassTypes
 import BotTypesClass.TelegramInstance
-import Execute.Telegram
+import Data.Aeson
+import Data.IORef
+import Data.Text as T
 import Execute
 import Execute.Logic
-import Data.Aeson
-import Data.Text as T
-import qualified Stuff as S
-import Test.Telegram.TestData
-import Test.Mock
+import Execute.Telegram
+import qualified HTTP.Types as H
+import Handlers
 import Messenger
-import App.Handle.Telegram
-
+import qualified Stuff as S
+import Telegram
+import Test.Hspec
+import Test.Mock
+import Test.Telegram.TestData
 
 testTelegram :: Spec
-testTelegram = describe "telegram logic" $ do
+testTelegram =
+  describe "telegram logic" $ do
     testHelpMessage
     testSetRepNumCommand
     testSetRepNum
@@ -31,95 +32,90 @@ testTelegram = describe "telegram logic" $ do
 
 testHelpMessage :: Spec
 testHelpMessage = do
-    describe "help message test" $ do
-        it "should process help request" $ do
-            testHelpMessage' `shouldReturn` 1
-            
+  describe "help message test" $ do
+    it "should process help request" $ do testHelpMessage' `shouldReturn` 1
+
 testHelpMessage' :: IO Int
 testHelpMessage' = do
-    ref <- newIORef 0
-    let helpSender = const $ sendCounterCommon @Telegram ref successReply
-        handle = (defaultHandle @Telegram) { D.sendHelp = helpSender }
-    handleUpdate @Telegram handle sendHelpMessageUpd
-    int <- readIORef ref
-    return int
-
+  ref <- newIORef 0
+  let helpSender = const $ sendCounterCommon @Telegram ref successReply
+      handle = (defaultHandle @Telegram) {D.sendHelp = helpSender}
+  handleUpdate @Telegram handle sendHelpMessageUpd
+  readIORef ref
 
 testSetRepNumCommand :: Spec
 testSetRepNumCommand = do
-    describe "send repnum keyboard message test" $ do
-        it "should send the keyboard after rep num request" $ do
-            testSetRepNumCommand' `shouldReturn` 1
+  describe "send repnum keyboard message test" $ do
+    it "should send the keyboard after rep num request" $ do
+      testSetRepNumCommand' `shouldReturn` 1
 
 testSetRepNumCommand' :: IO Int
 testSetRepNumCommand' = do
-    ref <- newIORef 0
-    let keyboardSender = const $ sendCounterCommon  @Telegram ref successReply
-        handle = (defaultHandle  @Telegram) { D.sendKeyboard = keyboardSender }
-    handleUpdate @Telegram handle sendKeyboardMessageUpd
-    int <- readIORef ref
-    return int
+  ref <- newIORef 0
+  let keyboardSender = const $ sendCounterCommon @Telegram ref successReply
+      handle = (defaultHandle @Telegram) {D.sendKeyboard = keyboardSender}
+  handleUpdate @Telegram handle sendKeyboardMessageUpd
+  readIORef ref
 
 testSetRepNum :: Spec
 testSetRepNum = do
-    describe "set repeat number test" $ do
-        it "set repeat number and send info message" $ do
-            testSetRepNum' 3 `shouldReturn` True
+  describe "set repeat number test" $ do
+    it "set repeat number and send info message" $ do
+      testSetRepNum' 3 `shouldReturn` True
 
 testSetRepNum' :: Int -> IO Bool
 testSetRepNum' repnum = do
-    ref <- newIORef 0
-    refMap <- newIORef Nothing :: IO (IORef (Maybe (TlUser, Int)))
-    let infoMessageSender = const $ sendCounterCommon @Telegram ref successReply
-        
-        handle = (defaultHandle @Telegram) {
-            D.sendRepNumMessage = infoMessageSender
-            , D.insertUser = mockInsertUserCommon @Telegram refMap
-            }
-    handleUpdate @Telegram handle $ setRepNumUpdate repnum
-    int <- readIORef ref
-    maybeUserRepnum <- readIORef refMap
-    let bool = int == 1 && maybeUserRepnum == Just (defaultUser, repnum)
-    return bool
--- if this test doesn't pass, use S.echo from Stuff.hs
+  ref <- newIORef 0
+  refMap <- newIORef Nothing :: IO (IORef (Maybe (TlUser, Int)))
+  let infoMessageSender = const $ sendCounterCommon @Telegram ref successReply
+      handle =
+        (defaultHandle @Telegram)
+          { D.sendRepNumMessage = infoMessageSender
+          , D.insertUser = mockInsertUserCommon @Telegram refMap
+          }
+  handleUpdate @Telegram handle $ setRepNumUpdate repnum
+  int <- readIORef ref
+  maybeUserRepnum <- readIORef refMap
+  let bool = int == 1 && maybeUserRepnum == Just (defaultUser, repnum)
+  return bool
 
+-- if this test doesn't pass, use S.echo from Stuff.hs
 testSendEcho :: Int -> Spec
 testSendEcho int = do
-    describe "message echo test" $ do
-        it "should send echo message proper number of times" $ do
-            testSendEcho' int `shouldReturn` validateRepNum int
+  describe "message echo test" $ do
+    it "should send echo message proper number of times" $ do
+      testSendEcho' int `shouldReturn` validateRepNum int
 
 testSendEcho' :: Int -> IO Int
 testSendEcho' repnum = do
-    ref <- newIORef 0
-    refMap <- newIORef $ Just (defaultUser, repnum)
-    let echoSender = const $ sendCounterCommon @Telegram ref successReply
-        handle = (defaultHandle @Telegram) {
-            D.sendEcho = echoSender
-            , D.getUser = mockGetUserCommon @Telegram refMap
-            }
-    handleUpdate @Telegram handle $ simpleMessageUpdate
-    int <- readIORef ref
-    return int
+  ref <- newIORef 0
+  refMap <- newIORef $ Just (defaultUser, repnum)
+  let echoSender = const $ sendCounterCommon @Telegram ref successReply
+      handle =
+        (defaultHandle @Telegram)
+          { D.sendEcho = echoSender
+          , D.getUser = mockGetUserCommon @Telegram refMap
+          }
+  handleUpdate @Telegram handle simpleMessageUpdate
+  readIORef ref
 
 testMediaGroup :: Spec
 testMediaGroup =
-    describe "media group test" $ do
-        it "should save media group unit and send no requests immediately" $
-            testMediaGroup' `shouldReturn` 1
+  describe "media group test" $ do
+    it "should save media group unit and send no requests immediately" $
+      testMediaGroup' `shouldReturn` 1
 
 testMediaGroup' :: IO Int
 testMediaGroup' = do
-    refMap <- newIORef []
-    let handle = (defaultHandle @Telegram) {
-            D.specH = defaultTelegramHandle
-                { insertMediaGroupUnit = mockInsertMediaGroupUnit refMap
-                }
-            }
-    handleUpdate handle $ mediaGroupUpdate
-    int <- fmap Prelude.length $ readIORef refMap
-    return int
-    
+  refMap <- newIORef []
+  let handle =
+        (defaultHandle @Telegram)
+          { D.specH =
+              defaultTelegramHandle
+                {insertMediaGroupUnit = mockInsertMediaGroupUnit refMap}
+          }
+  handleUpdate handle mediaGroupUpdate
+  Prelude.length <$> readIORef refMap
 {-
     result: 
         [{"update_id":332501497,"message":{"from":{"first_name":"Yuri","username":"r
@@ -142,7 +138,6 @@ testMediaGroup' = do
          Bano & Romina Power","file_name":"1 Al Bano & Romina Power - Ci Sarа.mp3"}}
         }]
 -}
-
 {-
 [Debug]: {Array}
     [0]: {TlMediaGroupPair}

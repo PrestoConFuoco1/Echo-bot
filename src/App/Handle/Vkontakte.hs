@@ -15,7 +15,7 @@ module App.Handle.Vkontakte
     , Resources(..)
     ) where
 
-import qualified App.Handle as D
+import qualified App.BotHandler as BotH
 import qualified App.Logger as L
 import BotTypesClass.VkInstance ()
 import Config.Types (VkConfig(..))
@@ -42,7 +42,7 @@ import Vkontakte (VkUser(..), defaultVkParams')
 import qualified Vkontakte.Exceptions as VkEx
 
 ---------- types -----------------------
-instance D.HasBotHandler 'M.Vkontakte where
+instance BotH.HasBotHandler 'M.Vkontakte where
     type StateC 'M.Vkontakte = VkStateConst
     type StateM 'M.Vkontakte = VkStateMut
     type Hndl 'M.Vkontakte = VkHandler
@@ -100,22 +100,22 @@ initResources h common vkConf = do
             }
 
 resourcesToHandle ::
-       Resources -> L.LoggerHandler IO -> D.BotHandler 'M.Vkontakte IO
+       Resources -> L.LoggerHandler IO -> BotH.BotHandler 'M.Vkontakte IO
 resourcesToHandle resources logger =
-    D.BotHandler
-        { D.log = logger
-        , D.commonEnv = commonEnv resources
-        , D.getConstState = constState resources
-        , D.insertUser =
+    BotH.BotHandler
+        { BotH.log = logger
+        , BotH.commonEnv = commonEnv resources
+        , BotH.getConstState = constState resources
+        , BotH.insertUser =
               \u i -> modifyIORef' (usersMap resources) (M.insert u i)
-        , D.getUser =
+        , BotH.getUser =
               \u -> M.lookup u <$> readIORef (usersMap resources)
-        , D.getUpdates = HV.getUpdates logger
-        , D.sendEcho = HV.sendThis logger
-        , D.sendHelp = HV.sendThis logger
-        , D.sendKeyboard = HV.sendThis logger
-        , D.sendRepNumMessage = HV.sendThis logger
-        , D.specH = resourcesToVkHandler resources logger
+        , BotH.getUpdates = HV.getUpdates logger
+        , BotH.sendEcho = HV.sendThis logger
+        , BotH.sendHelp = HV.sendThis logger
+        , BotH.sendKeyboard = HV.sendThis logger
+        , BotH.sendRepNumMessage = HV.sendThis logger
+        , BotH.specH = resourcesToVkHandler resources logger
         }
 
 vkServerErrorHandler ::

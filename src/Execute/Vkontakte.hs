@@ -7,7 +7,7 @@ module Execute.Vkontakte
     (
     ) where
 
-import qualified App.Handle as D
+import qualified App.BotHandler as BotH
 import qualified App.Handle.Vkontakte as HV
 import BotTypesClass.VkInstance ()
 import qualified Control.Monad.Catch as C (MonadThrow, throwM)
@@ -59,11 +59,11 @@ instance BotClass 'M.Vkontakte where
     epilogue = epilogueVk
 
 getUpdatesRequestVk ::
-       (Monad m) => D.BotHandler 'M.Vkontakte m -> m H.HTTPRequest
+       (Monad m) => BotH.BotHandler 'M.Vkontakte m -> m H.HTTPRequest
 getUpdatesRequestVk h = do
-    curTS <- HV.getTimestamp (D.specH h)
-    let constState = D.getConstState h
-        timeout = Env.getTimeout $ D.commonEnv h
+    curTS <- HV.getTimestamp (BotH.specH h)
+    let constState = BotH.getConstState h
+        timeout = Env.getTimeout $ BotH.commonEnv h
         fullUrl = HV.vkServer constState
         pars =
             [ unit "act" ("a_check" :: T.Text)
@@ -88,40 +88,40 @@ errorMsg3 =
 
 handleFailedUpdatesRequestVk ::
        (C.MonadThrow m)
-    => D.BotHandler 'M.Vkontakte m
+    => BotH.BotHandler 'M.Vkontakte m
     -> VkUpdateReplyError
     -> m ()
 handleFailedUpdatesRequestVk h e@(VkUpdateReplyError {..}) =
     let funcName = "handleFailedUpdatesRequest: "
-        key = HV.vkKey $ D.getConstState h
+        key = HV.vkKey $ BotH.getConstState h
      in case replyerrorFailed of
             x
                 | x == 1 -> do
-                    D.logError h errorMsg1
+                    BotH.logError h errorMsg1
                     S.withMaybe
                         replyerrorTs
-                        (D.logError h $ funcName <> "no ts found")
+                        (BotH.logError h $ funcName <> "no ts found")
                         (\ts -> do
-                             D.logInfo h $ funcName <> "using new ts"
-                             HV.putTimestamp (D.specH h) ts)
+                             BotH.logInfo h $ funcName <> "using new ts"
+                             HV.putTimestamp (BotH.specH h) ts)
                 | x == 2 -> do
-                    D.logError h $ funcName <> errorMsg2
-                    D.logError h $
+                    BotH.logError h $ funcName <> errorMsg2
+                    BotH.logError h $
                         funcName <> "key was \"" <> key <> "\""
                     C.throwM KeyOutOfDateGetNew
                 | x == 3 -> do
-                    D.logError h $ funcName <> errorMsg3
+                    BotH.logError h $ funcName <> errorMsg3
                     C.throwM KeyAndTsLosedGetNew
                 | otherwise -> do
-                    D.logFatal
+                    BotH.logFatal
                         h
                         "failed to get updates and unable to handle error"
-                    D.logFatal h $ textPretty e
+                    BotH.logFatal h $ textPretty e
                     C.throwM Ex.UnableToHandleError
 
 sendTextMsgVk ::
        (Monad m)
-    => D.BotHandler 'M.Vkontakte m
+    => BotH.BotHandler 'M.Vkontakte m
     -> Maybe VkChat
     -> Maybe VkUser
     -> T.Text
@@ -132,8 +132,8 @@ sendTextMsgVk _ _ Nothing _ =
     Left "VK: no user supplied, unable to send messages to chats."
 sendTextMsgVk h _ (Just u) text = do
     let method = "messages.send"
-        sc = D.getConstState h
-    randomID <- HV.getRandomID (D.specH h)
+        sc = BotH.getConstState h
+    randomID <- HV.getRandomID (BotH.specH h)
     let pars =
             [ unit "user_id" (userID u)
             , unit "message" text
@@ -149,32 +149,32 @@ repNumKeyboardVk lst cmd = [unit "keyboard" obj]
 
 epilogueVk ::
        (Monad m)
-    => D.BotHandler 'M.Vkontakte m
+    => BotH.BotHandler 'M.Vkontakte m
     -> [VkUpdate]
     -> VkUpdateReplySuccess
     -> m ()
 epilogueVk h _ rep =
     case replysuccessTs rep of
         Nothing -> pure ()
-        Just x -> HV.putTimestamp (D.specH h) x
+        Just x -> HV.putTimestamp (BotH.specH h) x
 
 processMessageVk ::
        (Monad m)
-    => D.BotHandler 'M.Vkontakte m
+    => BotH.BotHandler 'M.Vkontakte m
     -> VkMessage
     -> m (Maybe (m H.HTTPRequest))
 processMessageVk h m
     | null atts && isNothing maybeText = do
-        D.logError h $ funcName <> "Unable to send empty message."
+        BotH.logError h $ funcName <> "Unable to send empty message."
         pure Nothing
     | otherwise = do
-        D.logDebug h $ funcName <> "processing vk attachments"
-        maybePars <- attsToParsVk (D.log h) atts
+        BotH.logDebug h $ funcName <> "processing vk attachments"
+        maybePars <- attsToParsVk (BotH.log h) atts
         S.withMaybe
             maybeText
             (S.withMaybe
                  maybePars
-                 (do D.logError
+                 (do BotH.logError
                          h
                          (funcName <>
                           "no text found and unable to send any attachments.")
@@ -193,15 +193,15 @@ processMessageVk h m
 
 processMessageVk1 ::
        (Monad m)
-    => D.BotHandler 'M.Vkontakte m
+    => BotH.BotHandler 'M.Vkontakte m
     -> VkUser
     -> Maybe T.Text
     -> H.ParamsList
     -> m H.HTTPRequest
 processMessageVk1 h user maybeText attachmentsEtc = do
-    let sc = D.getConstState h
+    let sc = BotH.getConstState h
         method = "messages.send"
-    randomID <- HV.getRandomID (D.specH h)
+    randomID <- HV.getRandomID (BotH.specH h)
     let pars =
             [ unit "user_id" $ userID user
             , mUnit "message" maybeText

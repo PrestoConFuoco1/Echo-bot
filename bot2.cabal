@@ -25,7 +25,7 @@ source-repository head
 
 library
   exposed-modules:
-      App.Handle
+      App.BotHandler
       App.Handle.Telegram
       App.Handle.Vkontakte
       App.Logger
@@ -58,7 +58,7 @@ library
       Telegram.Keyboard
       Telegram.Types.Entity
       Telegram.Types.MediaGroup
-      Telegram.Types.ProcessMessage
+      Telegram.Types.MessageContent
       Telegram.Update
       Vkontakte
       Vkontakte.Attachment

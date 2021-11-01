@@ -13,7 +13,7 @@ module App.Handle.Telegram
     , Resources(..)
     ) where
 
-import qualified App.Handle as D
+import qualified App.BotHandler as BotH
 import qualified App.Logger as L
 import BotTypesClass.TelegramInstance ()
 import Config.Types (TlConfig(..))
@@ -35,7 +35,7 @@ import Telegram
     )
 import qualified Telegram.Exceptions as TlEx
 
-instance D.HasBotHandler 'M.Telegram where
+instance BotH.HasBotHandler 'M.Telegram where
     type StateC 'M.Telegram = TlStateConst
     type StateM 'M.Telegram = TlStateMut
     type Hndl 'M.Telegram = TlHandler
@@ -95,22 +95,22 @@ initResources _ common tlConf = do
             }
 
 resourcesToHandle ::
-       Resources -> L.LoggerHandler IO -> D.BotHandler 'M.Telegram IO
+       Resources -> L.LoggerHandler IO -> BotH.BotHandler 'M.Telegram IO
 resourcesToHandle resources logger =
-    D.BotHandler
-        { D.log = logger
-        , D.commonEnv = commonEnv resources
-        , D.getConstState = constState resources
-        , D.insertUser =
+    BotH.BotHandler
+        { BotH.log = logger
+        , BotH.commonEnv = commonEnv resources
+        , BotH.getConstState = constState resources
+        , BotH.insertUser =
               \u i -> modifyIORef' (usersMap resources) (M.insert u i)
-        , D.getUser =
+        , BotH.getUser =
               \u -> M.lookup u <$> readIORef (usersMap resources)
-        , D.getUpdates = HTl.getUpdates logger
-        , D.sendEcho = HTl.sendThis logger
-        , D.sendHelp = HTl.sendThis logger
-        , D.sendKeyboard = HTl.sendThis logger
-        , D.sendRepNumMessage = HTl.sendThis logger
-        , D.specH = resourcesToTelegramHandler resources logger
+        , BotH.getUpdates = HTl.getUpdates logger
+        , BotH.sendEcho = HTl.sendThis logger
+        , BotH.sendHelp = HTl.sendThis logger
+        , BotH.sendKeyboard = HTl.sendThis logger
+        , BotH.sendRepNumMessage = HTl.sendThis logger
+        , BotH.specH = resourcesToTelegramHandler resources logger
         }
 
 resourcesToTelegramHandler ::

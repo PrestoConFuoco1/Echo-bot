@@ -1,8 +1,9 @@
-import Test.Vkontakte
-import Test.Telegram
 import Test.Hspec
+import Test.Telegram
+import Test.Vkontakte
 
 main :: IO ()
-main = hspec $ do
+main =
+  hspec $ do
     testVkontakte
     testTelegram

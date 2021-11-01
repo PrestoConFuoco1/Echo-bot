@@ -1,21 +1,20 @@
 module Test.Vkontakte.TestData where
 
-import Environment
-import Test.Hspec
-import Data.IORef
-import Handlers
-import qualified HTTP.Types as H
-import App.Handle as D
-import Vkontakte
+import App.BotHandler as D
 import BotTypesClass.ClassTypes
 import BotTypesClass.VkInstance
-import Execute.Vkontakte
+import Data.Aeson
+import Data.IORef
+import Data.Text as T
+import Environment
 import Execute
 import Execute.Logic
-import Data.Aeson
-import Data.Text as T
+import Execute.Vkontakte
+import qualified HTTP.Types as H
+import Handlers
 import qualified Stuff as S
-
+import Test.Hspec
+import Vkontakte
 
 {-
 data VkMessage = VkMessage {
@@ -28,19 +27,19 @@ data VkMessage = VkMessage {
 
 
 -}
+defaultUser = VkUser {userID = 0}
 
-defaultUser = VkUser { userID = 0 }
-
-defaultMessage = VkMessage {
-    messageID = 0
+defaultMessage =
+  VkMessage
+    { messageID = 0
     , messageFromID = defaultUser
     , messageText = Nothing
     , messageAttachments = []
     }
 
 sendHelpMessageMsg :: VkMessage
-sendHelpMessageMsg = defaultMessage { messageText = Just $ getHelpCommand defStateGen }
-
+sendHelpMessageMsg =
+  defaultMessage {messageText = Just $ getHelpCommand defStateGen}
 
 {-
 sendHelpMessageUpd = VkUpdate {
@@ -48,23 +47,22 @@ sendHelpMessageUpd = VkUpdate {
     , updateObject = VEMsg sendHelpMessageMsg
     }
 -}
-sendHelpMessageUpd = buildUpdate (VEMsg sendHelpMessageMsg) "help request update"
+sendHelpMessageUpd =
+  buildUpdate (VEMsg sendHelpMessageMsg) "help request update"
 
 successReply :: VkReply
 successReply = VkReply Nothing (String "success reply")
 
-
 buildUpdate :: VkEvent -> T.Text -> VkUpdate
-buildUpdate event msg = VkUpdate {
-    updateValue = String msg
-    , updateObject = event
-    }
+buildUpdate event msg =
+  VkUpdate {updateValue = String msg, updateObject = event}
 
-
-sendKeyboardMessage = defaultMessage { messageText = Just $ getSetRepNumCommand defStateGen }
+sendKeyboardMessage =
+  defaultMessage {messageText = Just $ getSetRepNumCommand defStateGen}
 
 sendKeyboardMessageUpd :: VkUpdate
-sendKeyboardMessageUpd = buildUpdate (VEMsg sendKeyboardMessage) "send repnum buttons request"
+sendKeyboardMessageUpd =
+  buildUpdate (VEMsg sendKeyboardMessage) "send repnum buttons request"
 
 {-
 [{"object":{"client_info":{"lang_id":0,"button_actions":["text","vkpay","ope
@@ -76,22 +74,19 @@ sendKeyboardMessageUpd = buildUpdate (VEMsg sendKeyboardMessage) "send repnum bu
         ut":0}},"group_id":199493573,"type":"message_new","event_id":"20a812cb0e42e8
         9e4fbe5f49df1600e1e79983ac"}]
 -}
-
 setRepNumCallback :: Int -> VkMyCallback
-setRepNumCallback int = VkMyCallback {
-    mycallbackFromID = defaultUser
+setRepNumCallback int =
+  VkMyCallback
+    { mycallbackFromID = defaultUser
     , mycallbackText = Just $ S.showT int
     , mycallbackPayload = VkPayload ("set " <> S.showT int)
-    
     }
 
 setRepNumUpdate :: Int -> VkUpdate
-setRepNumUpdate repnum = buildUpdate (VECallback $ setRepNumCallback repnum) "set repeat number update"
+setRepNumUpdate repnum =
+  buildUpdate (VECallback $ setRepNumCallback repnum) "set repeat number update"
 
-
-simpleMessage = defaultMessage { messageText = Just "hello, this is yoba" }
+simpleMessage = defaultMessage {messageText = Just "hello, this is yoba"}
 
 simpleMessageUpdate :: VkUpdate
 simpleMessageUpdate = buildUpdate (VEMsg simpleMessage) "simple message to echo"
-
-

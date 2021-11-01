@@ -5,7 +5,7 @@ module Execute
     ( execute
     ) where
 
-import qualified App.Handle as D
+import qualified App.BotHandler as BotH
 import BotTypesClass.ClassTypes (BotClassTypes(..))
 import Control.Monad (when)
 import qualified Control.Monad.Catch as C
@@ -18,28 +18,28 @@ import Execute.Logic (handleUpdate)
 import qualified GenericPretty as GP
 import qualified Stuff as S
 
-execute :: (BotClass s, C.MonadThrow m) => D.BotHandler s m -> m ()
+execute :: (BotClass s, C.MonadThrow m) => BotH.BotHandler s m -> m ()
 execute h = do
     let funcName = "execute: "
         respParseFail =
-            D.logError h .
+            BotH.logError h .
             ("failed to parse server reply: " <>) .
             (funcName <>) . T.pack
     request <- getUpdatesRequest h
-    eithResp <- D.getUpdates h request
+    eithResp <- BotH.getUpdates h request
     S.withEither eithResp respParseFail $ \resp' -> do
-        D.logDebug h $
+        BotH.logDebug h $
             funcName <> "got and successfully parsed server reply:"
-        D.logDebug h $ GP.textPretty resp'
+        BotH.logDebug h $ GP.textPretty resp'
         case resp' of
             Left updErr -> handleFailedUpdatesRequest h updErr
             Right resp -> handleUpdatesSuccess h resp
 
 updateListParseFail ::
-       (C.MonadThrow m) => D.BotHandler s m -> String -> m a
+       (C.MonadThrow m) => BotH.BotHandler s m -> String -> m a
 updateListParseFail h x = do
     let funcName = "updateListParseFail: "
-    D.logError h .
+    BotH.logError h .
         ("failed to parse update list: " <>) . (funcName <>) . T.pack $
         x
     C.throwM Ex.FailedToParseUpdatesListFromResult
@@ -47,23 +47,23 @@ updateListParseFail h x = do
 -- normal work is impossible if we are not able to parse update list
 logUpdatesErrors ::
        (BotClass s, C.MonadThrow m)
-    => D.BotHandler s m
+    => BotH.BotHandler s m
     -> [(Ae.Value, String)]
     -> [Upd s]
     -> m ()
 logUpdatesErrors h errs upds = do
     let funcName = "logUpdatesErrors: "
-    D.logError h $ funcName <> "failed to parse some updates"
+    BotH.logError h $ funcName <> "failed to parse some updates"
     mapM_ (singleUpdateParseFail h) errs
     when (null upds) $ do
-        D.logError h $ funcName <> "failed to parse all updates"
+        BotH.logError h $ funcName <> "failed to parse all updates"
         C.throwM Ex.ParsedNoUpdates
 
 -- normal work is impossible if we are not able to parse any updates
 -- we will try to parse them again and again resulting an infinite worthless loop
 handleUpdatesSuccess ::
        forall s m. (BotClass s, C.MonadThrow m)
-    => D.BotHandler s m
+    => BotH.BotHandler s m
     -> RepSucc s
     -> m ()
 handleUpdatesSuccess h resp = do
@@ -79,15 +79,15 @@ handleUpdatesSuccess h resp = do
 
 singleUpdateParseFail ::
        forall s m. (BotClass s, Monad m)
-    => D.BotHandler s m
+    => BotH.BotHandler s m
     -> (Ae.Value, String)
     -> m ()
 singleUpdateParseFail h (u, e) = do
     let funcName = "singleUpdateParseFail: "
-    D.logError h $
+    BotH.logError h $
         funcName <>
         "Failed to parse update: <" <> T.pack e <> ">, update is:"
-    D.logError h $ GP.textPretty u
+    BotH.logError h $ GP.textPretty u
 
 attachErrorReason :: (a -> Either b c) -> a -> Either (a, b) c
 attachErrorReason f x =

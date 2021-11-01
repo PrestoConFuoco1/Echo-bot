@@ -7,7 +7,7 @@ module Execute.Telegram
     (
     ) where
 
-import qualified App.Handle as D
+import qualified App.BotHandler as BotH
 import qualified App.Handle.Telegram as HT
 import BotTypesClass.TelegramInstance ()
 import qualified Control.Monad.Catch as C (MonadThrow, throwM)
@@ -61,28 +61,28 @@ instance BotClass 'M.Telegram where
     epilogue = epilogueTl
 
 getUpdatesRequestTl ::
-       (Monad m) => D.BotHandler 'M.Telegram m -> m HTTPRequest
+       (Monad m) => BotH.BotHandler 'M.Telegram m -> m HTTPRequest
 getUpdatesRequestTl h = do
-    let tout = Env.getDefaultTimeout $ D.commonEnv h
-        url = HT.stcUrl $ D.getConstState h
+    let tout = Env.getDefaultTimeout $ BotH.commonEnv h
+        url = HT.stcUrl $ BotH.getConstState h
         req uid =
             H.Req
                 H.GET
                 (url <> "getUpdates")
                 [unit "offset" uid, unit "timeout" tout]
-    curUpdID <- HT.getUpdateID (D.specH h)
+    curUpdID <- HT.getUpdateID (BotH.specH h)
     pure $ req curUpdID
 
 handleFailedUpdatesRequestTl ::
        (C.MonadThrow m)
-    => D.BotHandler 'M.Telegram m
+    => BotH.BotHandler 'M.Telegram m
     -> TlUpdateReplyError
     -> m b
 handleFailedUpdatesRequestTl h err = do
     let funcName = "tl_handleFailedUpdatesRequest: "
-    D.logError h $ funcName <> "got telegram error"
-    D.logError h $ GP.textPretty err
-    D.logError h $ funcName <> "unable to handle any telegram errors"
+    BotH.logError h $ funcName <> "got telegram error"
+    BotH.logError h $ GP.textPretty err
+    BotH.logError h $ funcName <> "unable to handle any telegram errors"
     C.throwM Ex.UnableToHandleError
 
 parseUpdatesValueListTl ::
@@ -103,7 +103,7 @@ repNumKeyboardTl lst cmd = [unit "reply_markup" obj]
 
 sendTextMsgTl ::
        (Monad m)
-    => D.BotHandler 'M.Telegram m
+    => BotH.BotHandler 'M.Telegram m
     -> Maybe TlChat
     -> Maybe TlUser
     -> T.Text
@@ -113,7 +113,7 @@ sendTextMsgTl _ Nothing _ _ =
     Left
         "M.Telegram: no chat supplied, unable to send messages to users"
 sendTextMsgTl h (Just c) _ text =
-    let url = HT.stcUrl $ D.getConstState h
+    let url = HT.stcUrl $ BotH.getConstState h
      in pure $
         Right $
         buildHTTP
@@ -123,7 +123,7 @@ sendTextMsgTl h (Just c) _ text =
 
 epilogueTl ::
        (Monad m)
-    => D.BotHandler 'M.Telegram m
+    => BotH.BotHandler 'M.Telegram m
     -> [TlUpdate]
     -> TlUpdateReplySuccess
     -> m ()
@@ -131,17 +131,17 @@ epilogueTl _ [] _ = pure ()
 epilogueTl h us _ = do
     let funcName = "tl_epilogue: "
         newUpdateID = maximum (map updateUpdateID us) + 1
-    HT.putUpdateID (D.specH h) newUpdateID
-    stmMediaGroups <- HT.getMediaGroups (D.specH h)
-    D.logDebug h $
+    HT.putUpdateID (BotH.specH h) newUpdateID
+    stmMediaGroups <- HT.getMediaGroups (BotH.specH h)
+    BotH.logDebug h $
         funcName <> "ready to process some media groups, if any"
-    D.logDebug h $ GP.textPretty stmMediaGroups
+    BotH.logDebug h $ GP.textPretty stmMediaGroups
     mapM_ (sendMediaGroup h) stmMediaGroups
-    HT.purgeMediaGroups (D.specH h)
+    HT.purgeMediaGroups (BotH.specH h)
 
 processMessageTl ::
        (Monad m)
-    => D.BotHandler 'M.Telegram m
+    => BotH.BotHandler 'M.Telegram m
     -> TlMessage
     -> m (Maybe (m H.HTTPRequest))
 processMessageTl h m =
@@ -153,17 +153,17 @@ processMessageTl h m =
                  (pure . Just)
   where
     logThenNothing e = do
-        D.logError h $ funcName <> T.pack e
+        BotH.logError h $ funcName <> T.pack e
         pure Nothing
        
     funcName = "tl_processMessage: "
     sendMessage =
         let eithMethodParams = echoMessageTele m
-            url = HT.stcUrl $ D.getConstState h
+            url = HT.stcUrl $ BotH.getConstState h
          in pure . buildHTTP url <$> eithMethodParams
 
 processMediaGroup ::
-       (Monad m) => D.BotHandler 'M.Telegram m -> TlMessage -> m ()
+       (Monad m) => BotH.BotHandler 'M.Telegram m -> TlMessage -> m ()
 processMediaGroup h m =
     let funcName = "processMediaGroup: "
         chat = messageChat m
@@ -174,21 +174,21 @@ processMediaGroup h m =
         mMediaGroupUnit = maybeMediaGroupUnit m
         mAction =
             asum
-                [ HT.insertMediaGroupUnit (D.specH h) <$>
+                [ HT.insertMediaGroupUnit (BotH.specH h) <$>
                   mMediaGroupIdent <*>
                   mMediaGroupUnit
                 ]
         processFail = do
-            D.logWarning h $
+            BotH.logWarning h $
                 funcName <> "failed to process media group. Message:"
-            D.logWarning h $ GP.textPretty m
+            BotH.logWarning h $ GP.textPretty m
      in S.withMaybe mAction processFail $ \action -> do
-            D.logDebug h $ funcName <> "processing media group"
+            BotH.logDebug h $ funcName <> "processing media group"
             action
 
 sendMediaGroup ::
        (Monad m)
-    => D.BotHandler 'M.Telegram m
+    => BotH.BotHandler 'M.Telegram m
     -> TlMediaGroupPair
     -> m ()
 sendMediaGroup h (TlMediaGroupPair ident items) = do
@@ -196,7 +196,7 @@ sendMediaGroup h (TlMediaGroupPair ident items) = do
         mUser = tmgidUser ident
         reversedItems = reverse items
         method = "sendMediaGroup"
-        url = HT.stcUrl $ D.getConstState h
+        url = HT.stcUrl $ BotH.getConstState h
         mCaption = S.safeHead items >>= photoVideoCaption
         pars =
             [ unit "chat_id" $ chatID chat
